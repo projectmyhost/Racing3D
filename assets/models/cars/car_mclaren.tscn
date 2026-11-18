@@ -1,0 +1,24 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/cars/mclaren/FINAL_MODEL_S.fbx" id="1_model"]
+
+[node name="mclaren" type="Node3D"]
+
+[node name="Body" type="Node3D" parent="."]
+
+[node name="ModelWrapper" type="Node3D" parent="Body"]
+transform = Transform3D(-100, 0, 0, 0, 100, 0, 0, 0, -100, 0, 0, 0)
+
+[node name="Model" type="Node3D" parent="Body/ModelWrapper" instance=ExtResource("1_model")]
+
+[node name="Wheel_FL" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.771, 0.325, -1.180)
+
+[node name="Wheel_FR" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.771, 0.325, -1.180)
+
+[node name="Wheel_RL" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.749, 0.358, 1.458)
+
+[node name="Wheel_RR" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.749, 0.358, 1.458)

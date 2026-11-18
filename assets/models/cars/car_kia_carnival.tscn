@@ -1,0 +1,24 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/cars/kia_carnival/source/kia_carnival.glb" id="1_model"]
+
+[node name="kia_carnival" type="Node3D"]
+
+[node name="Body" type="Node3D" parent="."]
+
+[node name="ModelWrapper" type="Node3D" parent="Body"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0, -1.513)
+
+[node name="Model" type="Node3D" parent="Body/ModelWrapper" instance=ExtResource("1_model")]
+
+[node name="Wheel_FL" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.855, 0.371, -1.541)
+
+[node name="Wheel_FR" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.853, 0.371, -1.541)
+
+[node name="Wheel_RL" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.855, 0.371, 1.541)
+
+[node name="Wheel_RR" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.853, 0.371, 1.541)
