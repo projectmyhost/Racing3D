@@ -1,14 +1,14 @@
 class_name HomeScreen
 extends Node3D
 
+const EnvMatEnhancer = preload("res://scripts/core/environment_material_enhancer.gd")
+
 ## Root scene controller for Sunset Street Racing Home Screen.
 
 func _ready() -> void:
-	var sun = get_node_or_null("SunLight") as DirectionalLight3D
-	if sun:
-		sun.light_energy = 0.55
-		sun.light_specular = 0.05
-		sun.shadow_bias = 0.03
+	EnvMatEnhancer.enhance_city_stage(get_node_or_null("Stage"))
+	if has_node("/root/QualitySettings"):
+		get_node("/root/QualitySettings").apply_to_current_scene()
 
 	var ui = get_node_or_null("UILayer/HomeScreenUI")
 	var car = get_node_or_null("ShowcaseCar")

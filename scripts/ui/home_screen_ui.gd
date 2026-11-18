@@ -672,6 +672,16 @@ func _connect_modal_buttons() -> void:
 		
 	# Settings Quality & Display
 	if quality_option:
+		if has_node("/root/QualitySettings"):
+			var qs = get_node("/root/QualitySettings")
+			var tier_idx: int = clampi(int(qs.current_tier), 0, quality_option.item_count - 1)
+			quality_option.select(tier_idx)
+			qs.tier_changed.connect(func(new_tier):
+				if is_instance_valid(quality_option):
+					var clamped := clampi(int(new_tier), 0, quality_option.item_count - 1)
+					if quality_option.selected != clamped:
+						quality_option.select(clamped)
+			)
 		quality_option.item_selected.connect(_on_quality_selected)
 	if fps_option:
 		if _selected_fps_index >= 0 and _selected_fps_index < fps_option.item_count:
@@ -951,7 +961,7 @@ func _on_garage_action_pressed() -> void:
 			if sm.has_method("select_car"):
 				sm.select_car(_garage_selected_car_id)
 		var showcase = _get_showcase_car()
-		if showcase and showcase.has_method("load_car_model"):
+		if showcase and showcase.has_method("load_car_model") and showcase.get("current_model") != _garage_selected_car_id:
 			showcase.load_car_model(_garage_selected_car_id)
 		car_equipped.emit(_garage_selected_car_id)
 		show_toast("[OK] Equipped " + car["name"] + " for race!")
@@ -1086,6 +1096,9 @@ func open_modal(modal: Control) -> void:
 		var prof = _get_profile()
 		if prof and prof.data:
 			_garage_selected_car_id = prof.data.equipped_car
+		var showcase = _get_showcase_car()
+		if showcase and showcase.has_method("warm_garage_fleet"):
+			showcase.warm_garage_fleet(GARAGE_FLEET_DATA.keys())
 		_refresh_garage_ui()
 
 func close_modal() -> void:
@@ -1093,7 +1106,7 @@ func close_modal() -> void:
 		var prof = _get_profile()
 		var eq = prof.data.equipped_car if prof and prof.data else "sedan"
 		var showcase = _get_showcase_car()
-		if showcase and showcase.has_method("load_car_model"):
+		if showcase and showcase.has_method("load_car_model") and showcase.get("current_model") != eq:
 			showcase.load_car_model(eq)
 	if pages_layer:
 		pages_layer.visible = false

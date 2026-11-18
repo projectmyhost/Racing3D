@@ -48,6 +48,7 @@ var _pos_top_label: Label
 # Pause Modal Nodes
 var _pause_overlay: ColorRect
 var _pause_dialog: PanelContainer
+var _graphics_btn: Button
 
 var _font_bold: Font
 var _font_regular: Font
@@ -347,10 +348,10 @@ func _create_pause_modal() -> void:
 	_pause_dialog.name = "PauseDialog"
 	_pause_dialog.set_anchors_preset(Control.PRESET_CENTER)
 	_pause_dialog.offset_left = -220.0
-	_pause_dialog.offset_top = -180.0
+	_pause_dialog.offset_top = -212.0
 	_pause_dialog.offset_right = 220.0
-	_pause_dialog.offset_bottom = 180.0
-	_pause_dialog.custom_minimum_size = Vector2(440, 360)
+	_pause_dialog.offset_bottom = 212.0
+	_pause_dialog.custom_minimum_size = Vector2(440, 424)
 	
 	var sb = StyleBoxFlat.new()
 	sb.bg_color = Color(0.05, 0.08, 0.14, 0.98)
@@ -402,12 +403,29 @@ func _create_pause_modal() -> void:
 	)
 	vbox.add_child(restart_btn)
 
+	_graphics_btn = _create_menu_btn(_get_graphics_btn_text(), Color(0.95, 0.72, 0.18, 0.95))
+	_graphics_btn.pressed.connect(_on_graphics_cycle_pressed)
+	vbox.add_child(_graphics_btn)
+
 	var exit_btn = _create_menu_btn("EXIT TO MAIN MENU", Color(0.85, 0.2, 0.15, 0.95))
 	exit_btn.pressed.connect(func():
 		_close_pause_menu()
 		exit_to_home_requested.emit()
 	)
 	vbox.add_child(exit_btn)
+
+func _get_graphics_btn_text() -> String:
+	if has_node("/root/QualitySettings"):
+		var qs = get_node("/root/QualitySettings")
+		return "GRAPHICS: " + qs.get_tier_name()
+	return "GRAPHICS: AUTO"
+
+func _on_graphics_cycle_pressed() -> void:
+	if has_node("/root/QualitySettings"):
+		var qs = get_node("/root/QualitySettings")
+		qs.cycle_tier()
+	if _graphics_btn:
+		_graphics_btn.text = _get_graphics_btn_text()
 
 func _create_menu_btn(txt: String, border_col: Color) -> Button:
 	var btn = Button.new()
@@ -436,6 +454,8 @@ func _create_menu_btn(txt: String, border_col: Color) -> Button:
 
 func _open_pause_menu() -> void:
 	is_paused = true
+	if _graphics_btn:
+		_graphics_btn.text = _get_graphics_btn_text()
 	if _pause_overlay:
 		_pause_overlay.visible = true
 	get_tree().paused = true

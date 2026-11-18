@@ -12,13 +12,13 @@ transform = Transform3D(-100, 0, 0, 0, 100, 0, 0, 0, -100, 0, 0.19, 0)
 [node name="Model" parent="Body/ModelWrapper" instance=ExtResource("1_model")]
 
 [node name="Wheel_FL" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8016, 0.3716, -1.3472)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8016, 0.3986, -1.3472)
 
 [node name="Wheel_FR" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8326, 0.3716, -1.3472)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8326, 0.3986, -1.3472)
 
 [node name="Wheel_RL" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8176, 0.390, 1.3827)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8176, 0.4170, 1.3827)
 
 [node name="Wheel_RR" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.875, 0.390, 1.3827)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.875, 0.4176, 1.3827)

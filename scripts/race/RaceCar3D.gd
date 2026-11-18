@@ -15,8 +15,38 @@ var _reflection_probe: ReflectionProbe
 func _ready() -> void:
 	super._ready()
 	_setup_reflection_probe()
+	_setup_vehicle_lights()
 	_setup_audio()
 	_setup_drift_particles()
+
+func _setup_vehicle_lights() -> void:
+	var half_wb: float = config.wheelbase * 0.5 if config else 1.4
+	var front_z: float = -(half_wb + 0.78)
+	var rear_z: float = half_wb + 0.96
+	for x_sign in [-1.0, 1.0]:
+		var spot := SpotLight3D.new()
+		spot.name = "HeadlightSpotL" if x_sign < 0.0 else "HeadlightSpotR"
+		spot.position = Vector3(0.62 * x_sign, 0.50, front_z)
+		spot.rotation = Vector3(deg_to_rad(-8.0), 0.0, 0.0)
+		spot.light_color = Color(0.98, 0.96, 0.9, 1.0)
+		spot.light_energy = 1.5
+		spot.light_specular = 0.25
+		spot.spot_range = 16.0
+		spot.spot_attenuation = 1.45
+		spot.spot_angle = 35.0
+		spot.shadow_enabled = false
+		add_child(spot)
+
+	var rear_glow := OmniLight3D.new()
+	rear_glow.name = "RearTaillightGlow"
+	rear_glow.position = Vector3(0.0, 0.46, rear_z)
+	rear_glow.light_color = Color(1.0, 0.12, 0.08, 1.0)
+	rear_glow.light_energy = 0.55
+	rear_glow.light_specular = 0.12
+	rear_glow.omni_range = 2.6
+	rear_glow.omni_attenuation = 1.4
+	rear_glow.shadow_enabled = false
+	add_child(rear_glow)
 
 func _setup_reflection_probe() -> void:
 	_reflection_probe = ReflectionProbe.new()

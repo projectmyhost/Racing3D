@@ -41,6 +41,7 @@ class WheelState:
 	var suspension_length: float = 0.38
 	var compression: float = 0.0
 	var prev_compression: float = 0.0
+	var was_grounded: bool = false
 	var suspension_velocity: float = 0.0
 	var spring_force_mag: float = 0.0
 	var normal_force_mag: float = 0.0
@@ -87,7 +88,8 @@ func get_spawn_height() -> float:
 	if not config: return 0.55
 	var k_total = (config.spring_stiffness_front + config.spring_stiffness_rear) * 2.0
 	var eq_compression = (config.mass * 9.8) / maxf(k_total, 1000.0)
-	return config.wheel_radius + config.suspension_rest_length - eq_compression
+	var mount_y = config.suspension_rest_length * 0.5
+	return config.wheel_radius + config.suspension_rest_length - eq_compression - mount_y
 
 func _ready() -> void:
 	continuous_cd = true
@@ -287,17 +289,26 @@ func _read_player_inputs(delta: float) -> void:
 	smoothed_brake = move_toward(smoothed_brake, _brake_input, brake_rate * delta)
 	
 	var speed_kmh = absf(forward_speed) * 3.6
-	var speed_factor = clampf((speed_kmh - 30.0) / 100.0, 0.0, 1.0)
-	var dyn_max_steer = lerpf(deg_to_rad(config.max_steer_angle_deg), deg_to_rad(config.min_steer_angle_deg), speed_factor)
+	var dyn_max_steer: float
+	if speed_kmh <= 120.0:
+		var mid_t := clampf((speed_kmh - 28.0) / 92.0, 0.0, 1.0)
+		dyn_max_steer = lerpf(deg_to_rad(config.max_steer_angle_deg), deg_to_rad(config.min_steer_angle_deg), mid_t)
+	else:
+		var hi_t := clampf((speed_kmh - 120.0) / 140.0, 0.0, 1.0)
+		# Smooth ease-out to agile high-speed angle (~5 deg) prevents sudden spinout on A/D lane changes
+		hi_t = 1.0 - pow(1.0 - hi_t, 1.5)
+		dyn_max_steer = lerpf(deg_to_rad(config.min_steer_angle_deg), deg_to_rad(config.high_speed_steer_angle_deg), hi_t)
 	max_steer_angle = dyn_max_steer
 	
 	var target_steer = raw_steer * dyn_max_steer
+	# Keep steering crisp yet progressive at highway/top speeds so A/D taps never snap chassis yaw
+	var speed_steer_rate_scale := lerpf(1.0, 0.62, clampf((speed_kmh - 100.0) / 160.0, 0.0, 1.0))
 	var steer_rate = config.return_speed
 	if raw_steer != 0.0:
 		if current_steer_angle * raw_steer < 0.0:
-			steer_rate = config.counter_steer_speed
+			steer_rate = config.counter_steer_speed * lerpf(1.0, 0.78, clampf((speed_kmh - 100.0) / 160.0, 0.0, 1.0))
 		else:
-			steer_rate = config.steer_speed
+			steer_rate = config.steer_speed * speed_steer_rate_scale
 	current_steer_angle = move_toward(current_steer_angle, target_steer, steer_rate * delta)
 	_steer_input = current_steer_angle / maxf(dyn_max_steer, 0.001)
 
@@ -343,6 +354,7 @@ func _solve_suspension_raycasts(_delta: float) -> void:
 	var chassis_up = global_transform.basis.y.normalized()
 	
 	for w in _wheels:
+		w.was_grounded = w.is_grounded
 		w.prev_compression = w.compression
 		var mount_world = global_transform * w.mount_local_pos
 		var ray_origin = mount_world + chassis_up * ray_headroom
@@ -369,6 +381,8 @@ func _solve_suspension_raycasts(_delta: float) -> void:
 			var dist_along_axis = (ray_origin - hit.position).dot(chassis_up) - ray_headroom
 			w.suspension_length = maxf(0.0, dist_along_axis - config.wheel_radius)
 			w.compression = clampf(config.suspension_rest_length - w.suspension_length, 0.0, config.suspension_travel)
+			if not w.was_grounded:
+				w.prev_compression = w.compression
 		else:
 			w.is_grounded = false
 			w.compression = 0.0
@@ -378,9 +392,9 @@ func _solve_suspension_raycasts(_delta: float) -> void:
 
 func _solve_suspension_forces(delta: float) -> void:
 	for w in _wheels:
-		# Clamp suspension velocity to prevent impulse explosions from mesh steps or curb seams
+		# Allow hydraulic landing stroke velocity while capping extreme curb/seam spikes
 		var raw_vel = (w.compression - w.prev_compression) / maxf(delta, 0.001)
-		w.suspension_velocity = clampf(raw_vel, -4.0, 4.0)
+		w.suspension_velocity = clampf(raw_vel, -5.5, 5.5)
 		
 	# Anti-Roll Bar Force computation
 	var arb_f = (_wheels[0].compression - _wheels[1].compression) * config.anti_roll_front
@@ -388,7 +402,7 @@ func _solve_suspension_forces(delta: float) -> void:
 	var arb_forces = [arb_f, -arb_f, arb_r, -arb_r]
 	
 	var chassis_up = global_transform.basis.y.normalized()
-	# Maximum allowed spring force per wheel: 2.8x corner weight
+	# Cap peak shock impulse so crest/ramp landings absorb smoothly without bouncing skyward
 	var max_allowed_force = (config.mass * 9.8 / 4.0) * 2.8
 	
 	for i in range(4):
@@ -407,11 +421,13 @@ func _solve_suspension_forces(delta: float) -> void:
 		var f_damp = c * w.suspension_velocity
 		var f_arb = arb_forces[i]
 		
+		# Progressive viscoelastic bump-stop (spring + hydraulic compression damper near full stroke)
 		var f_bump_stop = 0.0
-		var bump_threshold = config.suspension_travel * 0.85
+		var bump_threshold = config.suspension_travel * 0.78
 		if w.compression > bump_threshold:
 			var excess_norm = (w.compression - bump_threshold) / maxf(config.suspension_travel - bump_threshold, 0.001)
-			f_bump_stop = config.bump_stop_stiffness * excess_norm * excess_norm
+			var bs_damp = config.bump_stop_damping * maxf(0.0, w.suspension_velocity) * excess_norm
+			f_bump_stop = config.bump_stop_stiffness * (excess_norm * excess_norm) + bs_damp
 			
 		var f_total_normal = clampf(f_spring + f_damp + f_arb + f_bump_stop, 0.0, max_allowed_force)
 		w.spring_force_mag = f_spring
@@ -421,6 +437,18 @@ func _solve_suspension_forces(delta: float) -> void:
 		var force_vec = chassis_up * f_total_normal
 		var contact_offset = w.contact_point - global_position
 		apply_force(force_vec, contact_offset)
+
+	# GTA V Crest & Landing Shock Absorber: damps excessive pitch oscillation when settling on slopes/bumps
+	var grounded_wheels := 0
+	for w in _wheels:
+		if w.is_grounded:
+			grounded_wheels += 1
+	if grounded_wheels >= 2:
+		var pitch_rate := angular_velocity.dot(global_transform.basis.x)
+		var roll_rate := angular_velocity.dot(-global_transform.basis.z)
+		var pitch_damper_torque := -global_transform.basis.x * (pitch_rate * config.mass * 2.2)
+		var roll_damper_torque := global_transform.basis.z * (roll_rate * config.mass * 1.4)
+		apply_torque(pitch_damper_torque + roll_damper_torque)
 
 func _solve_tire_forces(delta: float) -> void:
 	var drive_count = 0
@@ -503,16 +531,23 @@ func _solve_tire_forces(delta: float) -> void:
 			var f_drag = signf(v_long) * (config.rolling_resistance_coeff * w.normal_force_mag + 120.0) * coast_drag_mult
 			raw_f_x -= f_drag
 			
-		# Lateral cornering grip
-		w.slip_angle = -atan2(v_lat, maxf(absf(v_long), 0.4))
-		var peak_slip_rad = deg_to_rad(config.slip_angle_peak_deg)
-		var raw_f_y = clampf(w.slip_angle / peak_slip_rad, -1.0, 1.0) * max_lat_force
+		# Lateral cornering grip with smooth progressive Pacejka-like curve & rear stability margin
+		w.slip_angle = -atan2(v_lat, maxf(absf(v_long), 0.6))
+		var peak_slip_rad = deg_to_rad(maxf(config.slip_angle_peak_deg, 5.0))
+		var slip_norm = w.slip_angle / peak_slip_rad
+		# Smooth tanh curve avoids harsh cliff snap; rear axle keeps +8% baseline lateral stability unless handbraking
+		var grip_shape = tanh(slip_norm * 1.35)
+		var rear_stability_bonus = 1.08 if (not w.is_front and _handbrake_input <= 0.1) else (0.58 if (not w.is_front and _handbrake_input > 0.1) else 1.0)
+		var effective_max_lat = max_lat_force * rear_stability_bonus
+		var raw_f_y = grip_shape * effective_max_lat
 		
-		# Friction Circle Coupling
-		var ellipse_norm = sqrt((raw_f_x / maxf(max_long_force, 1.0)) ** 2.0 + (raw_f_y / maxf(max_lat_force, 1.0)) ** 2.0)
+		# Friction Circle Coupling with traction-control lateral reserve (prevents full-throttle 180 spinout)
+		var ellipse_norm = sqrt((raw_f_x / maxf(max_long_force, 1.0)) ** 2.0 + (raw_f_y / maxf(effective_max_lat, 1.0)) ** 2.0)
 		if ellipse_norm > 1.0:
 			raw_f_x /= ellipse_norm
-			raw_f_y /= ellipse_norm
+			# Preserve minimum 62% lateral bite when accelerating cleanly without handbrake
+			var lat_scale = maxf(1.0 / ellipse_norm, 0.62 if _handbrake_input <= 0.1 else 0.35)
+			raw_f_y *= lat_scale
 			
 		# Apply net tractive forces
 		var tire_force_vec = wheel_fwd * raw_f_x + wheel_right * raw_f_y
@@ -520,6 +555,43 @@ func _solve_tire_forces(delta: float) -> void:
 		
 		# Wheel spin synchronization
 		w.wheel_angular_velocity = v_long / maxf(wheel_radius, 0.1)
+
+	# GTA V Electronic Stability & Controlled Racing Drift Assist (ESP)
+	_apply_stability_and_drift_control()
+
+func _apply_stability_and_drift_control() -> void:
+	var grounded := 0
+	for w in _wheels:
+		if w.is_grounded:
+			grounded += 1
+	if grounded < 2:
+		return
+
+	var fwd_speed := linear_velocity.dot(-global_transform.basis.z)
+	var lat_speed := linear_velocity.dot(global_transform.basis.x)
+	var abs_fwd := absf(fwd_speed)
+	var speed_kmh := abs_fwd * 3.6
+	if speed_kmh < 35.0 or fwd_speed < 0.0:
+		return
+
+	var assist_strength := clampf(config.stability_assist, 0.0, 1.0)
+	var chassis_up := global_transform.basis.y.normalized()
+	var body_slip_rad := atan2(lat_speed, maxf(abs_fwd, 2.0))
+	var abs_slip_deg := rad_to_deg(absf(body_slip_rad))
+	var yaw_rate := angular_velocity.dot(chassis_up)
+
+	# Allow crisp racing drift up to ~26 deg with handbrake, smoothly damp runaway rotation before 180 spinout
+	var slip_limit_deg := 26.0 if _handbrake_input > 0.1 else 10.0
+	if abs_slip_deg > slip_limit_deg and assist_strength > 0.01:
+		var excess := clampf((abs_slip_deg - slip_limit_deg) / 22.0, 0.0, 1.6)
+		var hb_scale := 0.22 if _handbrake_input > 0.1 else 1.0
+		# +lat_speed means nose is turned left of velocity vector; apply negative yaw torque to align nose toward travel direction
+		var corrective_yaw := -signf(body_slip_rad) * excess * config.mass * 16.0 * assist_strength * hb_scale
+		apply_torque(chassis_up * corrective_yaw)
+
+	# Always damp excessive angular yaw velocity (counteracts uncontrollable pendulum snap)
+	var yaw_damp_coeff := (config.mass * 3.8 * assist_strength) * (0.32 if _handbrake_input > 0.1 else lerpf(0.65, 1.35, clampf((speed_kmh - 80.0) / 140.0, 0.0, 1.0)))
+	apply_torque(-chassis_up * yaw_rate * yaw_damp_coeff)
 
 func _solve_slope_hold_stabilization(delta: float) -> void:
 	var is_idle = absf(smoothed_throttle) <= 0.05 and smoothed_brake <= 0.05
@@ -669,8 +741,8 @@ func _update_visual_adapter(delta: float) -> void:
 	var speed_kmh = absf(cur_fwd_speed) * 3.6
 	var speed_sensitivity = clampf(0.35 + 0.65 * (speed_kmh / 10.0), 0.35, 1.0)
 		
-	# Second-order damped harmonic spring for pitch with natural rebound
-	var max_pitch_rad = deg_to_rad(2.6)
+	# Second-order damped harmonic spring for pitch with natural rebound (bounded to avoid bumper clipping)
+	var max_pitch_rad = deg_to_rad(1.75)
 	var target_pitch = clampf(blended_accel / 12.0, -1.0, 1.0) * max_pitch_rad * speed_sensitivity
 	if cur_fwd_speed == 0.0 and smoothed_brake <= 0.05:
 		target_pitch = 0.0

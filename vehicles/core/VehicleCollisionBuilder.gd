@@ -24,9 +24,13 @@ static func build_chassis_shape(config: VehicleConfig) -> ConvexPolygonShape3D:
 	
 	var y_top = center.y + half_h
 	var y_mid = center.y
-	var y_bot = center.y - half_h + chamfer
-	var y_front_lift = y_bot + 0.16
-	var y_rear_lift = y_bot + 0.12
+	# Ensure chassis floor matches suspension full-bump height with protective anti-clip margin
+	var mount_y = config.suspension_rest_length * 0.5
+	var min_ground_to_origin = maxf((config.suspension_rest_length - config.suspension_travel) + config.wheel_radius - mount_y, 0.25)
+	var floor_protect_y = maxf(center.y - half_h + chamfer, -min_ground_to_origin + 0.08)
+	var y_bot = floor_protect_y
+	var y_front_lift = y_bot + 0.18
+	var y_rear_lift = y_bot + 0.14
 	
 	var z_front = center.z - half_l
 	var z_rear = center.z + half_l

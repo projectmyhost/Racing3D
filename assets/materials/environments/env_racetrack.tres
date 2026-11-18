@@ -1,22 +1,94 @@
 [gd_resource type="Environment" format=3]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_env"]
-sky_top_color = Color(0.38, 0.58, 0.88, 1)
-sky_horizon_color = Color(0.75, 0.82, 0.9, 1)
-ground_bottom_color = Color(0.2, 0.22, 0.25, 1)
-ground_horizon_color = Color(0.65, 0.72, 0.8, 1)
+[ext_resource type="Shader" path="res://assets/shaders/sky_sunset.gdshader" id="1_sunset"]
 
-[sub_resource type="Sky" id="Sky_env"]
-sky_material = SubResource("ProceduralSkyMaterial_env")
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sunset"]
+shader = ExtResource("1_sunset")
+shader_parameter/color_zenith = Color(0.09, 0.15, 0.34, 1)
+shader_parameter/color_mid = Color(0.32, 0.25, 0.45, 1)
+shader_parameter/color_pink = Color(0.84, 0.4, 0.36, 1)
+shader_parameter/color_horizon = Color(1, 0.6, 0.26, 1)
+shader_parameter/color_sun = Color(1, 0.94, 0.8, 1)
+shader_parameter/color_sun_glow = Color(1, 0.64, 0.24, 1)
+shader_parameter/color_ground = Color(0.09, 0.09, 0.12, 1)
+shader_parameter/hdr_sky_intensity = 1.45
+shader_parameter/cloud_coverage = 0.48
+shader_parameter/sun_dir = Vector3(0.7217, 0.3909, 0.5713)
+
+[sub_resource type="Sky" id="Sky_sunset"]
+sky_material = SubResource("ShaderMaterial_sunset")
+process_mode = 1
+radiance_size = 3
 
 [resource]
 resource_name = "EnvRaceTrack"
-background_mode = 1
-background_color = Color(0.7, 0.76, 0.84, 1)
-sky = SubResource("Sky_env")
-ambient_light_source = 2
-ambient_light_color = Color(0.42, 0.48, 0.58, 1)
-ambient_light_energy = 0.22
-reflected_light_source = 0
-tonemap_mode = 2
-tonemap_exposure = 0.58
+background_mode = 2
+sky = SubResource("Sky_sunset")
+ambient_light_source = 3
+ambient_light_color = Color(0.48, 0.52, 0.66, 1)
+ambient_light_sky_contribution = 0.72
+ambient_light_energy = 0.55
+reflected_light_source = 2
+tonemap_mode = 4
+tonemap_exposure = 0.95
+tonemap_agx_white = 7.5
+tonemap_agx_contrast = 1.28
+ssr_enabled = true
+ssr_max_steps = 64
+ssr_fade_in = 0.15
+ssr_fade_out = 2.0
+ssr_depth_tolerance = 0.25
+ssao_enabled = true
+ssao_radius = 1.0
+ssao_intensity = 1.85
+ssao_power = 1.75
+ssao_detail = 0.5
+ssao_horizon = 0.06
+ssil_enabled = true
+ssil_radius = 4.0
+ssil_intensity = 0.65
+ssil_sharpness = 0.98
+ssil_normal_rejection = 1.0
+sdfgi_enabled = true
+sdfgi_use_occlusion = true
+sdfgi_read_sky_light = true
+sdfgi_bounce_feedback = 0.38
+sdfgi_cascades = 4
+sdfgi_min_cell_size = 0.35
+sdfgi_y_scale = 1
+sdfgi_energy = 0.72
+sdfgi_normal_bias = 1.1
+sdfgi_probe_bias = 1.1
+glow_enabled = true
+glow_levels/1 = 0.0
+glow_levels/2 = 0.35
+glow_levels/3 = 0.65
+glow_levels/4 = 0.4
+glow_levels/5 = 0.2
+glow_levels/6 = 0.08
+glow_intensity = 0.48
+glow_strength = 0.88
+glow_bloom = 0.025
+glow_blend_mode = 1
+glow_hdr_threshold = 1.15
+glow_hdr_scale = 2.0
+glow_hdr_luminance_cap = 12.0
+fog_enabled = true
+fog_light_color = Color(0.95, 0.76, 0.58, 1)
+fog_sun_scatter = 0.32
+fog_density = 0.00024
+fog_aerial_perspective = 0.42
+fog_sky_affect = 0.1
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.00085
+volumetric_fog_albedo = Color(1, 0.88, 0.78, 1)
+volumetric_fog_anisotropy = 0.72
+volumetric_fog_length = 200.0
+volumetric_fog_detail_spread = 2.0
+volumetric_fog_ambient_inject = 0.06
+volumetric_fog_sky_affect = 0.08
+volumetric_fog_temporal_reprojection_enabled = true
+adjustment_enabled = true
+adjustment_brightness = 0.99
+adjustment_contrast = 1.14
+adjustment_saturation = 1.09

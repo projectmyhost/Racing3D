@@ -9,15 +9,74 @@ extends RefCounted
 # - Woven carbon fiber with specularity and clearcoat
 # - Headlight and taillight optical emission
 
-const MCLAREN_PAPAYA_ORANGE = Color(1.0, 0.46, 0.01, 1.0)
-const PORSCHE_GT_SILVER = Color(0.88, 0.90, 0.92, 1.0)
-const PORSCHE_ROCKET_BRONZE = Color(0.74, 0.68, 0.62, 1.0)
-const KIA_CERAMIC_SILVER = Color(0.88, 0.90, 0.92, 1.0)
-const KIA_STARBRIGHT_YELLOW = Color(0.96, 0.78, 0.10, 1.0)
+const MCLAREN_PAPAYA_ORANGE = Color(0.96, 0.36, 0.01, 1.0)
+const PORSCHE_GT_SILVER = Color(0.84, 0.87, 0.90, 1.0)
+const PORSCHE_ROCKET_BRONZE = Color(0.68, 0.61, 0.55, 1.0)
+const KIA_CERAMIC_SILVER = Color(0.84, 0.87, 0.90, 1.0)
+const KIA_STARBRIGHT_YELLOW = Color(0.94, 0.74, 0.08, 1.0)
+
+static var _paint_shader: Shader = null
+static var _paint_mat_refs: Array[WeakRef] = []
+static var _contact_shadow_tex: ImageTexture = null
+static var _current_quality_detail: float = 1.0
+
+static func set_quality_detail(detail_level: float) -> void:
+	_current_quality_detail = clampf(detail_level, 0.0, 1.0)
+	var alive: Array[WeakRef] = []
+	for wr in _paint_mat_refs:
+		var mat = wr.get_ref() as ShaderMaterial
+		if is_instance_valid(mat):
+			mat.set_shader_parameter("quality_detail", _current_quality_detail)
+			alive.append(wr)
+	_paint_mat_refs = alive
+
+static func attach_contact_shadow(parent_node: Node3D, local_pos: Vector3, width: float, length: float) -> Decal:
+	if not parent_node:
+		return null
+	var existing := parent_node.get_node_or_null("ContactShadowDecal") as Decal
+	if existing:
+		existing.position = local_pos
+		existing.size = Vector3(width, 0.95, length)
+		return existing
+	if _contact_shadow_tex == null:
+		_contact_shadow_tex = _build_contact_shadow_texture()
+	var decal := Decal.new()
+	decal.name = "ContactShadowDecal"
+	decal.position = local_pos
+	decal.size = Vector3(width, 0.95, length)
+	decal.texture_albedo = _contact_shadow_tex
+	decal.albedo_mix = 0.82
+	decal.modulate = Color(1.0, 1.0, 1.0, 0.88)
+	decal.upper_fade = 0.35
+	decal.lower_fade = 0.55
+	decal.distance_fade_enabled = true
+	decal.distance_fade_begin = 90.0
+	decal.distance_fade_length = 30.0
+	decal.cull_mask = 1
+	parent_node.add_child(decal)
+	return decal
+
+static func _build_contact_shadow_texture() -> ImageTexture:
+	var w: int = 128
+	var h: int = 128
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	for y in range(h):
+		var ny: float = (float(y) + 0.5) / float(h) * 2.0 - 1.0
+		for x in range(w):
+			var nx: float = (float(x) + 0.5) / float(w) * 2.0 - 1.0
+			# Rounded-box superellipse matches automotive chassis footprint
+			var box_d: float = pow(pow(absf(nx), 2.8) + pow(absf(ny), 3.6), 1.0 / 3.2)
+			var alpha: float = clampf(1.0 - smoothstep(0.32, 0.98, box_d), 0.0, 1.0)
+			alpha = alpha * alpha * 0.92
+			img.set_pixel(x, y, Color(0.015, 0.015, 0.02, alpha))
+	img.generate_mipmaps()
+	return ImageTexture.create_from_image(img)
 
 static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_paint: Color = Color.WHITE) -> void:
 	if not root_node:
 		return
+	if _paint_shader == null:
+		_paint_shader = load("res://assets/shaders/car_paint_aaa.gdshader") as Shader
 		
 	var id_lower = car_id.to_lower()
 	
@@ -28,18 +87,41 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 				child.visible = false
 				
 	var meshes = root_node.find_children("*", "MeshInstance3D", true, false)
+	var mat_cache: Dictionary = {}
 	
 	for m in meshes:
 		var mi = m as MeshInstance3D
 		if not mi.mesh:
 			continue
+		# Move vehicle geometry off Layer 1 so under-car ContactShadowDecal (cull_mask = 1) never projects onto skirts/tires
+		mi.layers = 2
 			
 		var m_name = mi.name.to_lower()
 		for s in range(mi.mesh.get_surface_count()):
 			var active_mat = mi.get_active_material(s)
 			if not active_mat:
 				active_mat = mi.mesh.surface_get_material(s)
+
+			# Fast path (< 0.01ms): re-tint already-enhanced custom car paint ShaderMaterial
+			if active_mat is ShaderMaterial and (active_mat as ShaderMaterial).shader == _paint_shader:
+				var base_sm := mi.mesh.surface_get_material(s) as StandardMaterial3D
+				var fallback_col: Color = base_sm.albedo_color if base_sm else Color.WHITE
+				var has_tex: bool = base_sm != null and base_sm.albedo_texture != null
+				var new_col := Color.WHITE
+				if custom_paint != Color.WHITE and custom_paint != Color(1.0, 1.0, 1.0, 1.0):
+					new_col = custom_paint
+				elif id_lower == "porsche_mission_x":
+					new_col = Color(0.86, 0.80, 0.74, 1.0)
+				elif has_tex and id_lower != "porsche_carrera_gt":
+					new_col = Color.WHITE
+				else:
+					new_col = _get_default_factory_color(id_lower, fallback_col)
+				(active_mat as ShaderMaterial).set_shader_parameter("albedo_color", new_col)
+				continue
+
 			if not (active_mat is StandardMaterial3D):
+				continue
+			if active_mat.has_meta("_vm_enhanced"):
 				continue
 				
 			var sm = active_mat as StandardMaterial3D
@@ -48,26 +130,35 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 			# Strictly preserve Porsche Mission X velg (rims/calipers/badges) untouched as requested by user
 			if id_lower == "porsche_mission_x" and _is_porsche_mission_x_rim(m_name, mat_name):
 				continue
+
+			var cache_key := "%d:%s" % [sm.get_instance_id(), m_name if id_lower == "porsche_carrera_gt" else mat_name]
+			if mat_cache.has(cache_key):
+				mi.set_surface_override_material(s, mat_cache[cache_key])
+				continue
 				
 			# 1. Optical Headlight Lens Covers (Crystal Clear Glass)
 			if _is_headlight_lens(id_lower, m_name, mat_name):
 				var lens_mat = sm.duplicate() as StandardMaterial3D
+				lens_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 				lens_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 				lens_mat.albedo_color = Color(0.85, 0.92, 1.0, 0.18)
-				lens_mat.metallic = 0.1
+				lens_mat.metallic = 0.15
 				lens_mat.metallic_specular = 1.0
-				lens_mat.roughness = 0.03
+				lens_mat.roughness = 0.02
 				lens_mat.clearcoat_enabled = true
 				lens_mat.clearcoat = 1.0
-				lens_mat.clearcoat_roughness = 0.02
+				lens_mat.clearcoat_roughness = 0.015
+				lens_mat.set_meta("_vm_enhanced", true)
+				mat_cache[cache_key] = lens_mat
 				mi.set_surface_override_material(s, lens_mat)
 				continue
 			
 			# 2. Optics / Lights / Taillights (Checked before general glass)
 			if _is_light(id_lower, m_name, mat_name):
 				var light_mat = sm.duplicate() as StandardMaterial3D
-				light_mat.roughness = 0.05
-				light_mat.metallic = 0.15
+				light_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+				light_mat.roughness = 0.04
+				light_mat.metallic = 0.18
 				light_mat.clearcoat_enabled = true
 				light_mat.clearcoat = 1.0
 				if id_lower == "porsche_carrera_gt" and (mat_name == "c1_light" or m_name.contains("body3b")):
@@ -75,47 +166,54 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 					if sm.albedo_texture != null:
 						light_mat.albedo_texture = sm.albedo_texture
 						light_mat.albedo_color = Color.WHITE
-					light_mat.metallic = 0.8
-					light_mat.roughness = 0.1
+					light_mat.metallic = 0.85
+					light_mat.roughness = 0.08
 					light_mat.clearcoat_enabled = true
 					light_mat.clearcoat = 1.0
 					light_mat.emission_enabled = false
-				elif mat_name.contains("rojo"):
-					# Deep ruby red taillight optic
-					light_mat.albedo_color = Color(0.70, 0.04, 0.02, 1.0)
-					light_mat.emission_enabled = true
-					light_mat.emission = Color(0.85, 0.05, 0.02, 1.0)
-					light_mat.emission_energy_multiplier = 1.2
-				elif mat_name.contains("red") or mat_name == "mat_199247480" or mat_name == "mat_200069275" or mat_name == "mat_199247509":
-					light_mat.albedo_color = Color(0.95, 0.05, 0.02, 1.0)
+				elif mat_name.contains("rojo") or mat_name == "rear_led" or mat_name == "t_b_l":
+					# Deep ruby red taillight / rear LED lightbar optic
+					light_mat.albedo_color = Color(0.85, 0.04, 0.02, 1.0)
 					light_mat.emission_enabled = true
 					light_mat.emission = Color(1.0, 0.06, 0.02, 1.0)
-					light_mat.emission_energy_multiplier = 3.0
+					light_mat.emission_texture = null
+					light_mat.emission_energy_multiplier = 3.2
+				elif mat_name.contains("red") or mat_name == "mat_199247480" or mat_name == "mat_200069275" or mat_name == "mat_199247509" or (mat_name.begins_with("light_") and mat_name.contains("rear")):
+					light_mat.albedo_color = Color(0.95, 0.05, 0.02, 1.0)
+					light_mat.emission_enabled = true
+					light_mat.emission = Color(1.0, 0.07, 0.02, 1.0)
+					light_mat.emission_texture = null
+					light_mat.emission_energy_multiplier = 3.6
 				elif sm.albedo_texture != null:
 					light_mat.emission_enabled = true
 					light_mat.emission_texture = sm.albedo_texture
-					light_mat.emission_energy_multiplier = 2.2
+					light_mat.emission_energy_multiplier = 3.2
 					light_mat.emission = Color(1.0, 0.98, 0.92, 1.0)
 				elif mat_name.begins_with("light_"):
 					light_mat.emission_enabled = true
-					light_mat.emission = Color(1.0, 0.3, 0.1) if mat_name.contains("rear") else Color(1.0, 0.95, 0.85)
-					light_mat.emission_energy_multiplier = 2.2
+					light_mat.emission = Color(1.0, 0.95, 0.88)
+					light_mat.emission_energy_multiplier = 3.2
+				light_mat.set_meta("_vm_enhanced", true)
+				mat_cache[cache_key] = light_mat
 				mi.set_surface_override_material(s, light_mat)
 				continue
 			
 			# 3. Exterior Black Trim & Grilles
 			if _is_black_trim(id_lower, m_name, mat_name):
 				var trim_mat = sm.duplicate() as StandardMaterial3D
+				trim_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 				# Kia Carnival chrome surround & garnish
 				if id_lower == "kia_carnival" and (mat_name == "mat_199247463" or mat_name == "mat_199247464"):
 					trim_mat.albedo_color = Color(0.88, 0.89, 0.92, 1.0)
-					trim_mat.metallic = 0.85
-					trim_mat.roughness = 0.18
+					trim_mat.metallic = 0.88
+					trim_mat.roughness = 0.14
 					trim_mat.metallic_specular = 1.0
 					trim_mat.clearcoat_enabled = true
-					trim_mat.clearcoat = 0.8
+					trim_mat.clearcoat = 0.85
 					trim_mat.clearcoat_roughness = 0.03
 					trim_mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
+					trim_mat.set_meta("_vm_enhanced", true)
+					mat_cache[cache_key] = trim_mat
 					mi.set_surface_override_material(s, trim_mat)
 					continue
 				# Perforated Grille Meshes (preserve honeycomb texture with alpha scissor)
@@ -127,68 +225,80 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 						trim_mat.normal_texture = sm.normal_texture
 					trim_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
 					trim_mat.alpha_scissor_threshold = 0.5
-					trim_mat.roughness = 0.5
-					trim_mat.metallic = 0.2
+					trim_mat.roughness = 0.48
+					trim_mat.metallic = 0.25
 					trim_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 				else:
 					trim_mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
 					trim_mat.albedo_texture = null
 					trim_mat.albedo_color = Color(0.02, 0.02, 0.02, 1.0)
-					trim_mat.roughness = 0.88
-					trim_mat.metallic = 0.04
-					trim_mat.metallic_specular = 0.1
+					trim_mat.roughness = 0.72
+					trim_mat.metallic = 0.06
+					trim_mat.metallic_specular = 0.22
 					trim_mat.clearcoat_enabled = false
 					trim_mat.emission_enabled = false
+				trim_mat.set_meta("_vm_enhanced", true)
+				mat_cache[cache_key] = trim_mat
 				mi.set_surface_override_material(s, trim_mat)
 				continue
 				
-			# 4. Window Glass - Luxury dark tinted glass (with subtle transparency so headlights shine through)
+			# 4. Window Glass - Luxury dark tinted glass (crisp Forward+ Sky + SSR reflections)
 			if _is_glass(id_lower, m_name, mat_name):
 				var glass_mat = sm.duplicate() as StandardMaterial3D
+				glass_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 				if id_lower == "porsche_carrera_gt":
 					glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 					glass_mat.albedo_color = Color(0.04, 0.05, 0.07, 0.70)
 				else:
 					glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
-					glass_mat.albedo_color = Color(0.012, 0.012, 0.015, 1.0)
-				glass_mat.metallic = 0.15
+					glass_mat.albedo_color = Color(0.015, 0.016, 0.022, 1.0)
+				glass_mat.metallic = 0.24
 				glass_mat.metallic_specular = 1.0
-				glass_mat.roughness = 0.02
+				glass_mat.roughness = 0.015
 				glass_mat.clearcoat_enabled = true
 				glass_mat.clearcoat = 1.0
-				glass_mat.clearcoat_roughness = 0.02
+				glass_mat.clearcoat_roughness = 0.01
+				glass_mat.emission_enabled = false
+				glass_mat.set_meta("_vm_enhanced", true)
+				mat_cache[cache_key] = glass_mat
 				mi.set_surface_override_material(s, glass_mat)
 				continue
 				
 			# 5. Tires (Dark Charcoal Matte Rubber)
 			if _is_tire(id_lower, m_name, mat_name):
 				var tire_mat = sm.duplicate() as StandardMaterial3D
+				tire_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 				if id_lower == "porsche_mission_x":
 					var tex_di = load("res://assets/models/cars/porsche_mission_x/tyre_Di.png") as Texture2D
 					var tex_nm = load("res://assets/models/cars/porsche_mission_x/tyre_nm.png") as Texture2D
 					if tex_di:
 						tire_mat.albedo_texture = tex_di
-						tire_mat.albedo_color = Color(0.85, 0.85, 0.85, 1.0)
+						tire_mat.albedo_color = Color(0.75, 0.75, 0.76, 1.0)
 					else:
-						tire_mat.albedo_color = Color(0.12, 0.12, 0.12, 1.0)
+						tire_mat.albedo_color = Color(0.11, 0.11, 0.12, 1.0)
 					if tex_nm:
 						tire_mat.normal_enabled = true
 						tire_mat.normal_texture = tex_nm
 				else:
-					tire_mat.albedo_color = Color(0.12, 0.12, 0.13, 1.0)
-				tire_mat.roughness = 0.88
+					tire_mat.albedo_color = Color(0.10, 0.10, 0.11, 1.0)
+				tire_mat.roughness = 0.86
 				tire_mat.metallic = 0.0
-				tire_mat.metallic_specular = 0.25
+				tire_mat.metallic_specular = 0.24
 				tire_mat.clearcoat_enabled = false
+				tire_mat.emission_enabled = false
 				tire_mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
+				tire_mat.set_meta("_vm_enhanced", true)
+				mat_cache[cache_key] = tire_mat
 				mi.set_surface_override_material(s, tire_mat)
 				continue
 				
 			# 6. Wheels / Rims / Calipers
 			if _is_wheel(id_lower, m_name, mat_name):
 				var wheel_mat = sm.duplicate() as StandardMaterial3D
+				wheel_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 				wheel_mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
 				wheel_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+				wheel_mat.emission_enabled = false
 				if sm.albedo_texture != null:
 					wheel_mat.albedo_texture = sm.albedo_texture
 					wheel_mat.albedo_color = Color.WHITE
@@ -198,24 +308,27 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 					wheel_mat.normal_enabled = true
 					wheel_mat.normal_texture = sm.normal_texture
 				if mat_name.contains("caliper") or mat_name.contains("calliper") or mat_name == "mat_199247461":
-					wheel_mat.metallic = 0.2
-					wheel_mat.roughness = 0.18
+					wheel_mat.metallic = 0.25
+					wheel_mat.roughness = 0.16
 					wheel_mat.clearcoat_enabled = true
-					wheel_mat.clearcoat = 0.8
-					wheel_mat.clearcoat_roughness = 0.04
+					wheel_mat.clearcoat = 0.85
+					wheel_mat.clearcoat_roughness = 0.03
 				else:
-					wheel_mat.metallic = 0.65
-					wheel_mat.metallic_specular = 0.95
-					wheel_mat.roughness = 0.22
+					wheel_mat.metallic = 0.82
+					wheel_mat.metallic_specular = 1.0
+					wheel_mat.roughness = 0.17
 					wheel_mat.clearcoat_enabled = true
-					wheel_mat.clearcoat = 0.5
-					wheel_mat.clearcoat_roughness = 0.04
+					wheel_mat.clearcoat = 0.65
+					wheel_mat.clearcoat_roughness = 0.03
+				wheel_mat.set_meta("_vm_enhanced", true)
+				mat_cache[cache_key] = wheel_mat
 				mi.set_surface_override_material(s, wheel_mat)
 				continue
 				
 			# 7. Carbon Fiber & Aero Trim
 			if _is_carbon(id_lower, m_name, mat_name) or (id_lower == "porsche_mission_x" and m_name == "0_t"):
 				var carbon_mat = sm.duplicate() as StandardMaterial3D
+				carbon_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 				if sm.albedo_texture != null:
 					carbon_mat.albedo_texture = sm.albedo_texture
 					carbon_mat.albedo_color = Color(0.7, 0.7, 0.7, 1.0)
@@ -224,20 +337,20 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 				if sm.normal_texture != null:
 					carbon_mat.normal_enabled = true
 					carbon_mat.normal_texture = sm.normal_texture
-				carbon_mat.roughness = 0.24
-				carbon_mat.metallic = 0.12
-				carbon_mat.metallic_specular = 0.7
+				carbon_mat.roughness = 0.20
+				carbon_mat.metallic = 0.16
+				carbon_mat.metallic_specular = 0.85
 				carbon_mat.clearcoat_enabled = true
-				carbon_mat.clearcoat = 0.8
-				carbon_mat.clearcoat_roughness = 0.04
+				carbon_mat.clearcoat = 0.90
+				carbon_mat.clearcoat_roughness = 0.03
+				carbon_mat.emission_enabled = false
+				carbon_mat.set_meta("_vm_enhanced", true)
+				mat_cache[cache_key] = carbon_mat
 				mi.set_surface_override_material(s, carbon_mat)
 				continue
 				
-			# 8. Body Paint (Vibrant, high-gloss automotive lacquer with 3D contour depth)
+			# 8. Body Paint (GTA V Dual-Layer Automotive Clearcoat + Micro-Flake PBR Shader)
 			if _is_paint(id_lower, m_name, mat_name):
-				var paint_mat = sm.duplicate() as StandardMaterial3D
-				
-				# Determine base factory color
 				var target_color = Color.WHITE
 				if custom_paint != Color.WHITE and custom_paint != Color(1.0, 1.0, 1.0, 1.0):
 					target_color = custom_paint
@@ -245,69 +358,108 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 					target_color = Color.WHITE
 				else:
 					target_color = _get_default_factory_color(id_lower, sm.albedo_color)
-					
-				paint_mat.albedo_color = target_color
-				
-				# Dielectric base with fine metallic micro-flakes preserves full color brilliance
+
+				var metal_val: float = 0.36
+				var rough_val: float = 0.16
+				var flake_val: float = 0.24
+				var tint_col: Color = target_color
+
 				if id_lower == "mclaren":
-					paint_mat.metallic = 0.18
-					paint_mat.roughness = 0.14
-					paint_mat.metallic_specular = 0.95
+					metal_val = 0.32
+					rough_val = 0.15
+					flake_val = 0.30
 				elif id_lower == "porsche_carrera_gt":
-					paint_mat.metallic = 0.65
-					paint_mat.roughness = 0.12
-					paint_mat.metallic_specular = 0.98
+					metal_val = 0.72
+					rough_val = 0.12
+					flake_val = 0.32
 				elif id_lower == "porsche_mission_x":
-					paint_mat.metallic = 0.40
-					paint_mat.roughness = 0.16
-					paint_mat.metallic_specular = 0.95
+					# Deep metallic tungsten/bronze tint when keeping default texture
+					if custom_paint == Color.WHITE or custom_paint == Color(1.0, 1.0, 1.0, 1.0):
+						tint_col = Color(0.86, 0.80, 0.74, 1.0)
+					metal_val = 0.56
+					rough_val = 0.13
+					flake_val = 0.30
 				elif id_lower == "kia_carnival":
-					paint_mat.metallic = 0.35
-					paint_mat.roughness = 0.14
-					paint_mat.metallic_specular = 0.95
+					metal_val = 0.44
+					rough_val = 0.16
+					flake_val = 0.22
 				elif sm.albedo_texture != null:
-					paint_mat.metallic = 0.22
-					paint_mat.roughness = 0.18
-					paint_mat.metallic_specular = 0.92
-				else:
-					paint_mat.metallic = 0.28
-					paint_mat.roughness = 0.16
-					paint_mat.metallic_specular = 0.95
-					
+					metal_val = 0.26
+					rough_val = 0.17
+					flake_val = 0.18
+
+				if _paint_shader != null:
+					var paint_shader_mat := ShaderMaterial.new()
+					paint_shader_mat.shader = _paint_shader
+					paint_shader_mat.set_shader_parameter("albedo_color", tint_col)
+					paint_shader_mat.set_shader_parameter("has_albedo_tex", sm.albedo_texture != null)
+					if sm.albedo_texture != null:
+						paint_shader_mat.set_shader_parameter("albedo_tex", sm.albedo_texture)
+					paint_shader_mat.set_shader_parameter("has_normal_tex", sm.normal_texture != null)
+					if sm.normal_texture != null:
+						paint_shader_mat.set_shader_parameter("normal_tex", sm.normal_texture)
+						paint_shader_mat.set_shader_parameter("normal_scale", sm.normal_scale)
+					paint_shader_mat.set_shader_parameter("metallic_base", metal_val)
+					paint_shader_mat.set_shader_parameter("base_roughness", rough_val)
+					paint_shader_mat.set_shader_parameter("clearcoat_strength", 1.0)
+					paint_shader_mat.set_shader_parameter("clearcoat_roughness", 0.018)
+					paint_shader_mat.set_shader_parameter("flake_intensity", flake_val)
+					paint_shader_mat.set_shader_parameter("flake_scale", 220.0)
+					paint_shader_mat.set_shader_parameter("orange_peel", 0.011)
+					paint_shader_mat.set_shader_parameter("fresnel_richness", 0.30)
+					paint_shader_mat.set_shader_parameter("ao_sill_strength", 0.28)
+					paint_shader_mat.set_shader_parameter("quality_detail", _current_quality_detail)
+					_paint_mat_refs.append(weakref(paint_shader_mat))
+					mat_cache[cache_key] = paint_shader_mat
+					mi.set_surface_override_material(s, paint_shader_mat)
+					continue
+
+				var paint_mat = sm.duplicate() as StandardMaterial3D
+				paint_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+				paint_mat.albedo_color = tint_col
+				paint_mat.metallic = metal_val
+				paint_mat.roughness = rough_val
+				paint_mat.metallic_specular = 1.0
+				paint_mat.emission_enabled = false
 				paint_mat.clearcoat_enabled = true
 				paint_mat.clearcoat = 1.0
-				paint_mat.clearcoat_roughness = 0.03
-				
-				# Fresnel rim lighting brings out 3D curvature and depth
-				paint_mat.rim_enabled = true
-				paint_mat.rim = 0.38
-				paint_mat.rim_tint = 0.2
-				
+				paint_mat.clearcoat_roughness = 0.02
+				paint_mat.rim_enabled = false
+				paint_mat.set_meta("_vm_enhanced", true)
+				mat_cache[cache_key] = paint_mat
 				mi.set_surface_override_material(s, paint_mat)
 				continue
 				
 			# 9. Interior & Cockpit Trim (Solid, non-transparent, double-sided to prevent see-through holes)
 			if _is_interior(id_lower, m_name, mat_name):
 				var int_mat = sm.duplicate() as StandardMaterial3D
+				int_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 				int_mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
 				int_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-				int_mat.roughness = 0.58
+				int_mat.roughness = 0.56
 				int_mat.metallic = 0.05
 				int_mat.metallic_specular = 0.35
 				int_mat.clearcoat_enabled = false
+				int_mat.emission_enabled = false
 				if sm.albedo_texture != null:
 					int_mat.albedo_texture = sm.albedo_texture
 					int_mat.albedo_color = Color.WHITE
 				else:
 					int_mat.albedo_color = sm.albedo_color
+				int_mat.set_meta("_vm_enhanced", true)
+				mat_cache[cache_key] = int_mat
 				mi.set_surface_override_material(s, int_mat)
 				continue
 
 			# 10. General matte cleanup (if imported FBX left roughness at 1.0)
 			if sm.roughness >= 0.95 and not _is_interior(id_lower, m_name, mat_name):
 				var clean_mat = sm.duplicate() as StandardMaterial3D
-				clean_mat.roughness = 0.25
-				clean_mat.metallic_specular = 0.8
+				clean_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+				clean_mat.roughness = 0.24
+				clean_mat.metallic_specular = 0.85
+				clean_mat.emission_enabled = false
+				clean_mat.set_meta("_vm_enhanced", true)
+				mat_cache[cache_key] = clean_mat
 				mi.set_surface_override_material(s, clean_mat)
 
 static func _is_headlight_lens(car_id: String, mesh_name: String, mat_name: String) -> bool:
@@ -390,7 +542,8 @@ static func _is_light(car_id: String, mesh_name: String, mat_name: String) -> bo
 			or mat_name == "mat_199247553" or mat_name == "mat_199247509" or mat_name == "mat_199247558":
 			return true
 	return mesh_name.contains("light") or mesh_name.contains("optic") or mesh_name.contains("faro") or mesh_name.contains("lamp") \
-		or mat_name.contains("light") or mat_name.contains("optic") or mat_name.contains("faro") or mat_name.contains("lamp")
+		or mat_name.contains("light") or mat_name.contains("optic") or mat_name.contains("faro") or mat_name.contains("lamp") \
+		or mat_name == "rear_led" or mat_name == "t_b_l"
 
 static func _is_interior(car_id: String, mesh_name: String, mat_name: String) -> bool:
 	if car_id == "porsche_carrera_gt":

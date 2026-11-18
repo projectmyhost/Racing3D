@@ -72,19 +72,26 @@ script = ExtResource("1_wy80s")
 environment = ExtResource("2_env")
 
 [node name="SunLight" type="DirectionalLight3D" parent="." unique_id=1180198892]
-transform = Transform3D(0.64278764, -0.54167515, 0.54167515, 0, 0.7071067, 0.7071067, -0.76604444, -0.45451942, 0.45451942, 50, 60, 40)
-light_color = Color(1, 0.96, 0.9, 1)
-light_energy = 0.55
-light_specular = 0.05
+transform = Transform3D(0.6207, -0.3065, 0.7217, 0, 0.9205, 0.3909, -0.7841, -0.2426, 0.5713, 50, 60, 40)
+light_color = Color(1, 0.85, 0.66, 1)
+light_energy = 2.75
+light_specular = 1.0
+light_angular_distance = 1.2
 shadow_enabled = true
-shadow_bias = 0.03
-directional_shadow_max_distance = 200.0
+shadow_bias = 0.02
+shadow_normal_bias = 1.2
+directional_shadow_mode = 2
+directional_shadow_split_1 = 0.08
+directional_shadow_split_2 = 0.24
+directional_shadow_split_3 = 0.55
+directional_shadow_blend_splits = true
+directional_shadow_max_distance = 260.0
 
 [node name="FillLight" type="DirectionalLight3D" parent="." unique_id=1895684117]
-transform = Transform3D(-0.64278764, -0.54167515, -0.54167515, 0, 0.7071067, -0.7071067, 0.76604444, -0.45451942, -0.45451942, -40, 40, -30)
-light_color = Color(0.48, 0.54, 0.65, 1)
-light_energy = 0.18
-light_specular = 0.0
+transform = Transform3D(-0.6207, 0.3921, -0.6791, 0, 0.8661, 0.5, 0.7841, 0.3104, -0.5375, -40, 40, -30)
+light_color = Color(0.45, 0.6, 0.9, 1)
+light_energy = 0.24
+light_specular = 0.25
 
 [node name="Checkpoints" type="Node3D" parent="." unique_id=1124413984]
 

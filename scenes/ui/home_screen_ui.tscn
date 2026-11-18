@@ -1087,7 +1087,7 @@ offset_bottom = 12.0
 theme_override_fonts/font = SubResource("FontFile_c0uxb")
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.3, 0.95, 0.6, 1)
-text = "TARGET HARDWARE: NVIDIA GEFORCE RTX 2050 MOBILE (4GB GDDR6)  |  THERMAL STATUS: [OPTIMAL / 60 FPS LOCK / SAFE TEMP <68 C]"
+text = "TARGET HARDWARE: ADAPTIVE VULKAN FORWARD+ (RTX 5050 ULTRA AAA / RTX 2050 COOL BALANCED)  |  PRESET ACTIVE IN DISPLAY"
 
 [node name="@Label@29" type="Label" parent="PagesLayer/SettingsModal/@Panel@22/TabPanelDisplay" unique_id=1240794029]
 layout_mode = 0
@@ -1117,14 +1117,16 @@ offset_left = 20.0
 offset_top = 145.0
 offset_right = 520.0
 offset_bottom = 183.0
-selected = 1
-item_count = 3
+selected = 3
+item_count = 4
 popup/item_0/text = "[LOW] Eco Thermal Mode (iGPU / Battery / 55 C Target)"
 popup/item_0/id = 0
-popup/item_1/text = "[MED] RTX 2050 Balanced (GL Compatibility / 60 FPS / 65 C)"
+popup/item_1/text = "[MED] RTX 2050 Cool Balanced (Forward+ / 60 FPS / <68 C)"
 popup/item_1/id = 1
-popup/item_2/text = "[HIGH] Maximum Fidelity (Single-Pass PBR / 72 C Target)"
+popup/item_2/text = "[HIGH] High Fidelity (SSR + SSAO + SSIL + TAA + 16x Aniso)"
 popup/item_2/id = 2
+popup/item_3/text = "[ULTRA AAA] RTX 5050 Max Realism (SDFGI + Vol. Fog + 4K Shadows)"
+popup/item_3/id = 3
 
 [node name="@Label@41" type="Label" parent="PagesLayer/SettingsModal/@Panel@22/TabPanelDisplay" unique_id=355065102]
 layout_mode = 0
@@ -1210,13 +1212,13 @@ theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.85, 0.88, 0.94, 0.9)
 text = "[TECHNICAL HARDWARE TUNING REPORT]
 
-- Render Backend: Godot 4.7.1 GLES3 / gl_compatibility
-- Mobile GPU: NVIDIA RTX 2050 Mobile (GA107, 35-45W TGP)
-- Overheat Prevention: Heavy compute passes (SSAO, Screen-Space Reflections, Volumetric Fog) are deactivated. Geometry shading is evaluated in a single forward pass.
-- Asphalt Visual Fidelity: Hand-crafted procedural aggregate tarmac with crisp high-contrast lane markings and rubber skid deposits runs via low-overhead pre-baked PBR textures.
-- GPU Utilization: 15% - 22% under full 3D showroom orbit, maintaining whisper-quiet fans and safe thermal levels under 65 C.
+- Backend: Godot 4.7.1 Vulkan Forward+ HDR Pipeline
+- Adaptive Tiers: Auto-detects Ultra AAA (RTX 5050+) or Cool Medium (RTX 2050).
+- Post-FX: AgX Filmic Tonemapping, Sky IBL, SDFGI, SSR, SSAO, Vol. Fog, TAA, 4K Shadows.
+- Surface Realism: 16x Anisotropic asphalt tarmac, clearcoat paint, HDR LED optics.
+- Thermal Safety: Medium/Low disables heavy compute passes for cool locked 60 FPS.
 
-Status: THERMALLY SAFE FOR EXTENDED DEMONSTRATIONS"
+Status: AAA VISUAL FIDELITY + ADAPTIVE THERMAL SAFETY"
 autowrap_mode = 3
 
 [node name="TabPanelAudio" type="Control" parent="PagesLayer/SettingsModal/@Panel@22" unique_id=2080368756]
@@ -1781,7 +1783,7 @@ offset_bottom = 200.0
 theme_override_fonts/font = SubResource("FontFile_c0uxb")
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.85, 0.88, 0.94, 0.9)
-text = "System enforces a deterministic 16.6ms render budget (60.0 FPS locked) on the NVIDIA RTX 2050 Mobile. By eliminating unneeded compute shaders and SSAO, GPU power consumption drops from 45W to 22W, preventing thermal throttling (80 C -> 65 C)."
+text = "Adaptive GPU preset system supports full Vulkan Forward+ Ultra AAA (SDFGI, SSR, SSAO, Volumetric Fog) on NVIDIA RTX 5050 while scaling down cleanly to a cool, locked 60 FPS Medium profile for RTX 2050 laptops."
 autowrap_mode = 3
 
 [node name="@Panel@170" type="Panel" parent="PagesLayer/SettingsModal/@Panel@22/TabPanelProject/@GridContainer@166" unique_id=738897297]
@@ -1865,7 +1867,7 @@ offset_bottom = 200.0
 theme_override_fonts/font = SubResource("FontFile_c0uxb")
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.85, 0.88, 0.94, 0.9)
-text = "Target Engine: Godot 4.7.1 Stable (GLES3/gl_compatibility) | 3D Car Model: 27-Surface FIA Formula 1 Monocoque | Texture Footprint: <128 MB VRAM | Maximum Draw Calls: <45 per frame | 100% Zero-Emoji UI Compliant."
+text = "Target Engine: Godot 4.7.1 Stable (Vulkan Forward+) | 15 Playable Supercars | AgX Filmic Tonemapping + Golden Hour Sky IBL + TAA + 4096 Soft Shadows | Adaptive 4-Tier GPU Presets | 100% Zero-Emoji UI Compliant."
 autowrap_mode = 3
 
 [node name="ProfileModal" type="Control" parent="PagesLayer" unique_id=529216861]

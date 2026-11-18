@@ -40,24 +40,27 @@ extends Resource
 
 @export_group("Steering")
 @export var max_steer_angle_deg: float = 34.0
-@export var min_steer_angle_deg: float = 16.0
-@export var steer_speed: float = 6.2
-@export var return_speed: float = 10.5
+@export var min_steer_angle_deg: float = 12.0
+@export var high_speed_steer_angle_deg: float = 5.4
+@export var steer_speed: float = 6.4
+@export var return_speed: float = 11.5
 @export var counter_steer_speed: float = 18.0
 @export var ackermann_factor: float = 0.85
+@export_range(0.0, 1.0) var stability_assist: float = 0.82
 
 @export_group("Suspension Geometry & Spring")
 @export var suspension_rest_length: float = 0.32
 @export var suspension_travel: float = 0.16
 @export var spring_stiffness_front: float = 34000.0
 @export var spring_stiffness_rear: float = 32000.0
-@export var bump_damping_front: float = 2800.0
-@export var bump_damping_rear: float = 2600.0
-@export var rebound_damping_front: float = 3800.0
-@export var rebound_damping_rear: float = 3600.0
-@export var anti_roll_front: float = 6500.0
-@export var anti_roll_rear: float = 5500.0
-@export var bump_stop_stiffness: float = 18000.0
+@export var bump_damping_front: float = 3000.0
+@export var bump_damping_rear: float = 2900.0
+@export var rebound_damping_front: float = 5800.0
+@export var rebound_damping_rear: float = 5600.0
+@export var anti_roll_front: float = 6800.0
+@export var anti_roll_rear: float = 6000.0
+@export var bump_stop_stiffness: float = 28000.0
+@export var bump_stop_damping: float = 4500.0
 
 @export_group("Wheel & Tire Dynamics")
 @export var wheel_radius: float = 0.34

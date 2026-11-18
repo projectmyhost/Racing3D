@@ -6,6 +6,7 @@ extends Node3D
 
 const CollisionGuard = preload("res://scripts/race/CollisionGuard.gd")
 const ModernRacingHUDScript = preload("res://scripts/race/ModernRacingHUD.gd")
+const EnvMatEnhancer = preload("res://scripts/core/environment_material_enhancer.gd")
 
 @onready var car: RaceCar3D = $RaceCar3D
 @onready var camera: Camera3D = $ChaseCamera
@@ -108,6 +109,10 @@ func _ready() -> void:
 		
 	_setup_checkpoints()
 	
+	EnvMatEnhancer.enhance_city_stage(get_node_or_null("CityMap"))
+	if has_node("/root/QualitySettings"):
+		get_node("/root/QualitySettings").apply_to_current_scene()
+
 	# Execute runtime anti-bug collision guard
 	CollisionGuard.run_guard(self)
 
