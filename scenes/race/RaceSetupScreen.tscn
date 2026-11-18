@@ -1,0 +1,419 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scenes/race/RaceSetupScreen.gd" id="1_setup"]
+[ext_resource type="Script" path="res://scripts/ui/RaceButton.gd" id="2_button"]
+[ext_resource type="Texture2D" path="res://assets/art/cars/car_starter_gt.png" id="3_car"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.09, 0.094, 0.153, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.141, 0.149, 0.227, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.204, 0.212, 0.306, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stage"]
+bg_color = Color(0.1, 0.11, 0.18, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.26, 0.38, 0.7)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="RaceSetupScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_setup")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 24
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderBar" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/HeaderBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 48)
+layout_mode = 2
+text = "◀ BACK"
+script = ExtResource("2_button")
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "RACE SETUP // GRAND PRIX"
+
+[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/HeaderBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CurrencyHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HeaderBar"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="CoinsHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HeaderBar/CurrencyHBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CoinIcon" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar/CurrencyHBox/CoinsHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+theme_override_font_sizes/font_size = 20
+text = "🪙"
+
+[node name="CoinsLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar/CurrencyHBox/CoinsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "12,750"
+
+[node name="DiamondsHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HeaderBar/CurrencyHBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DiamondIcon" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar/CurrencyHBox/DiamondsHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.75, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "💎"
+
+[node name="DiamondsLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar/CurrencyHBox/DiamondsHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "120"
+
+[node name="MainContentHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 24
+
+[node name="LeftColumn" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MainContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="TrackSelectionPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="TrackMargin" type="MarginContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TrackTitle" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+theme_override_font_sizes/font_size = 20
+text = "SELECT CIRCUIT"
+
+[node name="TrackButtonsHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TrackSunsetBtn" type="Button" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox/TrackButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sunset Circuit"
+script = ExtResource("2_button")
+
+[node name="TrackHarborBtn" type="Button" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox/TrackButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Harbor Run"
+script = ExtResource("2_button")
+
+[node name="TrackNeonBtn" type="Button" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox/TrackButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Neon Loop"
+script = ExtResource("2_button")
+
+[node name="TrackInfoBox" type="PanelContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stage")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox/TrackInfoBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="InfoVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox/TrackInfoBox/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TrackNameLabel" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox/TrackInfoBox/Margin/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Sunset Circuit"
+
+[node name="TrackDescLabel" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox/TrackInfoBox/Margin/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.66, 0.72, 1)
+theme_override_font_sizes/font_size = 14
+text = "Fast sweeping turns under glorious city sunset skies."
+autowrap_mode = 2
+
+[node name="MetaHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox/TrackInfoBox/Margin/InfoVBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TrackStatsLabel" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox/TrackInfoBox/Margin/InfoVBox/MetaHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.42, 0.24, 1)
+theme_override_font_sizes/font_size = 14
+text = "2.4 KM // 12 TURNS"
+
+[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox/TrackInfoBox/Margin/InfoVBox/MetaHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TrackBestTimeLabel" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/TrackSelectionPanel/TrackMargin/VBox/TrackInfoBox/Margin/InfoVBox/MetaHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "RECORD: --:--.--"
+
+[node name="DifficultyPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="DiffMargin" type="MarginContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/DifficultyPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/DifficultyPanel/DiffMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DiffTitle" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/DifficultyPanel/DiffMargin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+theme_override_font_sizes/font_size = 20
+text = "SELECT DIFFICULTY"
+
+[node name="DiffButtonsHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/DifficultyPanel/DiffMargin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DiffEasyBtn" type="Button" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/DifficultyPanel/DiffMargin/VBox/DiffButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Amateur"
+script = ExtResource("2_button")
+
+[node name="DiffNormalBtn" type="Button" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/DifficultyPanel/DiffMargin/VBox/DiffButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pro"
+script = ExtResource("2_button")
+
+[node name="DiffHardBtn" type="Button" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/DifficultyPanel/DiffMargin/VBox/DiffButtonsHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Legend"
+script = ExtResource("2_button")
+
+[node name="DiffDescLabel" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/LeftColumn/DifficultyPanel/DiffMargin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.66, 0.72, 1)
+theme_override_font_sizes/font_size = 14
+text = "Competitive AI pack. Balanced racing challenge with standard rewards."
+autowrap_mode = 2
+
+[node name="RightColumn" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MainContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="CarShowcasePanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="CarMargin" type="MarginContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CarHeaderHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/CarHeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CarNameLabel" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/CarHeaderHBox/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Starter GT"
+
+[node name="CarClassLabel" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/CarHeaderHBox/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.42, 0.24, 1)
+theme_override_font_sizes/font_size = 13
+text = "CLASS C // BALANCED COUPE"
+
+[node name="ChangeCarButton" type="Button" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/CarHeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 38)
+layout_mode = 2
+text = "GARAGE 🚗"
+script = ExtResource("2_button")
+
+[node name="CarStage" type="PanelContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox"]
+custom_minimum_size = Vector2(0, 180)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_stage")
+
+[node name="CenterContainer" type="CenterContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/CarStage"]
+layout_mode = 2
+
+[node name="CarPreviewImage" type="TextureRect" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/CarStage/CenterContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 140)
+layout_mode = 2
+texture = ExtResource("3_car")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StatsGrid" type="GridContainer" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 10
+columns = 3
+
+[node name="SpeedLabel" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/StatsGrid"]
+layout_mode = 2
+text = "TOP SPEED"
+
+[node name="SpeedBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/StatsGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 16)
+layout_mode = 2
+size_flags_horizontal = 3
+value = 70.0
+show_percentage = false
+
+[node name="SpeedValLabel" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/StatsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "180 KM/H"
+
+[node name="AccelLabel" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/StatsGrid"]
+layout_mode = 2
+text = "ACCELERATION"
+
+[node name="AccelBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/StatsGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 16)
+layout_mode = 2
+size_flags_horizontal = 3
+value = 65.0
+show_percentage = false
+
+[node name="AccelValLabel" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/StatsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "4.2s (0-100)"
+
+[node name="HandlingLabel" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/StatsGrid"]
+layout_mode = 2
+text = "HANDLING"
+
+[node name="HandlingBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/StatsGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 16)
+layout_mode = 2
+size_flags_horizontal = 3
+value = 75.0
+show_percentage = false
+
+[node name="HandlingValLabel" type="Label" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn/CarShowcasePanel/CarMargin/VBox/StatsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "75%"
+
+[node name="StartRaceButton" type="Button" parent="MarginContainer/VBoxContainer/MainContentHBox/RightColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "START RACE 🏁"
+script = ExtResource("2_button")
+is_primary = true

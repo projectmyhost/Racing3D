@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_pd846"]
+
+[resource]
+script = ExtResource("1_pd846")
+id = "coupe"
+display_name = "Apex Cruiser Coupe"
+vehicle_class = "Performance Coupe"
+mass = 1320.0
+center_of_mass_offset = Vector3(0, -0.44, -0.05)
+wheelbase = 2.715
+track_width_front = 1.492
+track_width_rear = 1.492
+chassis_size = Vector3(1.8, 0.85, 4.38)
+peak_power_kw = 260.0
+max_engine_rpm = 7200.0
+gear_ratios = Array[float]([3.7, 2.3, 1.62, 1.25, 0.98, 0.8])
+suspension_rest_length = 0.3
+suspension_travel = 0.14
+spring_stiffness_front = 32000.0
+spring_stiffness_rear = 30000.0
+wheel_radius = 0.335
+tire_longitudinal_friction = 1.7
+tire_lateral_friction = 1.72
+downforce_coefficient = 0.35
+visual_scene_path = "res://assets/models/cars/car_coupe.tscn"

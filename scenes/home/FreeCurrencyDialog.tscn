@@ -1,0 +1,406 @@
+[gd_scene load_steps=5 format=3 uid="uid://freecurr001"]
+
+[ext_resource type="Script" path="res://scenes/home/FreeCurrencyDialog.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/ui/RaceButton.gd" id="2_racebutton"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dim"]
+bg_color = Color(0.06, 0.07, 0.12, 0.85)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.141, 0.149, 0.227, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.24, 0.26, 0.38, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 20
+shadow_offset = Vector2(0, 8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pack"]
+bg_color = Color(0.11, 0.12, 0.18, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.24, 0.34, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="FreeCurrencyDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Dimmer" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_dim")
+
+[node name="CenterContainer" type="CenterContainer" parent="Dimmer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Card" type="PanelContainer" parent="Dimmer/CenterContainer"]
+custom_minimum_size = Vector2(720, 520)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Dimmer/CenterContainer/Card"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="HeaderMargin" type="MarginContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/HeaderMargin"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/HeaderMargin/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+theme_override_font_sizes/font_size = 22
+text = "FREE COIN CENTER"
+
+[node name="SubtitleLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/HeaderMargin/HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 14
+text = "OFFLINE REWARDS"
+
+[node name="CloseBtn" type="Button" parent="Dimmer/CenterContainer/Card/VBoxContainer/HeaderMargin/HBoxContainer"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+text = "✕"
+script = ExtResource("2_racebutton")
+
+[node name="TabsContainer" type="HBoxContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="CoinsTabBtn" type="Button" parent="Dimmer/CenterContainer/Card/VBoxContainer/TabsContainer"]
+custom_minimum_size = Vector2(180, 42)
+layout_mode = 2
+text = "🪙 FREE COINS"
+script = ExtResource("2_racebutton")
+
+[node name="DiamondsTabBtn" type="Button" parent="Dimmer/CenterContainer/Card/VBoxContainer/TabsContainer"]
+custom_minimum_size = Vector2(180, 42)
+layout_mode = 2
+text = "💎 FREE DIAMONDS"
+script = ExtResource("2_racebutton")
+
+[node name="BalanceMargin" type="MarginContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_right = 24
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/BalanceMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="BalanceIcon" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/BalanceMargin/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "🪙"
+
+[node name="BalanceValueLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/BalanceMargin/HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.95, 0.95, 1)
+theme_override_font_sizes/font_size = 18
+text = "Current Coins: 12,750"
+
+[node name="DisclaimerMargin" type="MarginContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_right = 24
+
+[node name="DisclaimerLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/DisclaimerMargin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 13
+text = "Offline demo — all coin packs are completely free to claim."
+horizontal_alignment = 1
+
+[node name="ContentMargin" type="MarginContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="CoinsGrid" type="GridContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 3
+
+[node name="Card250" type="PanelContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_pack")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card250"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Icon" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card250/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "🪙"
+horizontal_alignment = 1
+
+[node name="Amount" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card250/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = "+250 Coins"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card250/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 12
+text = "Quick Pit Bonus"
+horizontal_alignment = 1
+
+[node name="ClaimBtn" type="Button" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card250/VBox"]
+custom_minimum_size = Vector2(140, 38)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "CLAIM FREE"
+script = ExtResource("2_racebutton")
+is_primary = true
+
+[node name="Card1000" type="PanelContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_pack")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card1000"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Icon" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card1000/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "💰"
+horizontal_alignment = 1
+
+[node name="Amount" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card1000/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = "+1,000 Coins"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card1000/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 12
+text = "Racer Stash"
+horizontal_alignment = 1
+
+[node name="ClaimBtn" type="Button" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card1000/VBox"]
+custom_minimum_size = Vector2(140, 38)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "CLAIM FREE"
+script = ExtResource("2_racebutton")
+is_primary = true
+
+[node name="Card5000" type="PanelContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_pack")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card5000"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Icon" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card5000/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "🏆"
+horizontal_alignment = 1
+
+[node name="Amount" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card5000/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = "+5,000 Coins"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card5000/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 12
+text = "Grand Sponsor Vault"
+horizontal_alignment = 1
+
+[node name="ClaimBtn" type="Button" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/CoinsGrid/Card5000/VBox"]
+custom_minimum_size = Vector2(140, 38)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "CLAIM FREE"
+script = ExtResource("2_racebutton")
+is_primary = true
+
+[node name="DiamondsGrid" type="GridContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 3
+
+[node name="Card10" type="PanelContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_pack")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card10"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Icon" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card10/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "💎"
+horizontal_alignment = 1
+
+[node name="Amount" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card10/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "+10 Diamonds"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card10/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 12
+text = "Spark Shard"
+horizontal_alignment = 1
+
+[node name="ClaimBtn" type="Button" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card10/VBox"]
+custom_minimum_size = Vector2(140, 38)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "CLAIM FREE"
+script = ExtResource("2_racebutton")
+is_primary = true
+
+[node name="Card25" type="PanelContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_pack")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card25"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Icon" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card25/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "✨"
+horizontal_alignment = 1
+
+[node name="Amount" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card25/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "+25 Diamonds"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card25/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 12
+text = "Gem Cache"
+horizontal_alignment = 1
+
+[node name="ClaimBtn" type="Button" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card25/VBox"]
+custom_minimum_size = Vector2(140, 38)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "CLAIM FREE"
+script = ExtResource("2_racebutton")
+is_primary = true
+
+[node name="Card50" type="PanelContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_pack")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card50"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Icon" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card50/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "👑"
+horizontal_alignment = 1
+
+[node name="Amount" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card50/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "+50 Diamonds"
+horizontal_alignment = 1
+
+[node name="Desc" type="Label" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card50/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 12
+text = "Apex Royal Treasury"
+horizontal_alignment = 1
+
+[node name="ClaimBtn" type="Button" parent="Dimmer/CenterContainer/Card/VBoxContainer/ContentMargin/DiamondsGrid/Card50/VBox"]
+custom_minimum_size = Vector2(140, 38)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "CLAIM FREE"
+script = ExtResource("2_racebutton")
+is_primary = true

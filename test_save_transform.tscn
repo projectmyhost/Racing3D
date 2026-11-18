@@ -1,0 +1,4 @@
+[gd_scene format=3]
+
+[node name="" type="Node3D" unique_id=906325356]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 0, 0, -1.513)

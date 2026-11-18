@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_53dqe"]
+
+[resource]
+script = ExtResource("1_53dqe")
+id = "sport"
+display_name = "Phantom Turbo Sport"
+vehicle_class = "Sport"
+mass = 1380.0
+center_of_mass_offset = Vector3(0, -0.45, -0.06)
+wheelbase = 2.759
+track_width_front = 1.562
+track_width_rear = 1.523
+chassis_size = Vector3(1.86, 0.84, 4.48)
+peak_power_kw = 350.0
+max_engine_rpm = 7800.0
+gear_ratios = Array[float]([3.82, 2.36, 1.69, 1.31, 1.0, 0.79])
+suspension_rest_length = 0.29
+suspension_travel = 0.13
+spring_stiffness_front = 35000.0
+spring_stiffness_rear = 33000.0
+bump_damping_front = 2900.0
+bump_damping_rear = 2700.0
+rebound_damping_front = 3900.0
+rebound_damping_rear = 3700.0
+wheel_radius = 0.346
+tire_longitudinal_friction = 1.75
+tire_lateral_friction = 1.8
+drag_coefficient = 0.31
+downforce_coefficient = 0.5
+visual_scene_path = "res://assets/models/cars/car_sport.tscn"

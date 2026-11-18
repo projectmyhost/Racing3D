@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_qi3bg"]
+
+[resource]
+script = ExtResource("1_qi3bg")
+id = "porsche_mission_x"
+display_name = "Porsche Mission X Concept"
+vehicle_class = "Hypercar"
+mass = 1520.0
+center_of_mass_offset = Vector3(0, -0.48, -0.05)
+wheelbase = 2.73
+track_width_front = 1.634
+track_width_rear = 1.693
+chassis_size = Vector3(2.0, 0.75, 4.5)
+peak_power_kw = 1100.0
+max_engine_rpm = 18000.0
+gear_ratios = Array[float]([8.05])
+suspension_rest_length = 0.24
+suspension_travel = 0.11
+spring_stiffness_front = 46000.0
+spring_stiffness_rear = 48000.0
+bump_damping_front = 3800.0
+bump_damping_rear = 4000.0
+rebound_damping_front = 5200.0
+rebound_damping_rear = 5400.0
+wheel_radius = 0.37
+tire_longitudinal_friction = 2.05
+tire_lateral_friction = 2.1
+drag_coefficient = 0.28
+downforce_coefficient = 1.45
+visual_scene_path = "res://assets/models/cars/car_porsche_mission_x.tscn"
+

@@ -1,0 +1,149 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scenes/achievements/AchievementsScreen.gd" id="1_achievements"]
+[ext_resource type="Script" path="res://scripts/ui/RaceButton.gd" id="2_button"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.09, 0.094, 0.153, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_scroll_bg"]
+bg_color = Color(0.11, 0.118, 0.18, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.20, 0.21, 0.30, 0.6)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="AchievementsScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_achievements")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 30
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderBar" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/HeaderBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 48)
+layout_mode = 2
+text = "◀ BACK"
+script = ExtResource("2_button")
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.957, 0.949, 0.949, 1)
+theme_override_font_sizes/font_size = 32
+text = "ACHIEVEMENTS"
+vertical_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.659, 0.663, 0.722, 1)
+theme_override_font_sizes/font_size = 18
+text = "// CAREER MILESTONES & TROPHIES"
+vertical_alignment = 2
+
+[node name="TotalClaimedLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709, 0.106, 1)
+theme_override_font_sizes/font_size = 18
+text = "0 / 6 COMPLETED"
+vertical_alignment = 1
+
+[node name="CurrencyBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HeaderBar"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="CoinBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HeaderBar/CurrencyBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar/CurrencyBox/CoinBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709, 0.106, 1)
+theme_override_font_sizes/font_size = 20
+text = "🪙"
+
+[node name="CoinsLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar/CurrencyBox/CoinBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.957, 0.949, 0.949, 1)
+theme_override_font_sizes/font_size = 20
+text = "12,750"
+
+[node name="DiamondBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HeaderBar/CurrencyBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Icon" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar/CurrencyBox/DiamondBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.75, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "💎"
+
+[node name="DiamondsLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar/CurrencyBox/DiamondBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.957, 0.949, 0.949, 1)
+theme_override_font_sizes/font_size = 20
+text = "120"
+
+[node name="ScrollPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_scroll_bg")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/ScrollPanel"]
+layout_mode = 2
+follow_focus = true
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/VBoxContainer/ScrollPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="AchievementsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/ScrollPanel/ScrollContainer/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14

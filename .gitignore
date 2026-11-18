@@ -1,0 +1,28 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Unused backups, scratch files, and test validation screenshots
+_backup_before_overhaul/
+scratch/
+docs/validation/
+
+# Godot Mono / build / temp artifacts
+.mono/
+data_*/
+mono_crash.*.json
+*.translation
+*.tmp
+*.bak
+*.log
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Note: Keep all *.import files, HANDOFF.md, and docs/handoff/ tracked!

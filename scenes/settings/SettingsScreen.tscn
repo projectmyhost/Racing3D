@@ -1,0 +1,963 @@
+[gd_scene load_steps=6 format=3 uid="uid://settings_screen_001"]
+
+[ext_resource type="Script" path="res://scenes/settings/SettingsScreen.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/ui/RaceButton.gd" id="2_racebutton"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.09, 0.094, 0.153, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.141, 0.149, 0.227, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.204, 0.212, 0.306, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_row"]
+bg_color = Color(0.11, 0.118, 0.18, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.21, 0.3, 0.4)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="SettingsScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="MainVBox" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderHBox" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="BackButton" type="Button" parent="MarginContainer/MainVBox/HeaderHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 44)
+layout_mode = 2
+text = "← BACK"
+script = ExtResource("2_racebutton")
+
+[node name="TitleVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/MainVBox/HeaderHBox/TitleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+theme_override_font_sizes/font_size = 28
+text = "SETTINGS"
+
+[node name="CategoryDescLabel" type="Label" parent="MarginContainer/MainVBox/HeaderHBox/TitleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 14
+text = "Configure audio, display, gameplay, and system preferences."
+
+[node name="BodyHBox" type="HBoxContainer" parent="MarginContainer/MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 24
+
+[node name="TabsSidebar" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="TabsMargin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/TabsSidebar"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="TabsVBox" type="VBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/TabsSidebar/TabsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="AudioTabBtn" type="Button" parent="MarginContainer/MainVBox/BodyHBox/TabsSidebar/TabsMargin/TabsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+text = "🔊 AUDIO"
+alignment = 0
+script = ExtResource("2_racebutton")
+
+[node name="DisplayTabBtn" type="Button" parent="MarginContainer/MainVBox/BodyHBox/TabsSidebar/TabsMargin/TabsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+text = "🖥 DISPLAY"
+alignment = 0
+script = ExtResource("2_racebutton")
+
+[node name="GameplayTabBtn" type="Button" parent="MarginContainer/MainVBox/BodyHBox/TabsSidebar/TabsMargin/TabsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+text = "🎮 GAMEPLAY"
+alignment = 0
+script = ExtResource("2_racebutton")
+
+[node name="AccessTabBtn" type="Button" parent="MarginContainer/MainVBox/BodyHBox/TabsSidebar/TabsMargin/TabsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+text = "♿ ACCESSIBILITY"
+alignment = 0
+script = ExtResource("2_racebutton")
+
+[node name="DataTabBtn" type="Button" parent="MarginContainer/MainVBox/BodyHBox/TabsSidebar/TabsMargin/TabsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+text = "💾 DATA & SUPPORT"
+alignment = 0
+script = ExtResource("2_racebutton")
+
+[node name="ContentPanel" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="ContentMargin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="AudioPanel" type="ScrollContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="MasterRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/MasterRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/MasterRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="MasterTitleLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/MasterRow/Margin/HBox" groups=["setting_labels"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+text = "Master Volume"
+
+[node name="MasterSlider" type="HSlider" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/MasterRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="MasterValLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/MasterRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+text = "100%"
+horizontal_alignment = 2
+
+[node name="MusicRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/MusicRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/MusicRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="MusicTitleLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/MusicRow/Margin/HBox" groups=["setting_labels"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+text = "Music Volume"
+
+[node name="MusicSlider" type="HSlider" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/MusicRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.05
+value = 0.7
+
+[node name="MusicValLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/MusicRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+text = "70%"
+horizontal_alignment = 2
+
+[node name="SfxRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/SfxRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/SfxRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="SfxTitleLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/SfxRow/Margin/HBox" groups=["setting_labels"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+text = "SFX Volume"
+
+[node name="SfxSlider" type="HSlider" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/SfxRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.05
+value = 0.85
+
+[node name="SfxValLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/SfxRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+text = "85%"
+horizontal_alignment = 2
+
+[node name="TogglesRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/TogglesRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/TogglesRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MuteAllCheck" type="CheckButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/TogglesRow/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Mute All"
+
+[node name="MusicCheck" type="CheckButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/TogglesRow/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Music Enabled"
+
+[node name="SfxCheck" type="CheckButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/TogglesRow/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "UI SFX Enabled"
+
+[node name="TestSoundRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/TestSoundRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/TestSoundRow/Margin"]
+layout_mode = 2
+
+[node name="TestSoundBtn" type="Button" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AudioPanel/VBox/TestSoundRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 42)
+layout_mode = 2
+text = "🔊 TEST SOUND"
+script = ExtResource("2_racebutton")
+
+[node name="DisplayPanel" type="ScrollContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="WinModeRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/WinModeRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/WinModeRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="WindowModeLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/WinModeRow/Margin/HBox" groups=["setting_labels"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+text = "Window Mode"
+
+[node name="WindowModeOption" type="OptionButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/WinModeRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 38)
+layout_mode = 2
+
+[node name="ResRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/ResRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/ResRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ResolutionLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/ResRow/Margin/HBox" groups=["setting_labels"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+text = "Resolution"
+
+[node name="ResolutionOption" type="OptionButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/ResRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 38)
+layout_mode = 2
+
+[node name="VsyncRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/VsyncRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="VsyncCheck" type="CheckButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/VsyncRow/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "VSync"
+
+[node name="FpsRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/FpsRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/FpsRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="FpsLimitLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/FpsRow/Margin/HBox" groups=["setting_labels"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+text = "FPS Limit"
+
+[node name="FpsLimitOption" type="OptionButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/FpsRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 38)
+layout_mode = 2
+
+[node name="QualityRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/QualityRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/QualityRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="QualityLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/QualityRow/Margin/HBox" groups=["setting_labels"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+text = "Graphics Quality"
+
+[node name="QualityOption" type="OptionButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/QualityRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 38)
+layout_mode = 2
+
+[node name="UiScaleRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/UiScaleRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/UiScaleRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="UiScaleLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/UiScaleRow/Margin/HBox" groups=["setting_labels"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+text = "UI Scale"
+
+[node name="UiScaleSlider" type="HSlider" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/UiScaleRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 0.8
+max_value = 1.2
+step = 0.05
+value = 1.0
+
+[node name="UiScaleValLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/UiScaleRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+text = "100%"
+horizontal_alignment = 2
+
+[node name="DisplayTogglesRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/DisplayTogglesRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/DisplayTogglesRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ScreenShakeCheck" type="CheckButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/DisplayTogglesRow/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Screen Shake"
+
+[node name="ReducedMotionCheck" type="CheckButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DisplayPanel/VBox/DisplayTogglesRow/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Reduced Motion"
+
+[node name="GameplayPanel" type="ScrollContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="SensRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/SensRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/SensRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="SensitivityLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/SensRow/Margin/HBox" groups=["setting_labels"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+text = "Steering Sensitivity"
+
+[node name="SensitivitySlider" type="HSlider" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/SensRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 1.0
+max_value = 10.0
+step = 1.0
+value = 5.0
+
+[node name="SensitivityValLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/SensRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+text = "5 / 10"
+horizontal_alignment = 2
+
+[node name="ControlRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/ControlRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/ControlRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ControlSchemeLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/ControlRow/Margin/HBox" groups=["setting_labels"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+text = "Control Scheme"
+
+[node name="ControlSchemeOption" type="OptionButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/ControlRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 38)
+layout_mode = 2
+
+[node name="GameplayTogglesRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/GameplayTogglesRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/GameplayTogglesRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TutorialCheck" type="CheckButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/GameplayTogglesRow/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Show Race Tutorial"
+
+[node name="AutoAccelCheck" type="CheckButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/GameplayTogglesRow/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Auto Accelerate"
+
+[node name="ConfirmLeaveCheck" type="CheckButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/GameplayPanel/VBox/GameplayTogglesRow/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Confirm Before Leaving Race"
+
+[node name="AccessPanel" type="ScrollContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="LangRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/LangRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/LangRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="LanguageLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/LangRow/Margin/HBox" groups=["setting_labels"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+text = "Language"
+
+[node name="LanguageOption" type="OptionButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/LangRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 38)
+layout_mode = 2
+
+[node name="ContrastRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/ContrastRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HighContrastCheck" type="CheckButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/ContrastRow/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "High Contrast UI"
+
+[node name="ColorAssistRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/ColorAssistRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/ColorAssistRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ColorAssistLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/ColorAssistRow/Margin/HBox" groups=["setting_labels"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+text = "Color Assist"
+
+[node name="ColorAssistOption" type="OptionButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/ColorAssistRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 38)
+layout_mode = 2
+
+[node name="TextSizeRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/TextSizeRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/TextSizeRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TextSizeLabel" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/TextSizeRow/Margin/HBox" groups=["setting_labels"]]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+text = "Text Size"
+
+[node name="TextSizeOption" type="OptionButton" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/AccessPanel/VBox/TextSizeRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 38)
+layout_mode = 2
+
+[node name="DataPanel" type="ScrollContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="RestoreRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/RestoreRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/RestoreRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/RestoreRow/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/RestoreRow/Margin/HBox/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Reset Settings"
+
+[node name="Desc" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/RestoreRow/Margin/HBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 13
+text = "Restore audio, graphics, gameplay, and accessibility to default without touching saved cars or coins."
+
+[node name="RestoreDefaultsBtn" type="Button" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/RestoreRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 42)
+layout_mode = 2
+text = "RESTORE DEFAULTS"
+script = ExtResource("2_racebutton")
+
+[node name="ResetRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/ResetRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/ResetRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/ResetRow/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/ResetRow/Margin/HBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 18
+text = "Full Save Data Reset"
+
+[node name="Desc" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/ResetRow/Margin/HBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 13
+text = "Permanently wipe pilot name, coins, diamonds, cars, records, and achievements."
+
+[node name="ResetSaveBtn" type="Button" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/ResetRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+text = "RESET SAVE DATA"
+script = ExtResource("2_racebutton")
+
+[node name="CreditsRow" type="PanelContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/CreditsRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/CreditsRow/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/CreditsRow/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/CreditsRow/Margin/HBox/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Game Credits & Info"
+
+[node name="Desc" type="Label" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/CreditsRow/Margin/HBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 13
+text = "View engine information, build version, audio, and asset credits."
+
+[node name="CreditsBtn" type="Button" parent="MarginContainer/MainVBox/BodyHBox/ContentPanel/ContentMargin/DataPanel/VBox/CreditsRow/Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 42)
+layout_mode = 2
+text = "CREDITS"
+script = ExtResource("2_racebutton")
+
+[node name="CreditsModal" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="CreditsModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.04, 0.08, 0.8)
+
+[node name="Center" type="CenterContainer" parent="CreditsModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Card" type="PanelContainer" parent="CreditsModal/Center"]
+custom_minimum_size = Vector2(580, 420)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Margin" type="MarginContainer" parent="CreditsModal/Center/Card"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="VBox" type="VBoxContainer" parent="CreditsModal/Center/Card/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="CreditsTitleLabel" type="Label" parent="CreditsModal/Center/Card/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+theme_override_font_sizes/font_size = 24
+text = "RACEZONE CREDITS"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="CreditsModal/Center/Card/Margin/VBox"]
+layout_mode = 2
+
+[node name="CreditsContentLabel" type="Label" parent="CreditsModal/Center/Card/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.85, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "RACEZONE - 2D Arcade Racing Prototype
+Version: v1.0.0 Arcade Prototype
+Engine: Godot Engine 4.x
+
+Audio Design: Synthesized Chiptune & Arcade SFX
+Art & UI: 2D Arcade Racing Vector & Pixel Art
+Platform: Offline Standalone PC / Desktop
+
+Developed by the Antigravity Swarm Engineering Team."
+autowrap_mode = 2
+
+[node name="CreditsCloseBtn" type="Button" parent="CreditsModal/Center/Card/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 44)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "CLOSE"
+script = ExtResource("2_racebutton")

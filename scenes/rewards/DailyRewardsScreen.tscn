@@ -1,0 +1,385 @@
+[gd_scene load_steps=5 format=3 uid="uid://dailyrew001"]
+
+[ext_resource type="Script" path="res://scenes/rewards/DailyRewardsScreen.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/ui/RaceButton.gd" id="2_racebutton"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dim"]
+bg_color = Color(0.06, 0.07, 0.12, 0.85)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.141, 0.149, 0.227, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.24, 0.26, 0.38, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 20
+shadow_offset = Vector2(0, 8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_day"]
+bg_color = Color(0.11, 0.12, 0.18, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.24, 0.34, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="DailyRewardsScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Dimmer" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_dim")
+
+[node name="CenterContainer" type="CenterContainer" parent="Dimmer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Card" type="PanelContainer" parent="Dimmer/CenterContainer"]
+custom_minimum_size = Vector2(880, 480)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderMargin" type="MarginContainer" parent="Dimmer/CenterContainer/Card/VBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+
+[node name="HBox" type="HBoxContainer" parent="Dimmer/CenterContainer/Card/VBox/HeaderMargin"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/HeaderMargin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+theme_override_font_sizes/font_size = 24
+text = "DAILY LOGIN REWARDS"
+
+[node name="CloseBtn" type="Button" parent="Dimmer/CenterContainer/Card/VBox/HeaderMargin/HBox"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+text = "✕"
+script = ExtResource("2_racebutton")
+
+[node name="StreakMargin" type="MarginContainer" parent="Dimmer/CenterContainer/Card/VBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_right = 24
+
+[node name="StreakLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/StreakMargin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "🔥 Current Streak: 0 Days"
+
+[node name="CalendarMargin" type="MarginContainer" parent="Dimmer/CenterContainer/Card/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+
+[node name="DaysHBox" type="HBoxContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Day1" type="PanelContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_day")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day1"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DayLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day1/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "DAY 1"
+horizontal_alignment = 1
+
+[node name="IconLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day1/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "🪙"
+horizontal_alignment = 1
+
+[node name="AmountLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day1/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "+100"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day1/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "CLAIMED ✓"
+horizontal_alignment = 1
+
+[node name="Day2" type="PanelContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_day")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day2"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DayLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day2/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "DAY 2"
+horizontal_alignment = 1
+
+[node name="IconLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day2/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "🪙"
+horizontal_alignment = 1
+
+[node name="AmountLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day2/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "+150"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day2/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "LOCKED"
+horizontal_alignment = 1
+
+[node name="Day3" type="PanelContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_day")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day3"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DayLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day3/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "DAY 3"
+horizontal_alignment = 1
+
+[node name="IconLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day3/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "🪙"
+horizontal_alignment = 1
+
+[node name="AmountLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day3/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "+200"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day3/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "LOCKED"
+horizontal_alignment = 1
+
+[node name="Day4" type="PanelContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_day")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day4"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DayLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day4/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "DAY 4"
+horizontal_alignment = 1
+
+[node name="IconLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day4/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "🪙"
+horizontal_alignment = 1
+
+[node name="AmountLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day4/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "+250"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day4/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "LOCKED"
+horizontal_alignment = 1
+
+[node name="Day5" type="PanelContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_day")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day5"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DayLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day5/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "DAY 5"
+horizontal_alignment = 1
+
+[node name="IconLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day5/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "💰"
+horizontal_alignment = 1
+
+[node name="AmountLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day5/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "+300"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day5/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "LOCKED"
+horizontal_alignment = 1
+
+[node name="Day6" type="PanelContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_day")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day6"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DayLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day6/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "DAY 6"
+horizontal_alignment = 1
+
+[node name="IconLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day6/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "💰"
+horizontal_alignment = 1
+
+[node name="AmountLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day6/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "+400"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day6/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "LOCKED"
+horizontal_alignment = 1
+
+[node name="Day7" type="PanelContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_day")
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day7"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DayLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day7/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "DAY 7"
+horizontal_alignment = 1
+
+[node name="IconLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day7/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "🏆"
+horizontal_alignment = 1
+
+[node name="AmountLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day7/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "+750"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/CalendarMargin/DaysHBox/Day7/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "GRAND PRIZE"
+horizontal_alignment = 1
+
+[node name="ActionMargin" type="MarginContainer" parent="Dimmer/CenterContainer/Card/VBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="Dimmer/CenterContainer/Card/VBox/ActionMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="StatusInfoLabel" type="Label" parent="Dimmer/CenterContainer/Card/VBox/ActionMargin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 14
+text = "Your daily reward is ready!"
+horizontal_alignment = 1
+
+[node name="ClaimTodayBtn" type="Button" parent="Dimmer/CenterContainer/Card/VBox/ActionMargin/VBox"]
+custom_minimum_size = Vector2(260, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "CLAIM TODAY (+100 COINS)"
+script = ExtResource("2_racebutton")
+is_primary = true

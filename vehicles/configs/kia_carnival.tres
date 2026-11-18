@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_qi3bg"]
+
+[resource]
+script = ExtResource("1_qi3bg")
+id = "kia_carnival"
+display_name = "Kia Carnival Grand Touring"
+vehicle_class = "Grand MPV"
+mass = 2080.0
+center_of_mass_offset = Vector3(0, -0.42, 0)
+wheelbase = 3.082
+track_width_front = 1.708
+track_width_rear = 1.708
+chassis_size = Vector3(1.995, 1.25, 5.15)
+peak_power_kw = 216.0
+max_engine_rpm = 6500.0
+gear_ratios = Array[float]([4.15, 2.68, 1.84, 1.39, 1.0, 0.77, 0.64, 0.52])
+suspension_rest_length = 0.28
+suspension_travel = 0.16
+spring_stiffness_front = 48000.0
+spring_stiffness_rear = 46000.0
+bump_damping_front = 3800.0
+bump_damping_rear = 3600.0
+rebound_damping_front = 5200.0
+rebound_damping_rear = 5000.0
+wheel_radius = 0.386
+tire_longitudinal_friction = 1.55
+tire_lateral_friction = 1.5
+drag_coefficient = 0.34
+downforce_coefficient = 0.35
+visual_scene_path = "res://assets/models/cars/car_kia_carnival.tscn"
+

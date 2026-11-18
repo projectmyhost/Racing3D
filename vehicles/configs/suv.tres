@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_s7uye"]
+
+[resource]
+script = ExtResource("1_s7uye")
+id = "suv"
+display_name = "Titan Ridge SUV"
+vehicle_class = "SUV"
+mass = 1560.0
+center_of_mass_offset = Vector3(0, -0.4, -0.05)
+wheelbase = 3.073
+track_width_front = 1.629
+track_width_rear = 1.629
+chassis_size = Vector3(1.95, 1.1, 4.85)
+drivetrain_type = 2
+peak_power_kw = 240.0
+max_engine_rpm = 6600.0
+gear_ratios = Array[float]([3.85, 2.35, 1.58, 1.18, 0.92, 0.74])
+suspension_rest_length = 0.35
+suspension_travel = 0.17
+spring_stiffness_front = 37000.0
+spring_stiffness_rear = 35000.0
+bump_damping_front = 3000.0
+bump_damping_rear = 2800.0
+rebound_damping_front = 4000.0
+rebound_damping_rear = 3800.0
+wheel_radius = 0.42
+tire_longitudinal_friction = 1.6
+tire_lateral_friction = 1.63
+drag_coefficient = 0.38
+downforce_coefficient = 0.25
+visual_scene_path = "res://assets/models/cars/car_suv.tscn"

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_3c6bl"]
+
+[resource]
+script = ExtResource("1_3c6bl")
+id = "compact"
+display_name = "City Compact"
+vehicle_class = "Compact"
+mass = 1150.0
+center_of_mass_offset = Vector3(0, -0.42, -0.04)
+wheelbase = 2.344
+track_width_front = 1.23
+track_width_rear = 1.23
+chassis_size = Vector3(1.5, 0.85, 3.75)
+drivetrain_type = 0
+peak_power_kw = 110.0
+max_engine_rpm = 6500.0
+gear_ratios = Array[float]([3.45, 2.05, 1.4, 1.05, 0.85])
+suspension_rest_length = 0.3
+suspension_travel = 0.14
+spring_stiffness_front = 28000.0
+spring_stiffness_rear = 26000.0
+bump_damping_front = 2600.0
+bump_damping_rear = 2400.0
+rebound_damping_front = 3600.0
+rebound_damping_rear = 3400.0
+wheel_radius = 0.266
+tire_longitudinal_friction = 1.6
+tire_lateral_friction = 1.62
+drag_coefficient = 0.34
+downforce_coefficient = 0.2
+visual_scene_path = "res://assets/models/cars/car_compact.tscn"

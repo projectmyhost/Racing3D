@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_g4nt3"]
+
+[resource]
+script = ExtResource("1_g4nt3")
+id = "minivan"
+display_name = "Grand Voyager Minivan"
+vehicle_class = "Van"
+mass = 1520.0
+center_of_mass_offset = Vector3(0, -0.4, -0.04)
+wheelbase = 3.196
+track_width_front = 1.571
+track_width_rear = 1.571
+chassis_size = Vector3(1.88, 1.15, 4.95)
+drivetrain_type = 0
+peak_power_kw = 180.0
+max_engine_rpm = 6400.0
+gear_ratios = Array[float]([3.75, 2.25, 1.5, 1.12, 0.88, 0.72])
+suspension_rest_length = 0.34
+spring_stiffness_front = 36000.0
+spring_stiffness_rear = 34000.0
+bump_damping_front = 2900.0
+bump_damping_rear = 2700.0
+rebound_damping_front = 3900.0
+rebound_damping_rear = 3700.0
+wheel_radius = 0.353
+tire_longitudinal_friction = 1.58
+tire_lateral_friction = 1.6
+drag_coefficient = 0.36
+downforce_coefficient = 0.2
+visual_scene_path = "res://assets/models/cars/car_minivan.tscn"

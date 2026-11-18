@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_qi3bg"]
+
+[resource]
+script = ExtResource("1_qi3bg")
+id = "kia_seltos"
+display_name = "Kia Seltos Turbo AWD"
+vehicle_class = "Compact SUV"
+mass = 1480.0
+center_of_mass_offset = Vector3(0, -0.4, 0)
+wheelbase = 2.61
+track_width_front = 1.546
+track_width_rear = 1.546
+chassis_size = Vector3(1.8, 1.15, 4.37)
+peak_power_kw = 145.0
+max_engine_rpm = 6500.0
+gear_ratios = Array[float]([3.92, 2.45, 1.68, 1.22, 1.0, 0.81, 0.67])
+suspension_rest_length = 0.27
+suspension_travel = 0.15
+spring_stiffness_front = 36000.0
+spring_stiffness_rear = 34000.0
+bump_damping_front = 2900.0
+bump_damping_rear = 2700.0
+rebound_damping_front = 4000.0
+rebound_damping_rear = 3800.0
+wheel_radius = 0.35
+tire_longitudinal_friction = 1.65
+tire_lateral_friction = 1.6
+drag_coefficient = 0.35
+downforce_coefficient = 0.4
+visual_scene_path = "res://assets/models/cars/car_kia_seltos.tscn"
+

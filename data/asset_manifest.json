@@ -1,0 +1,58 @@
+﻿{
+  "project": "Sunset Street Racing",
+  "version": "1.0.0",
+  "assets": [
+    {
+      "id": "veh_showcase_coupe_01",
+      "type": "model",
+      "path": "res://assets/vehicles/showcase_car/veh_showcase_coupe_01.glb",
+      "source": "generated",
+      "license": "Original",
+      "tris": 48200,
+      "replaceable": true
+    },
+    {
+      "id": "veh_fallback_coupe_01",
+      "type": "scene",
+      "path": "res://scenes/vehicles/fallback_coupe.tscn",
+      "source": "generated",
+      "license": "Original",
+      "tris": 4800,
+      "replaceable": true
+    },
+    {
+      "id": "veh_wheel_multispoke_01",
+      "type": "scene",
+      "path": "res://assets/vehicles/wheels/veh_wheel_multispoke_01.tscn",
+      "source": "generated",
+      "license": "Original",
+      "tris": 3200,
+      "replaceable": true
+    },
+    {
+      "id": "env_sky_sunset_01",
+      "type": "shader",
+      "path": "res://assets/shaders/sky_sunset.gdshader",
+      "source": "generated",
+      "license": "Original",
+      "replaceable": true
+    },
+    {
+      "id": "env_prop_billboard_01",
+      "type": "scene",
+      "path": "res://assets/environments/props/billboard/env_prop_billboard_01.tscn",
+      "source": "generated",
+      "license": "Original",
+      "tris": 950,
+      "replaceable": true
+    },
+    {
+      "id": "tex_env_billboard_art_01",
+      "type": "texture",
+      "path": "res://assets/textures/environments/tex_env_billboard_art_01.png",
+      "source": "generated",
+      "license": "Original",
+      "replaceable": true
+    }
+  ]
+}

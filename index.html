@@ -1,0 +1,2041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Apex Racing - 4K Native Procedural HUD</title>
+  <!-- Google Fonts: Rajdhani, Chakra Petch, Orbitron -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,600;0,700;1,700&family=Orbitron:wght@700;800;900&family=Rajdhani:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       CSS RESET & GLOBAL TOKENS
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    :root {
+      --skew-angle: -15deg;
+      --counter-skew: 15deg;
+      
+      /* Colors */
+      --color-gold-start: #FDE047;
+      --color-gold-mid: #F59E0B;
+      --color-gold-end: #EA580C;
+      --color-accent-red: #EF4444;
+      --color-accent-orange: #F97316;
+      --color-accent-yellow: #FACC15;
+      --color-neon-cyan: #06B6D4;
+      --color-neon-green: #00F279;
+      
+      /* Carbon & Surface */
+      --carbon-bg-top: #1A1D24;
+      --carbon-bg-bot: #0D0F13;
+      --border-specular: rgba(255, 255, 255, 0.22);
+      --border-dark: rgba(0, 0, 0, 0.7);
+      
+      /* Typography */
+      --font-display: 'Rajdhani', 'Chakra Petch', sans-serif;
+      --font-headline: 'Orbitron', 'Rajdhani', sans-serif;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #08090C;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ==========================================================================
+       4K / RETINA RESPONSIVE VIEWPORT CONTAINER (1920x1080 Base)
+       ========================================================================== */
+    #viewport-scaler {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      transform-origin: center center;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.85);
+      background-color: #0b0d11;
+    }
+
+    /* 3D Background Layer */
+    .backdrop-layer {
+      position: absolute;
+      inset: 0;
+      background-image: url('bg.png');
+      background-size: cover;
+      background-position: center bottom;
+      z-index: 1;
+    }
+
+    .backdrop-vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 45%, rgba(0,0,0,0.65) 100%),
+                  linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 25%),
+                  linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 20%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Procedural Carbon Weave Generator */
+    .carbon-surface {
+      background: 
+        linear-gradient(135deg, rgba(255,255,255,0.025) 25%, transparent 25%),
+        linear-gradient(225deg, rgba(255,255,255,0.025) 25%, transparent 25%),
+        linear-gradient(45deg, rgba(255,255,255,0.025) 25%, transparent 25%),
+        linear-gradient(315deg, rgba(255,255,255,0.025) 25%, transparent 25%),
+        linear-gradient(180deg, var(--carbon-bg-top) 0%, var(--carbon-bg-bot) 100%);
+      background-size: 8px 8px, 8px 8px, 8px 8px, 8px 8px, 100% 100%;
+      border: 1px solid var(--border-specular);
+      border-bottom: 2px solid var(--border-dark);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(8px);
+    }
+
+    .skewed {
+      transform: skewX(var(--skew-angle));
+    }
+
+    .unskew {
+      transform: skewX(var(--counter-skew));
+    }
+
+    /* Sparkle Glint Animations */
+    .glint-star {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      pointer-events: none;
+      filter: drop-shadow(0 0 4px #FDE047);
+      animation: pulseGlint 2.4s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlint {
+      0%, 100% { transform: scale(0.8) rotate(0deg); opacity: 0.7; }
+      50% { transform: scale(1.25) rotate(90deg); opacity: 1; }
+    }
+
+    /* ==========================================================================
+       1. TOP-LEFT PROFILE CARD
+       ========================================================================== */
+    .profile-card-container {
+      position: absolute;
+      top: 30px;
+      left: 40px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .profile-card {
+      width: 512px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      padding: 12px 18px 12px 14px;
+      position: relative;
+    }
+
+    /* Dual Chrome Emblem Frame */
+    .avatar-emblem {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      flex-shrink: 0;
+      margin-right: 18px;
+    }
+
+    .avatar-chrome-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: conic-gradient(from 145deg, #e5e7eb, #4b5563 25%, #f9fafb 50%, #374151 75%, #e5e7eb 100%);
+      padding: 4px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.75);
+    }
+
+    .avatar-inner-ring {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 30%, #ef4444 0%, #991b1b 60%, #1e1b4b 100%);
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+    }
+
+    .avatar-inner-ring svg {
+      width: 68px;
+      height: 68px;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+    }
+
+    .profile-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .profile-license {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94A3B8;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+
+    .profile-pilot-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .profile-username {
+      font-family: var(--font-headline);
+      font-size: 28px;
+      font-weight: 900;
+      font-style: italic;
+      color: #FFFFFF;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    .profile-subtag {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #CBD5E1;
+      letter-spacing: 0.8px;
+    }
+
+    /* Level Badge in Card */
+    .profile-level-badge {
+      width: 90px;
+      height: 62px;
+      background: linear-gradient(180deg, #242933 0%, #111317 100%);
+      border: 1.5px solid #F59E0B;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6), inset 0 0 8px rgba(245, 158, 11, 0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-left: 12px;
+    }
+
+    .profile-level-badge .checker-icon {
+      width: 22px;
+      height: 12px;
+      margin-bottom: 2px;
+    }
+
+    .profile-level-badge .level-text {
+      font-family: var(--font-headline);
+      font-size: 22px;
+      font-weight: 900;
+      color: #F59E0B;
+      line-height: 1;
+      text-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+    }
+
+    /* XP Progress Bar Row */
+    .profile-xp-row {
+      width: 100%;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .xp-bar-track {
+      flex: 1;
+      height: 10px;
+      background: #090B0E;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .xp-bar-fill {
+      width: 94.4%; /* 236/250 */
+      height: 100%;
+      background: linear-gradient(90deg, #FACC15 0%, #F59E0B 50%, #EA580C 100%);
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
+      position: relative;
+    }
+
+    .xp-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40%;
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    .xp-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #F8FAFC;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    /* Hanging Tier Badge */
+    .tier-sub-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 18px;
+      background: linear-gradient(180deg, #1F242C 0%, #0F1116 100%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-top: none;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.7);
+      margin-left: 20px;
+    }
+
+    .tier-sub-badge svg {
+      width: 16px;
+      height: 16px;
+      color: #F59E0B;
+    }
+
+    .tier-sub-badge span {
+      font-size: 13px;
+      font-weight: 800;
+      font-style: italic;
+      color: #F3F4F6;
+      letter-spacing: 1px;
+    }
+
+    /* ==========================================================================
+       2. TOP-CENTER NAVIGATION TABS & TOP-RIGHT CURRENCY HUD
+       ========================================================================== */
+    .top-nav-bar {
+      position: absolute;
+      top: 36px;
+      left: 586px;
+      z-index: 10;
+      display: flex;
+      align-items: stretch;
+      height: 50px;
+    }
+
+    .nav-tab {
+      padding: 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-headline);
+      font-size: 18px;
+      font-weight: 800;
+      font-style: italic;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      margin-right: -4px;
+    }
+
+    .nav-tab.active {
+      background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%);
+      color: #0A0A0B;
+      border: 1px solid #FDE047;
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.5), inset 0 1px 0 #FFF;
+      z-index: 2;
+    }
+
+    .nav-tab:not(.active) {
+      background: linear-gradient(180deg, #1C2028 0%, #0E1015 100%);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-left: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-tab:not(.active):hover {
+      background: linear-gradient(180deg, #272C38 0%, #14171E 100%);
+      border-color: rgba(255, 255, 255, 0.35);
+      color: #FDE047;
+      transform: skewX(var(--skew-angle)) translateY(-2px);
+    }
+
+    /* Top-Right HUD Container */
+    .top-right-hud {
+      position: absolute;
+      top: 32px;
+      right: 36px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .currency-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .currency-pill {
+      height: 52px;
+      display: flex;
+      align-items: center;
+      padding: 0 8px 0 18px;
+      gap: 22px;
+    }
+
+    .currency-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .currency-item svg {
+      width: 26px;
+      height: 26px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+    }
+
+    .currency-amount {
+      font-family: var(--font-headline);
+      font-size: 21px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: 0.5px;
+    }
+
+    .store-btn {
+      padding: 6px 14px;
+      background: linear-gradient(180deg, #FDE047 0%, #F59E0B 100%);
+      color: #111827;
+      font-family: var(--font-headline);
+      font-size: 15px;
+      font-weight: 900;
+      font-style: italic;
+      border: 1px solid #FFF;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.6);
+      cursor: pointer;
+      transition: filter 0.15s ease;
+    }
+
+    .store-btn:hover {
+      filter: brightness(1.15);
+    }
+
+    /* Hexagonal Metallic Settings Gear Button */
+    .hex-settings-btn {
+      width: 64px;
+      height: 54px;
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.25s ease;
+    }
+
+    .hex-settings-btn:hover {
+      transform: scale(1.08) rotate(15deg);
+    }
+
+    .hex-settings-btn svg.hex-base {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7));
+    }
+
+    .hex-settings-btn svg.gear-icon {
+      position: relative;
+      z-index: 2;
+      width: 30px;
+      height: 30px;
+      color: #E2E8F0;
+    }
+
+    /* Notifications & Latency Sub-bar */
+    .sub-hud-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .notif-pill {
+      height: 42px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .notif-pill:hover {
+      border-color: rgba(255, 255, 255, 0.4);
+      background-color: #232833;
+    }
+
+    .notif-pill svg {
+      width: 20px;
+      height: 20px;
+      color: #FACC15;
+    }
+
+    .notif-pill span {
+      font-family: var(--font-headline);
+      font-size: 14px;
+      font-weight: 800;
+      font-style: italic;
+      letter-spacing: 1.5px;
+      color: #FFFFFF;
+    }
+
+    .ping-display {
+      font-family: var(--font-headline);
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--color-neon-green);
+      text-shadow: 0 0 10px rgba(0, 242, 121, 0.7);
+      letter-spacing: 1px;
+    }
+
+    /* ==========================================================================
+       3. LEFT MAIN MENU BUTTONS (VERTICAL STACK)
+       ========================================================================== */
+    .left-nav-stack {
+      position: absolute;
+      left: 54px;
+      top: 308px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Primary PLAY Button */
+    .btn-play-primary {
+      width: 530px;
+      height: 92px;
+      background: linear-gradient(90deg, #FDE047 0%, #F59E0B 65%, #EA580C 100%);
+      border: 2px solid #FFF;
+      border-bottom: 3px solid #B45309;
+      box-shadow: 0 12px 30px rgba(245, 158, 11, 0.5), inset 0 2px 0 rgba(255,255,255,0.7);
+      display: flex;
+      align-items: center;
+      padding: 0 0 0 28px;
+      cursor: pointer;
+      position: relative;
+      overflow: visible;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+    }
+
+    .btn-play-primary:hover {
+      transform: skewX(var(--skew-angle)) translateX(10px) scale(1.015);
+      box-shadow: 0 16px 36px rgba(245, 158, 11, 0.7), inset 0 2px 0 rgba(255,255,255,0.9);
+    }
+
+    .play-content {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      z-index: 3;
+    }
+
+    .play-flag-icon {
+      width: 52px;
+      height: 52px;
+      color: #111827;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .play-title {
+      font-family: var(--font-headline);
+      font-size: 52px;
+      font-weight: 900;
+      font-style: italic;
+      color: #0F1216;
+      letter-spacing: 2px;
+      line-height: 1;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.4);
+    }
+
+    /* Checkered pattern fade on right of PLAY button */
+    .play-checkered-overlay {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 200px;
+      background-image: 
+        linear-gradient(45deg, #111827 25%, transparent 25%),
+        linear-gradient(-45deg, #111827 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #111827 75%),
+        linear-gradient(-45deg, transparent 75%, #111827 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+      mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.85) 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.85) 100%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Trailing Yellow Slash */
+    .play-trailing-slash {
+      position: absolute;
+      right: -32px;
+      top: 0;
+      bottom: 0;
+      width: 20px;
+      background: linear-gradient(180deg, #FDE047 0%, #F59E0B 100%);
+      border: 1px solid #FFF;
+      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.5);
+    }
+
+    /* Secondary Nav Buttons (SETTINGS, GARAGE, TUNING, PAINT SHOP, PROFILE) */
+    .btn-nav-secondary {
+      width: 455px;
+      height: 76px;
+      display: flex;
+      align-items: center;
+      padding: 0;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-nav-secondary:hover {
+      transform: skewX(var(--skew-angle)) translateX(8px);
+      background-color: #222731;
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+
+    /* Left Icon Compartment with Slanted Divider */
+    .btn-icon-compartment {
+      width: 88px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid rgba(255, 255, 255, 0.12);
+      position: relative;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-icon-compartment svg {
+      width: 38px;
+      height: 38px;
+      color: #FFFFFF;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.6));
+    }
+
+    /* Button Label Text */
+    .btn-nav-label {
+      font-family: var(--font-headline);
+      font-size: 28px;
+      font-weight: 800;
+      font-style: italic;
+      letter-spacing: 2px;
+      color: #FFFFFF;
+      margin-left: 20px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+      flex: 1;
+    }
+
+    /* Right Triple-Color Angled Racing Stripe Accent */
+    .btn-racing-accent {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 14px;
+      display: flex;
+    }
+
+    .accent-stripe-1 { flex: 1; background-color: var(--color-accent-yellow); }
+    .accent-stripe-2 { flex: 1; background-color: var(--color-accent-orange); }
+    .accent-stripe-3 { flex: 2; background-color: var(--color-accent-red); box-shadow: 0 0 10px rgba(239, 68, 68, 0.7); }
+
+    /* Red NEW! Pill Badge */
+    .badge-new-slanted {
+      position: absolute;
+      right: 32px;
+      top: 50%;
+      transform: translateY(-50%) skewX(var(--skew-angle));
+      background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+      padding: 3px 14px;
+    }
+
+    .badge-new-slanted span {
+      display: inline-block;
+      transform: skewX(var(--counter-skew));
+      font-family: var(--font-headline);
+      font-size: 14px;
+      font-weight: 900;
+      font-style: italic;
+      color: #FFFFFF;
+      letter-spacing: 1px;
+    }
+
+    /* Paint Shop Cyan Spray Effect */
+    .paint-spray-glow {
+      position: absolute;
+      left: 12px;
+      top: 14px;
+      width: 44px;
+      height: 44px;
+      pointer-events: none;
+      filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.9));
+    }
+
+    /* ==========================================================================
+       4. RIGHT SIDEBAR WIDGETS
+       ========================================================================== */
+    .right-sidebar-stack {
+      position: absolute;
+      right: 36px;
+      top: 212px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 34px;
+      width: 360px;
+    }
+
+    /* Limited Time Event Card */
+    .event-card {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .event-header {
+      background: linear-gradient(90deg, #181C23 0%, #111317 100%);
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 2px solid #F59E0B;
+    }
+
+    .event-header svg {
+      width: 16px;
+      height: 16px;
+      color: #F59E0B;
+    }
+
+    .event-header span {
+      font-family: var(--font-headline);
+      font-size: 14px;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 1.5px;
+      color: #F8FAFC;
+    }
+
+    .event-art-container {
+      position: relative;
+      height: 160px;
+      background: radial-gradient(circle at 60% 40%, #ea580c 0%, #7f1d1d 40%, #0c0e12 80%);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .event-art-container svg.car-art {
+      width: 280px;
+      height: 140px;
+      filter: drop-shadow(0 0 20px #F97316);
+      transform: perspective(400px) rotateY(-12deg);
+    }
+
+    .event-info-section {
+      padding: 12px 16px;
+      background: linear-gradient(180deg, rgba(20, 24, 32, 0.95) 0%, rgba(10, 12, 16, 0.98) 100%);
+    }
+
+    .event-title {
+      font-family: var(--font-headline);
+      font-size: 26px;
+      font-weight: 900;
+      font-style: italic;
+      color: #FFFFFF;
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 12px rgba(249, 115, 22, 0.7);
+    }
+
+    .event-timer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+      margin-bottom: 12px;
+      color: #CBD5E1;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .event-timer svg {
+      width: 16px;
+      height: 16px;
+      color: #F59E0B;
+    }
+
+    .btn-event-join {
+      width: 100%;
+      height: 48px;
+      background: linear-gradient(180deg, #EF4444 0%, #DC2626 50%, #991B1B 100%);
+      border: 1.5px solid #FCA5A5;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.6), inset 0 1px 0 #FFF;
+      font-family: var(--font-headline);
+      font-size: 22px;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 2px;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-event-join:hover {
+      filter: brightness(1.18);
+      box-shadow: 0 6px 22px rgba(239, 68, 68, 0.85);
+      transform: skewX(var(--skew-angle)) translateY(-2px);
+    }
+
+    /* Online Friends Panel */
+    .friends-card {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .friends-header {
+      background: linear-gradient(90deg, #181C23 0%, #111317 100%);
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .friends-header .online-beacon {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--color-neon-green);
+      box-shadow: 0 0 8px var(--color-neon-green);
+      animation: pulseGreen 1.8s infinite;
+    }
+
+    @keyframes pulseGreen {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    .friends-header span {
+      font-family: var(--font-headline);
+      font-size: 14px;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 1.5px;
+      color: #F8FAFC;
+    }
+
+    .friends-list {
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .friend-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+    }
+
+    .friend-avatar-frame {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      padding: 2px;
+      flex-shrink: 0;
+    }
+
+    .frame-green { background: linear-gradient(135deg, #4ADE80, #15803D); }
+    .frame-gold { background: linear-gradient(135deg, #FACC15, #B45309); }
+
+    .friend-avatar-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #1E232E;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .friend-avatar-inner svg {
+      width: 32px;
+      height: 32px;
+      color: #94A3B8;
+    }
+
+    .friend-details {
+      flex: 1;
+    }
+
+    .friend-status-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--color-neon-green);
+      box-shadow: 0 0 6px var(--color-neon-green);
+    }
+
+    .status-text {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .friend-activity {
+      font-size: 12px;
+      color: #94A3B8;
+      font-weight: 600;
+    }
+
+    .friends-actions-row {
+      display: flex;
+      gap: 10px;
+      padding: 10px 14px 14px 14px;
+    }
+
+    .btn-friend-action {
+      flex: 1;
+      height: 40px;
+      background: linear-gradient(180deg, #2A303C 0%, #171A21 100%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-family: var(--font-headline);
+      font-size: 15px;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 1.5px;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-friend-action:hover {
+      background: #363D4D;
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #FDE047;
+    }
+
+    /* ==========================================================================
+       5. BOTTOM HUD BAR
+       ========================================================================== */
+    .bottom-hud-bar {
+      position: absolute;
+      bottom: 34px;
+      left: 40px;
+      right: 36px;
+      z-index: 10;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .bottom-left-group,
+    .bottom-center-group,
+    .bottom-right-group {
+      pointer-events: auto;
+    }
+
+    /* Bottom Left: Daily Missions & Mail */
+    .bottom-left-group {
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+    }
+
+    .daily-missions-card {
+      width: 325px;
+      height: 88px;
+      padding: 14px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .missions-title {
+      font-family: var(--font-headline);
+      font-size: 17px;
+      font-weight: 800;
+      font-style: italic;
+      color: #FFFFFF;
+      letter-spacing: 1px;
+    }
+
+    .missions-progress-container {
+      width: 100%;
+      height: 12px;
+      background: #090B0E;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      position: relative;
+    }
+
+    .missions-progress-fill {
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, #FDE047 0%, #F59E0B 100%);
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.7);
+    }
+
+    /* Mail Button with Notification Badge */
+    .mail-btn-card {
+      width: 105px;
+      height: 88px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .mail-btn-card:hover {
+      background-color: #242935;
+      border-color: rgba(255, 255, 255, 0.45);
+    }
+
+    .mail-btn-title {
+      font-family: var(--font-headline);
+      font-size: 16px;
+      font-weight: 800;
+      font-style: italic;
+      letter-spacing: 1px;
+      color: #FFFFFF;
+    }
+
+    .mail-btn-card svg {
+      width: 34px;
+      height: 34px;
+      color: #FFFFFF;
+    }
+
+    .mail-badge-counter {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #DC2626;
+      border: 2px solid #FFF;
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.8);
+      font-family: var(--font-headline);
+      font-size: 14px;
+      font-weight: 900;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulseRedBadge 2s infinite;
+    }
+
+    @keyframes pulseRedBadge {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    /* Bottom Center: News & Updates Banner */
+    .news-banner-card {
+      width: 720px;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .news-banner-card:hover {
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .news-tag-hanging {
+      position: absolute;
+      top: -24px;
+      left: 20px;
+      background: #0F1216;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-bottom: none;
+      padding: 2px 14px;
+      font-family: var(--font-headline);
+      font-size: 12px;
+      font-weight: 900;
+      font-style: italic;
+      color: #94A3B8;
+      letter-spacing: 1px;
+    }
+
+    .news-text {
+      font-family: var(--font-headline);
+      font-size: 21px;
+      font-weight: 800;
+      font-style: italic;
+      letter-spacing: 1.5px;
+      color: #F8FAFC;
+    }
+
+    .news-text span.highlight {
+      color: #F59E0B;
+    }
+
+    /* Bottom Right: Version & Season Pass */
+    .bottom-right-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .game-version-tag {
+      font-family: var(--font-headline);
+      font-size: 16px;
+      font-weight: 700;
+      color: #64748B;
+      letter-spacing: 1px;
+    }
+
+    .season-pass-card {
+      width: 375px;
+      height: 94px;
+      background: linear-gradient(90deg, #181B22 0%, #1F150B 50%, #451A03 100%);
+      border: 1.5px solid #F59E0B;
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px 0 24px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .season-pass-card:hover {
+      transform: skewX(var(--skew-angle)) translateY(-3px) scale(1.02);
+      box-shadow: 0 12px 30px rgba(245, 158, 11, 0.6);
+    }
+
+    .season-pass-text-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .season-pass-title {
+      font-family: var(--font-headline);
+      font-size: 22px;
+      font-weight: 900;
+      font-style: italic;
+      color: #FDE047;
+      letter-spacing: 1px;
+      line-height: 1.1;
+    }
+
+    .season-pass-sub {
+      font-size: 13px;
+      font-weight: 700;
+      color: #E2E8F0;
+      letter-spacing: 1.5px;
+    }
+
+    .season-pass-car-preview {
+      width: 140px;
+      height: 60px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .season-pass-car-preview svg {
+      width: 130px;
+      height: 55px;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));
+    }
+
+    .season-pass-level-unlock {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .season-pass-level-unlock .lv-number {
+      font-family: var(--font-headline);
+      font-size: 26px;
+      font-weight: 900;
+      color: #FFFFFF;
+      line-height: 1;
+      text-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
+    }
+
+    .season-pass-level-unlock .unlock-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: #F59E0B;
+      letter-spacing: 1px;
+    }
+
+    /* ==========================================================================
+       MODAL POPUP SYSTEM (PLAY, SETTINGS, GARAGE, ETC.)
+       ========================================================================== */
+    .hud-modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(4, 6, 9, 0.85);
+      backdrop-filter: blur(14px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.25s ease forwards;
+    }
+
+    .hud-modal-overlay.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .hud-modal-box {
+      width: 1000px;
+      max-height: 700px;
+      background: linear-gradient(180deg, #181C24 0%, #0D0F14 100%);
+      border: 2px solid #F59E0B;
+      box-shadow: 0 0 50px rgba(245, 158, 11, 0.4);
+      padding: 32px 40px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .modal-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+
+    .modal-title {
+      font-family: var(--font-headline);
+      font-size: 36px;
+      font-weight: 900;
+      font-style: italic;
+      color: #FFFFFF;
+      letter-spacing: 2px;
+    }
+
+    .modal-close-btn {
+      width: 44px;
+      height: 44px;
+      background: #20242D;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      font-family: var(--font-headline);
+      font-size: 20px;
+      font-weight: 900;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close-btn:hover {
+      background: #EF4444;
+      border-color: #EF4444;
+    }
+
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      font-size: 16px;
+      color: #CBD5E1;
+      line-height: 1.6;
+    }
+
+    /* Racing Mode Cards Grid inside Play Modal */
+    .game-modes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .mode-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .mode-card:hover {
+      border-color: #F59E0B;
+      background: rgba(245, 158, 11, 0.08);
+      transform: translateY(-4px);
+    }
+
+    .mode-card h4 {
+      font-family: var(--font-headline);
+      font-size: 22px;
+      font-weight: 900;
+      font-style: italic;
+      color: #FDE047;
+    }
+
+    .mode-card p {
+      font-size: 13.5px;
+      color: #94A3B8;
+    }
+
+    .btn-start-mode {
+      margin-top: auto;
+      height: 42px;
+      background: linear-gradient(180deg, #FDE047 0%, #F59E0B 100%);
+      color: #0F1216;
+      font-family: var(--font-headline);
+      font-size: 16px;
+      font-weight: 900;
+      font-style: italic;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Toast Notification HUD */
+    #hud-toast {
+      position: absolute;
+      top: 104px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-30px);
+      background: linear-gradient(90deg, #1E232E 0%, #151821 100%);
+      border: 1.5px solid #F59E0B;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), 0 0 16px rgba(245, 158, 11, 0.5);
+      padding: 10px 28px;
+      font-family: var(--font-headline);
+      font-size: 18px;
+      font-weight: 800;
+      font-style: italic;
+      color: #FDE047;
+      letter-spacing: 1px;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #hud-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- VIEWPORT SCALER (1920x1080 Aspect Ratio Fixed Matrix) -->
+  <div id="viewport-scaler">
+
+    <!-- LAYER 1: Background 3D Viewport -->
+    <div class="backdrop-layer"></div>
+    <div class="backdrop-vignette"></div>
+
+    <!-- ====================================================================
+         1. TOP-LEFT PROFILE CARD
+         ==================================================================== -->
+    <div class="profile-card-container">
+      <div class="profile-card carbon-surface skewed">
+        <!-- Dual Chrome Avatar Ring -->
+        <div class="avatar-emblem unskew">
+          <div class="avatar-chrome-ring">
+            <div class="avatar-inner-ring">
+              <!-- Racing Helmet SVG Vector -->
+              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Visor reflections & aerodynamic helmet shell -->
+                <path d="M12 36C12 21 21 11 36 11C48 11 54 19 54 31C54 39 48 49 38 51C34 52 28 52 24 51L12 47V36Z" fill="#F1F5F9"/>
+                <!-- Racing stripes Red/Blue -->
+                <path d="M26 12C32 12 36 14 40 18L32 20C28 16 26 14 24 12H26Z" fill="#EF4444"/>
+                <path d="M30 12C36 13 42 16 46 22L40 24C36 18 32 15 28 12H30Z" fill="#0284C7"/>
+                <!-- Visor Aperture -->
+                <path d="M16 28H42C46 28 48 31 46 36L42 41H20C16 41 14 38 14 34V30C14 28.9 14.9 28 16 28Z" fill="#0F172A"/>
+                <!-- Gold Visor Reflection Streak -->
+                <path d="M20 31H38L35 37H17L20 31Z" fill="url(#visorGrad)" opacity="0.85"/>
+                <!-- Chin vents -->
+                <line x1="22" y1="45" x2="32" y2="45" stroke="#475569" stroke-width="2"/>
+                <line x1="24" y1="48" x2="30" y2="48" stroke="#475569" stroke-width="2"/>
+                <defs>
+                  <linearGradient id="visorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#38BDF8"/>
+                    <stop offset="50%" stop-color="#FACC15"/>
+                    <stop offset="100%" stop-color="#EA580C"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pilot Credentials -->
+        <div class="profile-info unskew">
+          <div class="profile-license">FIA SUPER LICENSE // CATEGORY S1</div>
+          <div class="profile-pilot-row">
+            <div class="profile-username">rawrrr</div>
+          </div>
+          <div class="profile-subtag">PILOT ID #44-GR // RED BULL ACADEMY</div>
+          
+          <!-- XP Bar -->
+          <div class="profile-xp-row">
+            <div class="xp-bar-track">
+              <div class="xp-bar-fill"></div>
+            </div>
+            <div class="xp-label">236 / 250 XP</div>
+          </div>
+        </div>
+
+        <!-- Level 0 Badge -->
+        <div class="profile-level-badge unskew">
+          <!-- Checkered mini flag -->
+          <svg class="checker-icon" viewBox="0 0 24 12" fill="none">
+            <rect width="6" height="6" fill="#F59E0B"/>
+            <rect x="12" width="6" height="6" fill="#F59E0B"/>
+            <rect x="6" y="6" width="6" height="6" fill="#F59E0B"/>
+            <rect x="18" y="6" width="6" height="6" fill="#F59E0B"/>
+            <rect x="6" width="6" height="6" fill="#1F2937"/>
+            <rect x="18" width="6" height="6" fill="#1F2937"/>
+            <rect y="6" width="6" height="6" fill="#1F2937"/>
+            <rect x="12" y="6" width="6" height="6" fill="#1F2937"/>
+          </svg>
+          <div class="level-text">Lv. 0</div>
+        </div>
+      </div>
+
+      <!-- Hanging Tier Badge -->
+      <div class="tier-sub-badge skewed">
+        <svg class="unskew" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M5 3H19V5H21C21.55 5 22 5.45 22 6V8C22 10.21 20.21 12 18 12H16.9C16.42 13.72 15.06 15.11 13.33 15.65V18H16V20H8V18H10.67V15.65C8.94 15.11 7.58 13.72 7.1 12H6C3.79 12 2 10.21 2 8V6C2 5.45 2.45 5 3 5H5V3M4 7V8C4 9.1 4.9 10 6 10H7V7H4M17 7V10H18C19.1 10 20 9.1 20 8V7H17Z"/>
+        </svg>
+        <span class="unskew">AMATEUR TIER I</span>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         2. TOP-CENTER NAVIGATION TABS & TOP-RIGHT CURRENCY HUD
+         ==================================================================== -->
+    <div class="top-nav-bar">
+      <div class="nav-tab active skewed" onclick="handleNavTab('HOME')"><span class="unskew">HOME</span></div>
+      <div class="nav-tab skewed" onclick="handleNavTab('CAREER')"><span class="unskew">CAREER</span></div>
+      <div class="nav-tab skewed" onclick="handleNavTab('MULTIPLAYER')"><span class="unskew">MULTIPLAYER</span></div>
+      <div class="nav-tab skewed" onclick="handleNavTab('SHOP')"><span class="unskew">SHOP</span></div>
+      <div class="nav-tab skewed" onclick="handleNavTab('COMMUNITY')"><span class="unskew">COMMUNITY</span></div>
+    </div>
+
+    <div class="top-right-hud">
+      <div class="currency-row">
+        <!-- Currency Pill (Coins + Gems + Store) -->
+        <div class="currency-pill carbon-surface skewed">
+          <!-- Gold Coins -->
+          <div class="currency-item unskew">
+            <svg viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="14" fill="url(#coinOuter)" stroke="#FDE047" stroke-width="1.5"/>
+              <circle cx="16" cy="16" r="10" stroke="#FDE047" stroke-width="1" stroke-dasharray="2 2"/>
+              <path d="M16 8L18 13H23L19 16L20.5 21L16 18L11.5 21L13 16L9 13H14L16 8Z" fill="#FDE047"/>
+              <defs>
+                <linearGradient id="coinOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#FDE047"/>
+                  <stop offset="50%" stop-color="#D97706"/>
+                  <stop offset="100%" stop-color="#78350F"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span class="currency-amount">29,503,500</span>
+          </div>
+
+          <!-- Blue Gems -->
+          <div class="currency-item unskew">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M9 7L3 14L16 29L29 14L23 7H9Z" fill="url(#gemOuter)" stroke="#38BDF8" stroke-width="1.5"/>
+              <path d="M3 14H29L16 29L3 14Z" fill="url(#gemFacets)" opacity="0.65"/>
+              <path d="M9 7L16 14L23 7M16 14V29" stroke="#E0F2FE" stroke-width="1"/>
+              <defs>
+                <linearGradient id="gemOuter" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#38BDF8"/>
+                  <stop offset="60%" stop-color="#0284C7"/>
+                  <stop offset="100%" stop-color="#0369A1"/>
+                </linearGradient>
+                <linearGradient id="gemFacets" x1="50%" y1="0%" x2="50%" y2="100%">
+                  <stop offset="0%" stop-color="#BAE6FD"/>
+                  <stop offset="100%" stop-color="#0369A1"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span class="currency-amount">31,250</span>
+          </div>
+
+          <!-- Store Button -->
+          <div class="store-btn unskew" onclick="openStoreModal()">[+ STORE]</div>
+        </div>
+
+        <!-- Hexagonal Settings Gear Button -->
+        <div class="hex-settings-btn" onclick="openModal('SettingsModal')">
+          <svg class="hex-base" viewBox="0 0 64 54">
+            <polygon points="16,2 48,2 62,27 48,52 16,52 2,27" fill="url(#hexMetal)" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+            <polygon points="18,5 46,5 59,27 46,49 18,49 5,27" fill="none" stroke="rgba(0,0,0,0.6)" stroke-width="1.5"/>
+            <defs>
+              <linearGradient id="hexMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#4B5563"/>
+                <stop offset="50%" stop-color="#1F2937"/>
+                <stop offset="100%" stop-color="#111827"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <svg class="gear-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19.14 12.94C19.18 12.63 19.2 12.32 19.2 12C19.2 11.68 19.18 11.37 19.14 11.06L21.16 9.48C21.34 9.34 21.39 9.08 21.28 8.88L19.36 5.55C19.24 5.35 19 5.27 18.78 5.35L16.4 6.31C15.91 5.93 15.37 5.61 14.79 5.37L14.43 2.84C14.39 2.61 14.19 2.45 13.96 2.45H10.14C9.91 2.45 9.71 2.61 9.67 2.84L9.31 5.37C8.73 5.61 8.19 5.94 7.7 6.31L5.32 5.35C5.1 5.27 4.86 5.35 4.74 5.55L2.82 8.88C2.71 9.08 2.76 9.34 2.94 9.48L4.96 11.06C4.92 11.37 4.9 11.69 4.9 12C4.9 12.31 4.92 12.63 4.96 12.94L2.94 14.52C2.76 14.66 2.71 14.92 2.82 15.12L4.74 18.45C4.86 18.65 5.1 18.73 5.32 18.65L7.7 17.69C8.19 18.07 8.73 18.39 9.31 18.63L9.67 21.16C9.71 21.39 9.91 21.55 10.14 21.55H13.96C14.19 21.55 14.39 21.39 14.43 21.16L14.79 18.63C15.37 18.39 15.91 18.06 16.4 17.69L18.78 18.65C19 18.73 19.24 18.65 19.36 18.45L21.28 15.12C21.39 14.92 21.34 14.66 21.16 14.52L19.14 12.94ZM12 15.5C10.07 15.5 8.5 13.93 8.5 12C8.5 10.07 10.07 8.5 12 8.5C13.93 8.5 15.5 10.07 15.5 12C15.5 13.93 13.93 15.5 12 15.5Z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Notifications & Latency MS -->
+      <div class="sub-hud-row">
+        <div class="notif-pill carbon-surface skewed" onclick="showToast('Tidak ada notifikasi baru.')">
+          <svg class="unskew" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.89 22 12 22ZM18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z"/>
+          </svg>
+          <span class="unskew">NOTIFICATIONS</span>
+        </div>
+        <div class="ping-display">MS: 24</div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         3. LEFT MAIN MENU BUTTONS (VERTICAL STACK)
+         ==================================================================== -->
+    <div class="left-nav-stack">
+      <!-- 1. PRIMARY PLAY BUTTON -->
+      <div class="btn-play-primary skewed" onclick="openModal('PlayModal')">
+        <div class="play-content unskew">
+          <!-- Waving Checkered Flag SVG -->
+          <svg class="play-flag-icon" viewBox="0 0 32 32" fill="currentColor">
+            <path d="M4 4H7V28H4V4ZM8 4H28L25 11L28 18H8V4ZM10 6V9H13V6H10ZM13 9V12H16V9H13ZM16 6V9H19V6H16ZM19 9V12H22V9H19ZM22 6V9H25.5L24.2 9H22V6ZM10 12V15H13V12H10ZM13 15V16H16V15H13ZM16 12V15H19V12H16ZM19 15V16H22V15H19ZM22 12V15H24.8L23.5 12H22Z"/>
+          </svg>
+          <span class="play-title">PLAY</span>
+        </div>
+        <!-- Checkered Overlay on Right -->
+        <div class="play-checkered-overlay"></div>
+        <!-- Trailing yellow slash -->
+        <div class="play-trailing-slash"></div>
+        <!-- Glint Star Sparkle -->
+        <svg class="glint-star unskew" style="top: -6px; right: 8px;" viewBox="0 0 24 24" fill="#FFF">
+          <polygon points="12,0 14,9 24,12 14,15 12,24 10,15 0,12 10,9"/>
+        </svg>
+      </div>
+
+      <!-- 2. SETTINGS BUTTON -->
+      <div class="btn-nav-secondary carbon-surface skewed" onclick="openModal('SettingsModal')">
+        <div class="btn-icon-compartment">
+          <svg class="unskew" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19.14 12.94C19.18 12.63 19.2 12.32 19.2 12C19.2 11.68 19.18 11.37 19.14 11.06L21.16 9.48C21.34 9.34 21.39 9.08 21.28 8.88L19.36 5.55C19.24 5.35 19 5.27 18.78 5.35L16.4 6.31C15.91 5.93 15.37 5.61 14.79 5.37L14.43 2.84C14.39 2.61 14.19 2.45 13.96 2.45H10.14C9.91 2.45 9.71 2.61 9.67 2.84L9.31 5.37C8.73 5.61 8.19 5.94 7.7 6.31L5.32 5.35C5.1 5.27 4.86 5.35 4.74 5.55L2.82 8.88C2.71 9.08 2.76 9.34 2.94 9.48L4.96 11.06C4.92 11.37 4.9 11.69 4.9 12C4.9 12.31 4.92 12.63 4.96 12.94L2.94 14.52C2.76 14.66 2.71 14.92 2.82 15.12L4.74 18.45C4.86 18.65 5.1 18.73 5.32 18.65L7.7 17.69C8.19 18.07 8.73 18.39 9.31 18.63L9.67 21.16C9.71 21.39 9.91 21.55 10.14 21.55H13.96C14.19 21.55 14.39 21.39 14.43 21.16L14.79 18.63C15.37 18.39 15.91 18.06 16.4 17.69L18.78 18.65C19 18.73 19.24 18.65 19.36 18.45L21.28 15.12C21.39 14.92 21.34 14.66 21.16 14.52L19.14 12.94ZM12 15.5C10.07 15.5 8.5 13.93 8.5 12C8.5 10.07 10.07 8.5 12 8.5C13.93 8.5 15.5 10.07 15.5 12C15.5 13.93 13.93 15.5 12 15.5Z"/>
+          </svg>
+        </div>
+        <span class="btn-nav-label unskew">SETTINGS</span>
+        <div class="btn-racing-accent">
+          <div class="accent-stripe-1"></div>
+          <div class="accent-stripe-2"></div>
+          <div class="accent-stripe-3"></div>
+        </div>
+        <svg class="glint-star unskew" style="top: -4px; right: 2px;" viewBox="0 0 24 24" fill="#FACC15">
+          <polygon points="12,0 14,9 24,12 14,15 12,24 10,15 0,12 10,9"/>
+        </svg>
+      </div>
+
+      <!-- 3. GARAGE BUTTON (WITH NEW! BADGE) -->
+      <div class="btn-nav-secondary carbon-surface skewed" onclick="openModal('GarageModal')">
+        <div class="btn-icon-compartment">
+          <svg class="unskew" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5H6.5C5.84 5 5.28 5.42 5.08 6.01L3 12V20C3 20.55 3.45 21 4 21H5C5.55 21 6 20.55 6 20V19H18V20C18 20.55 18.45 21 19 21H20C20.55 21 21 20.55 21 20V12L18.92 6.01ZM6.85 7H17.14L18.22 10.11H5.77L6.85 7ZM7.5 16C6.67 16 6 15.33 6 14.5C6 13.67 6.67 13 7.5 13C8.33 13 9 13.67 9 14.5C9 15.33 8.33 16 7.5 16ZM16.5 16C15.67 16 15 15.33 15 14.5C15 13.67 15.67 13 16.5 13C17.33 13 18 13.67 18 14.5C18 15.33 17.33 16 16.5 16Z"/>
+          </svg>
+        </div>
+        <span class="btn-nav-label unskew">GARAGE</span>
+        <div class="badge-new-slanted"><span>NEW!</span></div>
+        <div class="btn-racing-accent">
+          <div class="accent-stripe-1"></div>
+          <div class="accent-stripe-2"></div>
+          <div class="accent-stripe-3"></div>
+        </div>
+        <svg class="glint-star unskew" style="top: -4px; right: 2px;" viewBox="0 0 24 24" fill="#FACC15">
+          <polygon points="12,0 14,9 24,12 14,15 12,24 10,15 0,12 10,9"/>
+        </svg>
+      </div>
+
+      <!-- 4. TUNING BUTTON -->
+      <div class="btn-nav-secondary carbon-surface skewed" onclick="openModal('TuningModal')">
+        <div class="btn-icon-compartment">
+          <svg class="unskew" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22.7 19L13.6 9.9C14.5 7.6 14 4.9 12.1 3C10.1 1 7.1 0.6 4.7 1.7L9 6L6 9L1.6 4.7C0.4 7.1 0.9 10.1 2.9 12.1C4.8 14 7.5 14.5 9.8 13.6L18.9 22.7C19.3 23.1 19.9 23.1 20.3 22.7L22.6 20.4C23.1 20 23.1 19.4 22.7 19Z"/>
+          </svg>
+        </div>
+        <span class="btn-nav-label unskew">TUNING</span>
+        <div class="btn-racing-accent">
+          <div class="accent-stripe-1"></div>
+          <div class="accent-stripe-2"></div>
+          <div class="accent-stripe-3"></div>
+        </div>
+      </div>
+
+      <!-- 5. PAINT SHOP BUTTON (CYAN SPRAY GLOW + STAR FLARE + NEW! BADGE) -->
+      <div class="btn-nav-secondary carbon-surface skewed" onclick="openModal('PaintShopModal')">
+        <div class="btn-icon-compartment">
+          <!-- Spray Plume SVG -->
+          <svg class="paint-spray-glow unskew" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="10" fill="url(#cyanGlow)" opacity="0.6"/>
+            <path d="M12 16L4 12M12 16L2 16M12 16L4 20" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round"/>
+            <defs>
+              <radialGradient id="cyanGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#06B6D4"/>
+                <stop offset="100%" stop-color="#06B6D4" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+          </svg>
+          <svg class="unskew" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 12H18V8C18 6.9 17.1 6 16 6H15V3H13V6H11V3H9V6H8C6.9 6 6 6.9 6 8V12H5C3.9 12 3 12.9 3 14V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V14C21 12.9 20.1 12 19 12ZM10 8H14V12H10V8Z"/>
+          </svg>
+        </div>
+        <span class="btn-nav-label unskew">PAINT SHOP</span>
+        <div class="badge-new-slanted"><span>NEW!</span></div>
+        <div class="btn-racing-accent">
+          <div class="accent-stripe-1"></div>
+          <div class="accent-stripe-2"></div>
+          <div class="accent-stripe-3"></div>
+        </div>
+        <!-- Bottom Flare Star on PAINT SHOP -->
+        <svg class="glint-star unskew" style="bottom: -5px; left: 52%;" viewBox="0 0 24 24" fill="#FDE047">
+          <polygon points="12,0 14,9 24,12 14,15 12,24 10,15 0,12 10,9"/>
+        </svg>
+      </div>
+
+      <!-- 6. PROFILE BUTTON -->
+      <div class="btn-nav-secondary carbon-surface skewed" onclick="openModal('ProfileModal')">
+        <div class="btn-icon-compartment">
+          <svg class="unskew" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/>
+          </svg>
+        </div>
+        <span class="btn-nav-label unskew">PROFILE</span>
+        <div class="btn-racing-accent">
+          <div class="accent-stripe-1"></div>
+          <div class="accent-stripe-2"></div>
+          <div class="accent-stripe-3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         4. RIGHT SIDEBAR WIDGETS
+         ==================================================================== -->
+    <div class="right-sidebar-stack">
+      <!-- Limited Time Event Card -->
+      <div class="event-card carbon-surface">
+        <div class="event-header">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+          <span>LIMITED TIME EVENT</span>
+        </div>
+        <!-- Procedural Artwork container with supercar vector & fiery trails -->
+        <div class="event-art-container">
+          <svg class="car-art" viewBox="0 0 200 80" fill="none">
+            <!-- Flame jet trails -->
+            <path d="M30 45 C10 45, 0 50, 0 52 C0 54, 10 55, 30 55 Z" fill="url(#flameTrail)"/>
+            <path d="M45 48 C20 48, 10 50, 10 52 C10 54, 20 54, 45 54 Z" fill="#FDE047"/>
+            <!-- Supercar Chassis Silhouette -->
+            <path d="M35 52 L55 38 L95 32 L140 34 L175 42 L185 52 L175 58 L145 60 L60 60 Z" fill="#1E293B" stroke="#F97316" stroke-width="2"/>
+            <!-- Canopy & Cockpit -->
+            <path d="M75 35 L95 24 L130 25 L145 35 Z" fill="#090D16" stroke="#38BDF8" stroke-width="1.5"/>
+            <!-- Wheels & Glowing brake calipers -->
+            <circle cx="65" cy="56" r="12" fill="#0F172A" stroke="#E2E8F0" stroke-width="2.5"/>
+            <circle cx="65" cy="56" r="5" fill="#EF4444"/>
+            <circle cx="155" cy="56" r="12" fill="#0F172A" stroke="#E2E8F0" stroke-width="2.5"/>
+            <circle cx="155" cy="56" r="5" fill="#EF4444"/>
+            <!-- Headlight LED streaks -->
+            <line x1="175" y1="46" x2="198" y2="48" stroke="#38BDF8" stroke-width="3" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="flameTrail" x1="100%" y1="50%" x2="0%" y2="50%">
+                <stop offset="0%" stop-color="#EF4444"/>
+                <stop offset="60%" stop-color="#F97316"/>
+                <stop offset="100%" stop-color="#F97316" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="event-info-section">
+          <div class="event-title">NIGHT SPEEDRUN</div>
+          <div class="event-timer">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM12.5 7H11V13L16.2 16.2L17 14.9L12.5 12.2V7Z"/></svg>
+            <span>03d 12h 45m</span>
+          </div>
+          <button class="btn-event-join skewed" onclick="showToast('Event Night Speedrun dimulai dalam 03d 12h 45m!')">
+            <span class="unskew">JOIN</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Online Friends Card -->
+      <div class="friends-card carbon-surface">
+        <div class="friends-header">
+          <div class="online-beacon"></div>
+          <span>ONLINE FRIENDS (5/12)</span>
+        </div>
+        <div class="friends-list">
+          <!-- Friend 1 -->
+          <div class="friend-row">
+            <div class="friend-avatar-frame frame-green">
+              <div class="friend-avatar-inner">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
+              </div>
+            </div>
+            <div class="friend-details">
+              <div class="friend-status-line">
+                <div class="status-dot"></div>
+                <div class="status-text">Aktif</div>
+              </div>
+              <div class="friend-activity">In Lobby</div>
+            </div>
+          </div>
+          <!-- Friend 2 -->
+          <div class="friend-row">
+            <div class="friend-avatar-frame frame-gold">
+              <div class="friend-avatar-inner">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/></svg>
+              </div>
+            </div>
+            <div class="friend-details">
+              <div class="friend-status-line">
+                <div class="status-dot"></div>
+                <div class="status-text">Aktif</div>
+              </div>
+              <div class="friend-activity">In Race</div>
+            </div>
+          </div>
+        </div>
+        <div class="friends-actions-row">
+          <button class="btn-friend-action skewed" onclick="showToast('Membuka obrolan teman...')"><span class="unskew">CHAT</span></button>
+          <button class="btn-friend-action skewed" onclick="showToast('Undangan balapan telah dikirim!')"><span class="unskew">INVITE</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         5. BOTTOM HUD BAR
+         ==================================================================== -->
+    <div class="bottom-hud-bar">
+      <!-- Bottom Left: Daily Missions & Mail -->
+      <div class="bottom-left-group">
+        <div class="daily-missions-card carbon-surface skewed" onclick="showToast('Daily Missions: 3/5 Selesai!')">
+          <div class="missions-title unskew">DAILY MISSIONS (3/5)</div>
+          <div class="missions-progress-container unskew">
+            <div class="missions-progress-fill"></div>
+          </div>
+          <div class="btn-racing-accent">
+            <div class="accent-stripe-1"></div>
+            <div class="accent-stripe-2"></div>
+            <div class="accent-stripe-3"></div>
+          </div>
+        </div>
+
+        <div class="mail-btn-card carbon-surface skewed" onclick="showToast('Kotak Masuk: 2 pesan balapan belum dibaca.')">
+          <div class="mail-badge-counter unskew">2</div>
+          <span class="mail-btn-title unskew">MAIL</span>
+          <svg class="unskew" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z"/>
+          </svg>
+          <div class="btn-racing-accent">
+            <div class="accent-stripe-1"></div>
+            <div class="accent-stripe-2"></div>
+            <div class="accent-stripe-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Center: News & Updates Banner -->
+      <div class="bottom-center-group">
+        <div class="news-banner-card carbon-surface skewed" onclick="showToast('Patch 1.4: New Tracks, Cars & Physics Upgrade!')">
+          <div class="news-tag-hanging unskew">NEWS & UPDATES</div>
+          <div class="news-text unskew"><span class="highlight">PATCH 1.4 LIVE:</span> NEW TRACKS & CARS</div>
+          <div class="btn-racing-accent">
+            <div class="accent-stripe-1"></div>
+            <div class="accent-stripe-2"></div>
+            <div class="accent-stripe-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Right: Game Version & Season Pass -->
+      <div class="bottom-right-group">
+        <div class="game-version-tag">v1.04.8</div>
+
+        <div class="season-pass-card skewed" onclick="showToast('Season Pass Lv. 15 unlock tersedia!')">
+          <div class="season-pass-text-group unskew">
+            <span class="season-pass-title">SEASON</span>
+            <span class="season-pass-sub">PASS</span>
+          </div>
+          <!-- White Sports Car Vector Silhouette -->
+          <div class="season-pass-car-preview unskew">
+            <svg viewBox="0 0 100 40" fill="none">
+              <path d="M10 26 L22 18 L46 14 L74 15 L92 20 L96 26 L90 28 L10 28 Z" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.2"/>
+              <path d="M35 16 L48 10 L68 11 L74 16 Z" fill="#0F172A" stroke="#38BDF8" stroke-width="1"/>
+              <circle cx="26" cy="27" r="6" fill="#090D16" stroke="#E2E8F0" stroke-width="1.5"/>
+              <circle cx="78" cy="27" r="6" fill="#090D16" stroke="#E2E8F0" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div class="season-pass-level-unlock unskew">
+            <span class="lv-number">Lv. 15</span>
+            <span class="unlock-label">UNLOCK</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         HUD MODALS (PLAY, SETTINGS, GARAGE, ETC.)
+         ==================================================================== -->
+    <div id="modalOverlay" class="hud-modal-overlay">
+      <div class="hud-modal-box">
+        <div class="modal-header-row">
+          <div id="modalTitle" class="modal-title">MODAL TITLE</div>
+          <div class="modal-close-btn" onclick="closeModal()">✕</div>
+        </div>
+        <div id="modalBody" class="modal-body">
+          <!-- Dynamic Content Injected by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST HUD NOTIFICATION -->
+    <div id="hud-toast">Notification Message</div>
+
+  </div> <!-- /viewport-scaler -->
+
+  <!-- ========================================================================
+       JAVASCRIPT: 4K RESPONSIVE SCALING, SOUND SYNTHESIS & INTERACTION
+       ======================================================================== -->
+  <script>
+    // 1. Auto-Responsive Viewport Scaling (Retina / 4K / Mobile Fit)
+    function fitViewport() {
+      const scaler = document.getElementById('viewport-scaler');
+      const baseWidth = 1920;
+      const baseHeight = 1080;
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      
+      const scale = Math.min(windowWidth / baseWidth, windowHeight / baseHeight);
+      scaler.style.transform = `scale(${scale})`;
+    }
+
+    window.addEventListener('resize', fitViewport);
+    window.addEventListener('DOMContentLoaded', fitViewport);
+
+    // 2. Pure Web Audio API Sound Generator (Zero External Audio Dependency)
+    let audioCtx = null;
+    function playUiBeep(freq = 880, duration = 0.08, type = 'sine') {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    // Attach click beeps to all interactive elements
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('button, .nav-tab, .btn-play-primary, .btn-nav-secondary, .season-pass-card, .store-btn, .hex-settings-btn, .notif-pill, .daily-missions-card, .mail-btn-card, .news-banner-card')) {
+        playUiBeep(1050, 0.07, 'triangle');
+      }
+    });
+
+    // 3. Toast Notifications
+    let toastTimeout = null;
+    function showToast(msg) {
+      const toast = document.getElementById('hud-toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      playUiBeep(1320, 0.12, 'sine');
+      
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    // 4. Modal Dialogs
+    function openModal(type) {
+      const overlay = document.getElementById('modalOverlay');
+      const title = document.getElementById('modalTitle');
+      const body = document.getElementById('modalBody');
+
+      if (type === 'PlayModal') {
+        title.textContent = 'SELECT RACE MODE';
+        body.innerHTML = `
+          <div class="game-modes-grid">
+            <div class="mode-card">
+              <h4>GRAND PRIX</h4>
+              <p>Full race weekend with qualifying session, 50-lap sprint, dynamic weather, and championship points.</p>
+              <button class="btn-start-mode" onclick="showToast('Starting Grand Prix...')">LAUNCH RACE</button>
+            </div>
+            <div class="mode-card">
+              <h4>TIME TRIAL</h4>
+              <p>Solo hot lap attack against ghost cars and global leaderboards. Perfect your lines and braking zones.</p>
+              <button class="btn-start-mode" onclick="showToast('Starting Time Trial...')">LAUNCH ATTACK</button>
+            </div>
+            <div class="mode-card">
+              <h4>STREET SPRINT</h4>
+              <p>High-speed waterfront circuit featuring elevated bridges, neon-lit alleys, and high-stakes pink slip wagers.</p>
+              <button class="btn-start-mode" onclick="showToast('Starting Street Sprint...')">LAUNCH SPRINT</button>
+            </div>
+          </div>
+        `;
+      } else if (type === 'SettingsModal') {
+        title.textContent = 'SYSTEM SETTINGS';
+        body.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 16px; max-width: 600px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.03);">
+              <span>Graphics Preset:</span>
+              <span style="color: #F59E0B; font-weight: bold;">ULTRA (4K RETINA)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.03);">
+              <span>Frame Rate Cap:</span>
+              <span style="color: #F59E0B; font-weight: bold;">UNLOCKED (144+ FPS)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.03);">
+              <span>Master Volume:</span>
+              <input type="range" min="0" max="100" value="85" style="accent-color: #F59E0B;">
+            </div>
+          </div>
+        `;
+      } else if (type === 'GarageModal') {
+        title.textContent = 'VEHICLE GARAGE';
+        body.innerHTML = `
+          <p>Equipped Vehicle: <strong style="color: #F59E0B;">Porsche Mission X Concept (Hypercar)</strong></p>
+          <div style="display: flex; gap: 20px; margin-top: 20px;">
+            <div style="padding: 16px; border: 1.5px solid #F59E0B; background: rgba(245,158,11,0.1); width: 200px;">
+              <h4 style="color:#FFF;">Porsche Mission X</h4>
+              <p style="font-size: 12px; color:#94A3B8;">Power: 1500 HP | Weight: 1400 kg</p>
+            </div>
+            <div style="padding: 16px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.02); width: 200px;">
+              <h4 style="color:#FFF;">Kia Seltos Turbo</h4>
+              <p style="font-size: 12px; color:#94A3B8;">Power: 280 HP | Weight: 1350 kg</p>
+            </div>
+          </div>
+        `;
+      } else {
+        title.textContent = type.replace('Modal', '').toUpperCase();
+        body.innerHTML = `<p>Konten untuk menu <strong>${type.replace('Modal', '')}</strong> telah aktif dan berjalan dalam mode 4K Native.</p>`;
+      }
+
+      overlay.classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    function handleNavTab(tabName) {
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.textContent.trim() === tabName);
+      });
+      if (tabName !== 'HOME') {
+        showToast(`Fitur ${tabName} akan segera hadir!`);
+      } else {
+        closeModal();
+      }
+    }
+
+    function openStoreModal() {
+      openModal('StoreModal');
+    }
+
+    // Close modal on Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</body>
+</html>

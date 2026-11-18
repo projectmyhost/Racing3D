@@ -1,0 +1,216 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scenes/leaderboard/LeaderboardScreen.gd" id="1_leaderboard"]
+[ext_resource type="Script" path="res://scripts/ui/RaceButton.gd" id="2_button"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.09, 0.094, 0.153, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header_row"]
+bg_color = Color(0.18, 0.19, 0.28, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 2
+border_color = Color(1, 0.709, 0.106, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_scroll_bg"]
+bg_color = Color(0.11, 0.118, 0.18, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.20, 0.21, 0.30, 0.6)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="LeaderboardScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_leaderboard")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 30
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderBar" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/HeaderBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 48)
+layout_mode = 2
+text = "◀ BACK"
+script = ExtResource("2_button")
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.957, 0.949, 0.949, 1)
+theme_override_font_sizes/font_size = 32
+text = "LOCAL LEADERBOARD"
+vertical_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.659, 0.663, 0.722, 1)
+theme_override_font_sizes/font_size = 18
+text = "// CIRCUIT BEST LAP TIMES & RECORDS"
+vertical_alignment = 2
+
+[node name="FilterBar" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TrackAllButton" type="Button" parent="MarginContainer/VBoxContainer/FilterBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 42)
+layout_mode = 2
+text = "ALL CIRCUITS"
+
+[node name="TrackSunsetButton" type="Button" parent="MarginContainer/VBoxContainer/FilterBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 42)
+layout_mode = 2
+text = "SUNSET CIRCUIT"
+
+[node name="TrackHarborButton" type="Button" parent="MarginContainer/VBoxContainer/FilterBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 42)
+layout_mode = 2
+text = "HARBOR RUN"
+
+[node name="TrackNeonButton" type="Button" parent="MarginContainer/VBoxContainer/FilterBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 42)
+layout_mode = 2
+text = "NEON LOOP"
+
+[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/FilterBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MyRecordsToggle" type="Button" parent="MarginContainer/VBoxContainer/FilterBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 42)
+layout_mode = 2
+text = "MY RECORDS ONLY"
+
+[node name="TableHeaderPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_header_row")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/VBoxContainer/TableHeaderPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 8
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TableHeaderPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ThRank" type="Label" parent="MarginContainer/VBoxContainer/TableHeaderPanel/Margin/HBox"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709, 0.106, 1)
+theme_override_font_sizes/font_size = 14
+text = "RANK"
+
+[node name="ThName" type="Label" parent="MarginContainer/VBoxContainer/TableHeaderPanel/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.4
+theme_override_colors/font_color = Color(1, 0.709, 0.106, 1)
+theme_override_font_sizes/font_size = 14
+text = "DRIVER / CALLSIGN"
+
+[node name="ThCar" type="Label" parent="MarginContainer/VBoxContainer/TableHeaderPanel/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+theme_override_colors/font_color = Color(1, 0.709, 0.106, 1)
+theme_override_font_sizes/font_size = 14
+text = "VEHICLE"
+
+[node name="ThTrack" type="Label" parent="MarginContainer/VBoxContainer/TableHeaderPanel/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.1
+theme_override_colors/font_color = Color(1, 0.709, 0.106, 1)
+theme_override_font_sizes/font_size = 14
+text = "CIRCUIT TRACK"
+
+[node name="ThTime" type="Label" parent="MarginContainer/VBoxContainer/TableHeaderPanel/Margin/HBox"]
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709, 0.106, 1)
+theme_override_font_sizes/font_size = 14
+text = "BEST LAP TIME"
+horizontal_alignment = 2
+
+[node name="ThDate" type="Label" parent="MarginContainer/VBoxContainer/TableHeaderPanel/Margin/HBox"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709, 0.106, 1)
+theme_override_font_sizes/font_size = 14
+text = "DATE"
+horizontal_alignment = 2
+
+[node name="TableScrollPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_scroll_bg")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TableScrollPanel"]
+layout_mode = 2
+follow_focus = true
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/VBoxContainer/TableScrollPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="RecordsTable" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TableScrollPanel/ScrollContainer/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_ei8jk"]
+
+[resource]
+script = ExtResource("1_ei8jk")
+id = "pickup"
+display_name = "Heavy Duty Pickup"
+vehicle_class = "Pickup"
+mass = 1600.0
+center_of_mass_offset = Vector3(0, -0.4, -0.05)
+wheelbase = 3.594
+track_width_front = 1.641
+track_width_rear = 1.641
+chassis_size = Vector3(1.98, 1.05, 5.35)
+drivetrain_type = 2
+peak_power_kw = 250.0
+max_engine_rpm = 6200.0
+gear_ratios = Array[float]([4.1, 2.45, 1.65, 1.2, 0.92, 0.72])
+suspension_rest_length = 0.36
+suspension_travel = 0.18
+spring_stiffness_front = 39000.0
+spring_stiffness_rear = 37000.0
+bump_damping_front = 3100.0
+bump_damping_rear = 2900.0
+rebound_damping_front = 4100.0
+rebound_damping_rear = 3900.0
+wheel_radius = 0.423
+tire_longitudinal_friction = 1.58
+tire_lateral_friction = 1.6
+drag_coefficient = 0.42
+downforce_coefficient = 0.2
+visual_scene_path = "res://assets/models/cars/car_pickup.tscn"

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_wg70s"]
+
+[resource]
+script = ExtResource("1_wg70s")
+id = "wagon"
+display_name = "Touring Estate Wagon"
+vehicle_class = "Wagon"
+mass = 1440.0
+wheelbase = 2.963
+track_width_front = 1.576
+track_width_rear = 1.576
+chassis_size = Vector3(1.86, 0.9, 4.7)
+drivetrain_type = 2
+peak_power_kw = 190.0
+max_engine_rpm = 6800.0
+suspension_travel = 0.15
+wheel_radius = 0.347
+tire_longitudinal_friction = 1.62
+tire_lateral_friction = 1.65
+drag_coefficient = 0.34
+downforce_coefficient = 0.25
+visual_scene_path = "res://assets/models/cars/car_wagon.tscn"

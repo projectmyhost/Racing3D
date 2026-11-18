@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PlayerProfileData" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/player_profile_data.gd" id="1_ndvts"]
+
+[resource]
+script = ExtResource("1_ndvts")
+nickname = "''"
+current_xp = 236
+coins = 29053500
+gems = 31250
+equipped_car = "porsche_mission_x"
+unlocked_cars = Array[String](["sedan", "coupe", "hatchback", "compact", "wagon", "sport", "offroad", "minivan", "mclaren", "pickup", "suv", "porsche_mission_x", "porsche_carrera_gt", "kia_seltos", "kia_carnival"])

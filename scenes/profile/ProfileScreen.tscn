@@ -1,0 +1,403 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scenes/profile/ProfileScreen.gd" id="1_profile"]
+[ext_resource type="Script" path="res://scripts/ui/RaceButton.gd" id="2_button"]
+[ext_resource type="Texture2D" path="res://assets/art/avatars/avatar_1.png" id="3_avatar"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.09, 0.094, 0.153, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.141, 0.149, 0.227, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.204, 0.212, 0.306, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_avatar_frame"]
+bg_color = Color(0.10, 0.11, 0.17, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.709, 0.106, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stat_card"]
+bg_color = Color(0.10, 0.11, 0.18, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.25, 0.26, 0.38, 0.7)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="ProfileScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_profile")
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 30
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="HeaderBar" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/HeaderBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 48)
+layout_mode = 2
+text = "◀ BACK"
+script = ExtResource("2_button")
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.957, 0.949, 0.949, 1)
+theme_override_font_sizes/font_size = 32
+text = "DRIVER PROFILE"
+vertical_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.659, 0.663, 0.722, 1)
+theme_override_font_sizes/font_size = 18
+text = "// EDIT IDENTITY & CAREER STATS"
+vertical_alignment = 2
+
+[node name="ContentSplit" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 30
+
+[node name="EditProfilePanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/ContentSplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="IdentityRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="AvatarFrame" type="PanelContainer" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox/IdentityRow"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_avatar_frame")
+
+[node name="AvatarPreview" type="TextureRect" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox/IdentityRow/AvatarFrame"]
+unique_name_in_owner = true
+layout_mode = 2
+texture = ExtResource("3_avatar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="IdentityDetails" type="VBoxContainer" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox/IdentityRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="LevelLabel" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox/IdentityRow/IdentityDetails"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709, 0.106, 1)
+theme_override_font_sizes/font_size = 20
+text = "LEVEL 12"
+
+[node name="XpBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox/IdentityRow/IdentityDetails"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+max_value = 1000.0
+value = 420.0
+show_percentage = false
+
+[node name="XpLabel" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox/IdentityRow/IdentityDetails"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.659, 0.663, 0.722, 1)
+theme_override_font_sizes/font_size = 14
+text = "420 / 1000 XP"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="NameEditSection" type="VBoxContainer" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox/NameEditSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.957, 0.949, 0.949, 1)
+theme_override_font_sizes/font_size = 16
+text = "DRIVER CALLSIGN / NAME (3 - 16 Characters):"
+
+[node name="NameEdit" type="LineEdit" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox/NameEditSection"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Enter callsign..."
+max_length = 16
+
+[node name="ErrorLabel" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox/NameEditSection"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.784, 0.231, 0.263, 1)
+theme_override_font_sizes/font_size = 14
+text = "Name must be between 3 and 16 characters!"
+
+[node name="AvatarSelectSection" type="VBoxContainer" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox/AvatarSelectSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.957, 0.949, 0.949, 1)
+theme_override_font_sizes/font_size = 16
+text = "SELECT AVATAR PRESET:"
+
+[node name="AvatarGrid" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox/AvatarSelectSection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ActionsRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 2
+
+[node name="CancelButton" type="Button" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox/ActionsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 48)
+layout_mode = 2
+text = "DISCARD"
+script = ExtResource("2_button")
+
+[node name="SaveButton" type="Button" parent="MarginContainer/VBoxContainer/ContentSplit/EditProfilePanel/Margin/VBox/ActionsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 48)
+layout_mode = 2
+text = "SAVE PROFILE"
+script = ExtResource("2_button")
+is_primary = true
+
+[node name="StatsPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/ContentSplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="StatsHeading" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709, 0.106, 1)
+theme_override_font_sizes/font_size = 20
+text = "CAREER PERFORMANCE"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox"]
+layout_mode = 2
+
+[node name="CardTotalRaces" type="PanelContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardTotalRaces"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardTotalRaces/Margin"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardTotalRaces/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.659, 0.663, 0.722, 1)
+theme_override_font_sizes/font_size = 16
+text = "Total Races Completed"
+
+[node name="TotalRacesLabel" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardTotalRaces/Margin/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.957, 0.949, 0.949, 1)
+theme_override_font_sizes/font_size = 20
+text = "0"
+
+[node name="CardWins" type="PanelContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardWins"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardWins/Margin"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardWins/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.659, 0.663, 0.722, 1)
+theme_override_font_sizes/font_size = 16
+text = "Race Victories"
+
+[node name="WinsLabel" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardWins/Margin/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.384, 0.773, 0.541, 1)
+theme_override_font_sizes/font_size = 20
+text = "0"
+
+[node name="CardWinRate" type="PanelContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardWinRate"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardWinRate/Margin"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardWinRate/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.659, 0.663, 0.722, 1)
+theme_override_font_sizes/font_size = 16
+text = "Win Rate"
+
+[node name="WinRateLabel" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardWinRate/Margin/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709, 0.106, 1)
+theme_override_font_sizes/font_size = 20
+text = "0.0%"
+
+[node name="CardBestTime" type="PanelContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardBestTime"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardBestTime/Margin"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardBestTime/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.659, 0.663, 0.722, 1)
+theme_override_font_sizes/font_size = 16
+text = "Best Lap Time"
+
+[node name="BestTimeLabel" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardBestTime/Margin/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.957, 0.949, 0.949, 1)
+theme_override_font_sizes/font_size = 20
+text = "--:--.--"
+
+[node name="CardDistance" type="PanelContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
+
+[node name="Margin" type="MarginContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardDistance"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardDistance/Margin"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardDistance/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.659, 0.663, 0.722, 1)
+theme_override_font_sizes/font_size = 16
+text = "Total Distance Driven"
+
+[node name="TotalDistanceLabel" type="Label" parent="MarginContainer/VBoxContainer/ContentSplit/StatsPanel/Margin/VBox/CardDistance/Margin/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.957, 0.949, 0.949, 1)
+theme_override_font_sizes/font_size = 20
+text = "0.0 km"

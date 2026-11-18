@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_4lsv1"]
+
+[resource]
+script = ExtResource("1_4lsv1")
+id = "offroad"
+display_name = "Trail Master 4x4"
+vehicle_class = "Offroad"
+mass = 1580.0
+center_of_mass_offset = Vector3(0, -0.4, -0.05)
+wheelbase = 2.611
+track_width_front = 1.654
+track_width_rear = 1.654
+chassis_size = Vector3(1.92, 1.15, 4.35)
+drivetrain_type = 2
+peak_power_kw = 210.0
+max_engine_rpm = 6400.0
+gear_ratios = Array[float]([4.2, 2.5, 1.7, 1.25, 0.95, 0.75])
+suspension_rest_length = 0.36
+suspension_travel = 0.18
+spring_stiffness_front = 38000.0
+spring_stiffness_rear = 36000.0
+bump_damping_front = 3000.0
+bump_damping_rear = 2800.0
+rebound_damping_front = 4000.0
+rebound_damping_rear = 3800.0
+wheel_radius = 0.402
+tire_longitudinal_friction = 1.62
+tire_lateral_friction = 1.64
+drag_coefficient = 0.4
+downforce_coefficient = 0.22
+visual_scene_path = "res://assets/models/cars/car_offroad.tscn"

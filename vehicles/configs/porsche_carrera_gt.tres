@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_qi3bg"]
+
+[resource]
+script = ExtResource("1_qi3bg")
+id = "porsche_carrera_gt"
+display_name = "Porsche Carrera GT"
+vehicle_class = "Analog Supercar"
+mass = 1380.0
+center_of_mass_offset = Vector3(0, -0.46, -0.04)
+wheelbase = 2.74
+track_width_front = 1.6
+track_width_rear = 1.6
+chassis_size = Vector3(1.92, 0.78, 4.61)
+peak_power_kw = 450.0
+max_engine_rpm = 8400.0
+gear_ratios = Array[float]([3.2, 2.15, 1.6, 1.27, 1.03, 0.84])
+suspension_rest_length = 0.25
+suspension_travel = 0.12
+spring_stiffness_front = 42000.0
+spring_stiffness_rear = 45000.0
+bump_damping_front = 3400.0
+bump_damping_rear = 3600.0
+rebound_damping_front = 4600.0
+rebound_damping_rear = 4800.0
+wheel_radius = 0.355
+tire_longitudinal_friction = 1.88
+tire_lateral_friction = 1.92
+drag_coefficient = 0.39
+downforce_coefficient = 0.85
+visual_scene_path = "res://assets/models/cars/car_porsche_carrera_gt.tscn"
+visual_offset = Vector3(0, -0.085, 0)
+

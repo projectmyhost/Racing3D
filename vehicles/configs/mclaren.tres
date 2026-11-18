@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_qi3bg"]
+
+[resource]
+script = ExtResource("1_qi3bg")
+id = "mclaren"
+display_name = "McLaren Artura Spider"
+vehicle_class = "Hypercar"
+mass = 1420.0
+center_of_mass_offset = Vector3(0, -0.46, -0.06)
+wheelbase = 2.759
+track_width_front = 1.613
+track_width_rear = 1.567
+chassis_size = Vector3(1.92, 0.82, 4.54)
+peak_power_kw = 515.0
+max_engine_rpm = 8500.0
+gear_ratios = Array[float]([3.95, 2.65, 1.95, 1.52, 1.24, 1.02, 0.84])
+suspension_rest_length = 0.28
+suspension_travel = 0.13
+spring_stiffness_front = 38000.0
+spring_stiffness_rear = 36000.0
+bump_damping_front = 3000.0
+bump_damping_rear = 2800.0
+rebound_damping_front = 4000.0
+rebound_damping_rear = 3800.0
+wheel_radius = 0.357
+tire_longitudinal_friction = 1.85
+tire_lateral_friction = 1.9
+drag_coefficient = 0.3
+downforce_coefficient = 0.75
+visual_scene_path = "res://assets/models/cars/car_mclaren.tscn"

@@ -1,0 +1,710 @@
+[gd_scene load_steps=18 format=3]
+
+[ext_resource type="Script" path="res://scenes/home/HomeScreen.gd" id="1_homescreen"]
+[ext_resource type="Script" path="res://scripts/ui/RaceButton.gd" id="2_racebutton"]
+[ext_resource type="Texture2D" path="res://assets/art/background/sunset_sky.png" id="3_sky"]
+[ext_resource type="Texture2D" path="res://assets/art/background/city_skyline.png" id="4_city"]
+[ext_resource type="Texture2D" path="res://assets/art/background/floodlights.png" id="5_lights"]
+[ext_resource type="Texture2D" path="res://assets/art/background/pit_lane_track.png" id="6_track"]
+[ext_resource type="Texture2D" path="res://assets/art/background/fence_overlay.png" id="7_fence"]
+[ext_resource type="Texture2D" path="res://assets/art/cars/car_starter_gt.png" id="8_car"]
+[ext_resource type="Texture2D" path="res://assets/art/cars/decal_stripes.png" id="9_decal"]
+[ext_resource type="Texture2D" path="res://assets/art/avatars/avatar_1.png" id="10_avatar"]
+[ext_resource type="Texture2D" path="res://assets/art/icons/icon_coin.png" id="11_coin"]
+[ext_resource type="Texture2D" path="res://assets/art/icons/icon_diamond.png" id="12_diamond"]
+[ext_resource type="Texture2D" path="res://assets/art/icons/icon_trophy.png" id="13_trophy"]
+[ext_resource type="Texture2D" path="res://assets/art/icons/icon_gift.png" id="14_gift"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel_dark"]
+bg_color = Color(0.129, 0.137, 0.212, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.204, 0.212, 0.306, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_event_card"]
+bg_color = Color(0.129, 0.137, 0.212, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.953, 0.416, 0.239, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill"]
+bg_color = Color(0.106, 0.114, 0.176, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.24, 0.26, 0.38, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_badge_red"]
+bg_color = Color(0.784, 0.231, 0.263, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_badge_gold"]
+bg_color = Color(0.25, 0.20, 0.10, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.709804, 0.105882, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xp_bg"]
+bg_color = Color(0.08, 0.085, 0.13, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xp_fill"]
+bg_color = Color(1, 0.709804, 0.105882, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shadow"]
+bg_color = Color(0.02, 0.02, 0.04, 0.6)
+corner_radius_top_left = 120
+corner_radius_top_right = 120
+corner_radius_bottom_right = 120
+corner_radius_bottom_left = 120
+
+[node name="HomeScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_homescreen")
+
+[node name="BackgroundLayers" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="SkyLayer" type="TextureRect" parent="BackgroundLayers"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_sky")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CityLayer" type="TextureRect" parent="BackgroundLayers"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_city")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="FloodlightsLayer" type="TextureRect" parent="BackgroundLayers"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_lights")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="TrackLayer" type="TextureRect" parent="BackgroundLayers"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_track")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="FenceLayer" type="TextureRect" parent="BackgroundLayers"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_fence")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="HeroCarContainer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -560.0
+offset_top = 40.0
+offset_right = 240.0
+offset_bottom = 350.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="FloorShadow" type="Panel" parent="HeroCarContainer"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -340.0
+offset_top = -45.0
+offset_right = 340.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_shadow")
+
+[node name="CarVisual" type="Control" parent="HeroCarContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CarSprite" type="TextureRect" parent="HeroCarContainer/CarVisual"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_car")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DecalSprite" type="TextureRect" parent="HeroCarContainer/CarVisual"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("9_decal")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HeaderLeft" type="MarginContainer" parent="."]
+layout_mode = 1
+offset_left = 28.0
+offset_top = 22.0
+offset_right = 410.0
+offset_bottom = 124.0
+
+[node name="ProfileCard" type="PanelContainer" parent="HeaderLeft"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel_dark")
+
+[node name="Margin" type="MarginContainer" parent="HeaderLeft/ProfileCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="HBox" type="HBoxContainer" parent="HeaderLeft/ProfileCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="AvatarFrame" type="PanelContainer" parent="HeaderLeft/ProfileCard/Margin/HBox"]
+custom_minimum_size = Vector2(74, 74)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+
+[node name="AvatarTexture" type="TextureRect" parent="HeaderLeft/ProfileCard/Margin/HBox/AvatarFrame"]
+layout_mode = 2
+texture = ExtResource("10_avatar")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="InfoVBox" type="VBoxContainer" parent="HeaderLeft/ProfileCard/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+alignment = 1
+
+[node name="NameHBox" type="HBoxContainer" parent="HeaderLeft/ProfileCard/Margin/HBox/InfoVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PlayerNameLabel" type="Label" parent="HeaderLeft/ProfileCard/Margin/HBox/InfoVBox/NameHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.956863, 0.94902, 0.94902, 1)
+theme_override_font_sizes/font_size = 20
+text = "RacerX"
+
+[node name="LevelBadge" type="PanelContainer" parent="HeaderLeft/ProfileCard/Margin/HBox/InfoVBox/NameHBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_badge_gold")
+
+[node name="LevelMargin" type="MarginContainer" parent="HeaderLeft/ProfileCard/Margin/HBox/InfoVBox/NameHBox/LevelBadge"]
+layout_mode = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 2
+
+[node name="LevelLabel" type="Label" parent="HeaderLeft/ProfileCard/Margin/HBox/InfoVBox/NameHBox/LevelBadge/LevelMargin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+theme_override_font_sizes/font_size = 12
+text = "Lv. 12"
+
+[node name="XPProgressBar" type="ProgressBar" parent="HeaderLeft/ProfileCard/Margin/HBox/InfoVBox"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_xp_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_xp_fill")
+max_value = 1000.0
+value = 420.0
+show_percentage = false
+
+[node name="XPHBox" type="HBoxContainer" parent="HeaderLeft/ProfileCard/Margin/HBox/InfoVBox"]
+layout_mode = 2
+
+[node name="XPTitle" type="Label" parent="HeaderLeft/ProfileCard/Margin/HBox/InfoVBox/XPHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.56, 0.62, 1)
+theme_override_font_sizes/font_size = 11
+text = "EXP"
+
+[node name="XPLabel" type="Label" parent="HeaderLeft/ProfileCard/Margin/HBox/InfoVBox/XPHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 11
+text = "420 / 1000"
+horizontal_alignment = 2
+
+[node name="ProfileButton" type="Button" parent="HeaderLeft/ProfileCard"]
+layout_mode = 2
+flat = true
+script = ExtResource("2_racebutton")
+
+[node name="HeaderRight" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -780.0
+offset_top = 22.0
+offset_right = -28.0
+offset_bottom = 76.0
+grow_horizontal = 0
+
+[node name="HBox" type="HBoxContainer" parent="HeaderRight"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 2
+
+[node name="CoinsPill" type="PanelContainer" parent="HeaderRight/HBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+
+[node name="Margin" type="MarginContainer" parent="HeaderRight/HBox/CoinsPill"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 4
+
+[node name="HBox" type="HBoxContainer" parent="HeaderRight/HBox/CoinsPill/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CoinsIcon" type="TextureRect" parent="HeaderRight/HBox/CoinsPill/Margin/HBox"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("11_coin")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CoinsValueLabel" type="Label" parent="HeaderRight/HBox/CoinsPill/Margin/HBox"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.956863, 0.94902, 0.94902, 1)
+theme_override_font_sizes/font_size = 16
+text = "12,750"
+
+[node name="CoinsPlusBtn" type="Button" parent="HeaderRight/HBox/CoinsPill/Margin/HBox"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+text = "+"
+script = ExtResource("2_racebutton")
+is_primary = true
+
+[node name="DiamondsPill" type="PanelContainer" parent="HeaderRight/HBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+
+[node name="Margin" type="MarginContainer" parent="HeaderRight/HBox/DiamondsPill"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 4
+
+[node name="HBox" type="HBoxContainer" parent="HeaderRight/HBox/DiamondsPill/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DiamondsIcon" type="TextureRect" parent="HeaderRight/HBox/DiamondsPill/Margin/HBox"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("12_diamond")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="DiamondsValueLabel" type="Label" parent="HeaderRight/HBox/DiamondsPill/Margin/HBox"]
+custom_minimum_size = Vector2(45, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.956863, 0.94902, 0.94902, 1)
+theme_override_font_sizes/font_size = 16
+text = "120"
+
+[node name="DiamondsPlusBtn" type="Button" parent="HeaderRight/HBox/DiamondsPill/Margin/HBox"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+text = "+"
+script = ExtResource("2_racebutton")
+is_primary = true
+
+[node name="InboxBtn" type="Button" parent="HeaderRight/HBox"]
+custom_minimum_size = Vector2(46, 44)
+layout_mode = 2
+text = "✉"
+script = ExtResource("2_racebutton")
+
+[node name="Badge" type="PanelContainer" parent="HeaderRight/HBox/InboxBtn"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -14.0
+offset_top = -4.0
+offset_right = 6.0
+offset_bottom = 16.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_badge_red")
+
+[node name="BadgeLabel" type="Label" parent="HeaderRight/HBox/InboxBtn/Badge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "3"
+horizontal_alignment = 1
+
+[node name="SettingsBtn" type="Button" parent="HeaderRight/HBox"]
+custom_minimum_size = Vector2(46, 44)
+layout_mode = 2
+text = "⚙"
+script = ExtResource("2_racebutton")
+
+[node name="LeftEventCard" type="PanelContainer" parent="."]
+layout_mode = 1
+offset_left = 28.0
+offset_top = 150.0
+offset_right = 430.0
+offset_bottom = 360.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_event_card")
+
+[node name="Margin" type="MarginContainer" parent="LeftEventCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="LeftEventCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="LeftEventCard/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EventTagPanel" type="PanelContainer" parent="LeftEventCard/Margin/VBox/HeaderHBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_badge_red")
+
+[node name="TagMargin" type="MarginContainer" parent="LeftEventCard/Margin/VBox/HeaderHBox/EventTagPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 2
+
+[node name="EventTagLabel" type="Label" parent="LeftEventCard/Margin/VBox/HeaderHBox/EventTagPanel/TagMargin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "EVENT"
+
+[node name="EventTitleLabel" type="Label" parent="LeftEventCard/Margin/VBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+theme_override_font_sizes/font_size = 19
+text = "Racing Festival"
+
+[node name="InfoHBox" type="HBoxContainer" parent="LeftEventCard/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TrophyIcon" type="TextureRect" parent="LeftEventCard/Margin/VBox/InfoHBox"]
+custom_minimum_size = Vector2(28, 28)
+layout_mode = 2
+texture = ExtResource("13_trophy")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="TimeLabel" type="Label" parent="LeftEventCard/Margin/VBox/InfoHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 13
+text = "⏱ 6d 12h left • Circuit Challenge"
+
+[node name="EventProgressBar" type="ProgressBar" parent="LeftEventCard/Margin/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_xp_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_xp_fill")
+max_value = 3.0
+show_percentage = false
+
+[node name="ProgressHBox" type="HBoxContainer" parent="LeftEventCard/Margin/VBox"]
+layout_mode = 2
+
+[node name="ProgressLabel" type="Label" parent="LeftEventCard/Margin/VBox/ProgressHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.67, 0.75, 1)
+theme_override_font_sizes/font_size = 12
+text = "0 / 3 Races completed"
+
+[node name="GoRaceBtn" type="Button" parent="LeftEventCard/Margin/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "GO RACE 🏁"
+script = ExtResource("2_racebutton")
+is_primary = true
+
+[node name="RightCTA" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -480.0
+offset_top = 270.0
+offset_right = -36.0
+offset_bottom = 385.0
+grow_horizontal = 0
+
+[node name="PlayBtn" type="Button" parent="RightCTA"]
+custom_minimum_size = Vector2(440, 110)
+layout_mode = 2
+theme_override_font_sizes/font_size = 38
+text = "PLAY  ❯❯"
+script = ExtResource("2_racebutton")
+is_primary = true
+
+[node name="RightMenu" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -460.0
+offset_top = 410.0
+offset_right = -36.0
+offset_bottom = 740.0
+grow_horizontal = 0
+
+[node name="VBox" type="VBoxContainer" parent="RightMenu"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="GarageBtn" type="Button" parent="RightMenu/VBox"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "🏎   GARAGE"
+alignment = 0
+script = ExtResource("2_racebutton")
+
+[node name="ShopBtn" type="Button" parent="RightMenu/VBox"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "🛒   SHOP"
+alignment = 0
+script = ExtResource("2_racebutton")
+
+[node name="AchievementsBtn" type="Button" parent="RightMenu/VBox"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "🏆   ACHIEVEMENTS"
+alignment = 0
+script = ExtResource("2_racebutton")
+
+[node name="LeaderboardBtn" type="Button" parent="RightMenu/VBox"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "📊   LEADERBOARD"
+alignment = 0
+script = ExtResource("2_racebutton")
+
+[node name="BottomLeftDaily" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = -120.0
+offset_right = 430.0
+offset_bottom = -30.0
+grow_vertical = 0
+
+[node name="DailyCard" type="PanelContainer" parent="BottomLeftDaily"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel_dark")
+
+[node name="Margin" type="MarginContainer" parent="BottomLeftDaily/DailyCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="BottomLeftDaily/DailyCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="GiftIcon" type="TextureRect" parent="BottomLeftDaily/DailyCard/Margin/HBox"]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+texture = ExtResource("14_gift")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="TextVBox" type="VBoxContainer" parent="BottomLeftDaily/DailyCard/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="DailyTitle" type="Label" parent="BottomLeftDaily/DailyCard/Margin/HBox/TextVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.956863, 0.94902, 0.94902, 1)
+theme_override_font_sizes/font_size = 16
+text = "Daily Login"
+
+[node name="DailyDesc" type="Label" parent="BottomLeftDaily/DailyCard/Margin/HBox/TextVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.709804, 0.105882, 1)
+theme_override_font_sizes/font_size = 13
+text = "Claim your reward!"
+
+[node name="ChevronLabel" type="Label" parent="BottomLeftDaily/DailyCard/Margin/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.56, 0.62, 1)
+theme_override_font_sizes/font_size = 18
+text = "❯"
+
+[node name="DailyLoginButton" type="Button" parent="BottomLeftDaily/DailyCard"]
+layout_mode = 2
+flat = true
+script = ExtResource("2_racebutton")
+
+[node name="BottomRightFooter" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -560.0
+offset_top = -84.0
+offset_right = -36.0
+offset_bottom = -30.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="HBox" type="HBoxContainer" parent="BottomRightFooter"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 2
+
+[node name="NewsBtn" type="Button" parent="BottomRightFooter/HBox"]
+custom_minimum_size = Vector2(150, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "📰  NEWS"
+script = ExtResource("2_racebutton")
+
+[node name="CustomizeBtn" type="Button" parent="BottomRightFooter/HBox"]
+custom_minimum_size = Vector2(160, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "🎨  CUSTOMIZE"
+script = ExtResource("2_racebutton")
+
+[node name="QuitBtn" type="Button" parent="BottomRightFooter/HBox"]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "⏻  QUIT"
+script = ExtResource("2_racebutton")
