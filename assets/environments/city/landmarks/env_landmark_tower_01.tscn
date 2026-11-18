@@ -1,0 +1,40 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_glass_tower.tres" id="1_vsa2c"]
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_metal_rail.tres" id="2_nuwxs"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_l30ec"]
+size = Vector3(40, 120, 40)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rn33h"]
+size = Vector3(32, 60, 32)
+
+[sub_resource type="BoxMesh" id="BoxMesh_t7yc8"]
+size = Vector3(24, 40, 24)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_miabg"]
+top_radius = 0.2
+bottom_radius = 1.0
+height = 25.0
+
+[node name="LandmarkTower" type="Node3D" unique_id=1455104162]
+
+[node name="BaseSection" type="MeshInstance3D" parent="." unique_id=1802543548]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 60, 0)
+material_override = ExtResource("1_vsa2c")
+mesh = SubResource("BoxMesh_l30ec")
+
+[node name="MidSection" type="MeshInstance3D" parent="." unique_id=1269233841]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 150, 0)
+material_override = ExtResource("1_vsa2c")
+mesh = SubResource("BoxMesh_rn33h")
+
+[node name="CrownSection" type="MeshInstance3D" parent="." unique_id=956560719]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 200, 0)
+material_override = ExtResource("1_vsa2c")
+mesh = SubResource("BoxMesh_t7yc8")
+
+[node name="Spire" type="MeshInstance3D" parent="." unique_id=275220603]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 232.5, 0)
+material_override = ExtResource("2_nuwxs")
+mesh = SubResource("CylinderMesh_miabg")

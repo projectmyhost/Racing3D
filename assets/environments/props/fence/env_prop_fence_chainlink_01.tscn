@@ -1,0 +1,41 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_chainlink.tres" id="1_sxhtt"]
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_metal_rail.tres" id="2_jctt5"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_b7dnt"]
+size = Vector2(3, 2.4)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_0aupq"]
+top_radius = 0.04
+bottom_radius = 0.04
+height = 2.4
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_sxhtt"]
+size = Vector3(3, 2.4, 0.08)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_jctt5"]
+height = 2.4
+radius = 0.05
+
+[node name="ChainlinkFence" type="Node3D" unique_id=1668096575]
+
+[node name="FencePanel" type="MeshInstance3D" parent="." unique_id=1063187166]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+material_override = ExtResource("1_sxhtt")
+mesh = SubResource("QuadMesh_b7dnt")
+
+[node name="Post" type="MeshInstance3D" parent="." unique_id=2072829560]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1.2, 0)
+material_override = ExtResource("2_jctt5")
+mesh = SubResource("CylinderMesh_0aupq")
+
+[node name="FenceStaticBody" type="StaticBody3D" parent="." unique_id=1221565697]
+
+[node name="PanelCollision" type="CollisionShape3D" parent="FenceStaticBody" unique_id=239621264]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+shape = SubResource("BoxShape3D_sxhtt")
+
+[node name="PostCollision" type="CollisionShape3D" parent="FenceStaticBody" unique_id=1098680477]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1.2, 0)
+shape = SubResource("CylinderShape3D_jctt5")

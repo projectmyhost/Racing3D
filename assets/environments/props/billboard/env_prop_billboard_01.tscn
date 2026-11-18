@@ -1,0 +1,89 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_metal_rail.tres" id="1_6t24v"]
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_billboard_face.tres" id="2_1l000"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_hcdui"]
+top_radius = 0.35
+bottom_radius = 0.4
+height = 9.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_8aomk"]
+size = Vector2(14, 6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rwcf8"]
+size = Vector3(14.4, 6.4, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pnd6i"]
+size = Vector3(15, 0.15, 1.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_w431f"]
+size = Vector3(0.5, 0.3, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wl3mu"]
+size = Vector3(0.5, 0.3, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fl5v5"]
+size = Vector3(0.5, 0.3, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xevjs"]
+size = Vector3(0.5, 0.3, 0.4)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_6t24v"]
+height = 9.0
+radius = 0.4
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1l000"]
+size = Vector3(14.4, 6.4, 0.3)
+
+[node name="Billboard" type="Node3D" unique_id=421617179]
+
+[node name="SteelPole" type="MeshInstance3D" parent="." unique_id=1646451136]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, 0)
+material_override = ExtResource("1_6t24v")
+mesh = SubResource("CylinderMesh_hcdui")
+
+[node name="BillboardFace" type="MeshInstance3D" parent="." unique_id=813912050]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, 0.1)
+material_override = ExtResource("2_1l000")
+mesh = SubResource("QuadMesh_8aomk")
+
+[node name="FrameBacking" type="MeshInstance3D" parent="." unique_id=237285996]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, -0.05)
+material_override = ExtResource("1_6t24v")
+mesh = SubResource("BoxMesh_rwcf8")
+
+[node name="Catwalk" type="MeshInstance3D" parent="." unique_id=505477294]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.85, 0.6)
+material_override = ExtResource("1_6t24v")
+mesh = SubResource("BoxMesh_pnd6i")
+
+[node name="LightFixture_-5_0" type="MeshInstance3D" parent="." unique_id=1914485643]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 6.2, 0.8)
+material_override = ExtResource("1_6t24v")
+mesh = SubResource("BoxMesh_w431f")
+
+[node name="LightFixture_-1_6" type="MeshInstance3D" parent="." unique_id=327683529]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 6.2, 0.8)
+material_override = ExtResource("1_6t24v")
+mesh = SubResource("BoxMesh_wl3mu")
+
+[node name="LightFixture_1_6" type="MeshInstance3D" parent="." unique_id=633209862]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, 6.2, 0.8)
+material_override = ExtResource("1_6t24v")
+mesh = SubResource("BoxMesh_fl5v5")
+
+[node name="LightFixture_5_0" type="MeshInstance3D" parent="." unique_id=2069118507]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 6.2, 0.8)
+material_override = ExtResource("1_6t24v")
+mesh = SubResource("BoxMesh_xevjs")
+
+[node name="BillboardStaticBody" type="StaticBody3D" parent="." unique_id=865999494]
+
+[node name="PoleCollision" type="CollisionShape3D" parent="BillboardStaticBody" unique_id=609329161]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, 0)
+shape = SubResource("CylinderShape3D_6t24v")
+
+[node name="SignCollision" type="CollisionShape3D" parent="BillboardStaticBody" unique_id=382497841]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, 0)
+shape = SubResource("BoxShape3D_1l000")

@@ -1,0 +1,33 @@
+[gd_resource type="Environment" format=3 uid="uid://7vv0svknb628"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_3v4jg"]
+sky_top_color = Color(0.24, 0.5, 0.86, 1)
+sky_horizon_color = Color(0.68, 0.8, 0.92, 1)
+ground_bottom_color = Color(0.22, 0.32, 0.22, 1)
+ground_horizon_color = Color(0.65, 0.75, 0.82, 1)
+
+[sub_resource type="Sky" id="Sky_7mrn1"]
+sky_material = SubResource("ProceduralSkyMaterial_3v4jg")
+process_mode = 1
+
+[resource]
+resource_name = "EnvDaytime"
+background_mode = 2
+sky = SubResource("Sky_7mrn1")
+ambient_light_source = 3
+ambient_light_color = Color(0.7, 0.78, 0.9, 1)
+ambient_light_sky_contribution = 0.65
+tonemap_mode = 2
+tonemap_white = 6.0
+glow_enabled = true
+glow_intensity = 0.2
+glow_strength = 0.8
+glow_bloom = 0.03
+glow_hdr_threshold = 1.25
+fog_enabled = true
+fog_light_color = Color(0.74, 0.82, 0.94, 1)
+fog_density = 0.0004
+fog_aerial_perspective = 0.3
+adjustment_enabled = true
+adjustment_contrast = 1.08
+adjustment_saturation = 1.15

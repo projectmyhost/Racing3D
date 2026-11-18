@@ -1,0 +1,119 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_building_facade_01.tres" id="1_gv06y"]
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_glass_tower.tres" id="2_b86fn"]
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_building_facade_02.tres" id="3_cxhn1"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_qnxi2"]
+size = Vector3(18, 80, 14.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_n6fxr"]
+size = Vector3(22, 130, 17.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ddwb8"]
+size = Vector3(16, 160, 12.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8n3qh"]
+size = Vector3(26, 110, 20.8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_beh40"]
+size = Vector3(32, 210, 25.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ma8qm"]
+size = Vector3(20, 170, 16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fgu74"]
+size = Vector3(24, 240, 19.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_y5nbk"]
+size = Vector3(19, 150, 15.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_dica0"]
+size = Vector3(28, 190, 22.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ygkwe"]
+size = Vector3(22, 140, 17.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_5ade7"]
+size = Vector3(18, 120, 14.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_dfvqc"]
+size = Vector3(25, 180, 20)
+
+[sub_resource type="BoxMesh" id="BoxMesh_a7ulb"]
+size = Vector3(30, 160, 24)
+
+[sub_resource type="BoxMesh" id="BoxMesh_uduv4"]
+size = Vector3(20, 95, 16)
+
+[node name="SkylineFar" type="Node3D" unique_id=936403012]
+
+[node name="FarTower_0" type="MeshInstance3D" parent="." unique_id=1160155928]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -121, 40, 8.798447)
+material_override = ExtResource("1_gv06y")
+mesh = SubResource("BoxMesh_qnxi2")
+
+[node name="FarTower_1" type="MeshInstance3D" parent="." unique_id=557814636]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -99, 65, 5.574888)
+material_override = ExtResource("2_b86fn")
+mesh = SubResource("BoxMesh_n6fxr")
+
+[node name="FarTower_2" type="MeshInstance3D" parent="." unique_id=1163277148]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -78, 80, 5.4753475)
+material_override = ExtResource("3_cxhn1")
+mesh = SubResource("BoxMesh_ddwb8")
+
+[node name="FarTower_3" type="MeshInstance3D" parent="." unique_id=1671587263]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55, 55, -7.434073)
+material_override = ExtResource("1_gv06y")
+mesh = SubResource("BoxMesh_8n3qh")
+
+[node name="FarTower_4" type="MeshInstance3D" parent="." unique_id=630179088]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, 105, 3.3056374)
+material_override = ExtResource("1_gv06y")
+mesh = SubResource("BoxMesh_beh40")
+
+[node name="FarTower_5" type="MeshInstance3D" parent="." unique_id=1726606717]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 85, 0.5816088)
+material_override = ExtResource("2_b86fn")
+mesh = SubResource("BoxMesh_ma8qm")
+
+[node name="FarTower_6" type="MeshInstance3D" parent="." unique_id=805096599]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 120, 0.8077364)
+material_override = ExtResource("3_cxhn1")
+mesh = SubResource("BoxMesh_fgu74")
+
+[node name="FarTower_7" type="MeshInstance3D" parent="." unique_id=1292822137]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 75, -13.780862)
+material_override = ExtResource("1_gv06y")
+mesh = SubResource("BoxMesh_y5nbk")
+
+[node name="FarTower_8" type="MeshInstance3D" parent="." unique_id=479905828]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77, 95, -14.838155)
+material_override = ExtResource("1_gv06y")
+mesh = SubResource("BoxMesh_dica0")
+
+[node name="FarTower_9" type="MeshInstance3D" parent="." unique_id=591200680]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 104, 70, -9.22055)
+material_override = ExtResource("2_b86fn")
+mesh = SubResource("BoxMesh_ygkwe")
+
+[node name="FarTower_10" type="MeshInstance3D" parent="." unique_id=1188604363]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 126, 60, -13.939048)
+material_override = ExtResource("3_cxhn1")
+mesh = SubResource("BoxMesh_5ade7")
+
+[node name="FarTower_11" type="MeshInstance3D" parent="." unique_id=1826838082]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 149.5, 90, 1.224865)
+material_override = ExtResource("1_gv06y")
+mesh = SubResource("BoxMesh_dfvqc")
+
+[node name="FarTower_12" type="MeshInstance3D" parent="." unique_id=430054291]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 179, 80, 14.130373)
+material_override = ExtResource("1_gv06y")
+mesh = SubResource("BoxMesh_a7ulb")
+
+[node name="FarTower_13" type="MeshInstance3D" parent="." unique_id=1047162326]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 206, 47.5, 7.0474567)
+material_override = ExtResource("2_b86fn")
+mesh = SubResource("BoxMesh_uduv4")

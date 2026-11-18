@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/environments/tex_env_billboard_art_01.png" id="1_np1py"]
+
+[resource]
+albedo_texture = ExtResource("1_np1py")
+roughness = 0.4
+emission_enabled = true
+emission_energy_multiplier = 0.85
+emission_texture = ExtResource("1_np1py")

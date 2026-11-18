@@ -1,0 +1,6 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <!-- Gold Coin Icon -->
+  <circle cx="32" cy="32" r="28" fill="#F7B500" stroke="#FFE27A" stroke-width="3"/>
+  <circle cx="32" cy="32" r="21" stroke="#D49A00" stroke-width="2"/>
+  <path d="M32 17v30M25 24c0-3 3-5 7-5s7 2 7 5-3 5-7 6-7 3-7 6 3 5 7 5 7-2 7-5" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

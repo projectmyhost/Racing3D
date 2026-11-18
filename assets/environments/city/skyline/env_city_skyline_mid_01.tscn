@@ -1,0 +1,87 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_glass_tower.tres" id="1_83nu3"]
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_building_facade_02.tres" id="2_2767w"]
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_building_facade_01.tres" id="3_grfon"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_segui"]
+size = Vector3(16.915468, 70, 16.915468)
+
+[sub_resource type="BoxMesh" id="BoxMesh_qt1ur"]
+size = Vector3(19.465952, 110, 19.465952)
+
+[sub_resource type="BoxMesh" id="BoxMesh_apm2h"]
+size = Vector3(23.63345, 140, 23.63345)
+
+[sub_resource type="BoxMesh" id="BoxMesh_d5c4e"]
+size = Vector3(18.441483, 95, 18.441483)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wa6h8"]
+size = Vector3(18.902824, 130, 18.902824)
+
+[sub_resource type="BoxMesh" id="BoxMesh_dob3x"]
+size = Vector3(20.498505, 115, 20.498505)
+
+[sub_resource type="BoxMesh" id="BoxMesh_irg3m"]
+size = Vector3(18.485622, 150, 18.485622)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wbote"]
+size = Vector3(18.100548, 85, 18.100548)
+
+[sub_resource type="BoxMesh" id="BoxMesh_8wlv5"]
+size = Vector3(20.222334, 105, 20.222334)
+
+[sub_resource type="BoxMesh" id="BoxMesh_mc3bd"]
+size = Vector3(20.646492, 75, 20.646492)
+
+[node name="SkylineMid" type="Node3D" unique_id=1008301826]
+
+[node name="MidTower_0" type="MeshInstance3D" parent="." unique_id=1495652556]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -71.54227, 35, 5.633258)
+material_override = ExtResource("1_83nu3")
+mesh = SubResource("BoxMesh_segui")
+
+[node name="MidTower_1" type="MeshInstance3D" parent="." unique_id=1282048573]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50.351555, 55, -0.28760338)
+material_override = ExtResource("2_2767w")
+mesh = SubResource("BoxMesh_qt1ur")
+
+[node name="MidTower_2" type="MeshInstance3D" parent="." unique_id=1626562594]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.801855, 70, 8.017647)
+material_override = ExtResource("3_grfon")
+mesh = SubResource("BoxMesh_apm2h")
+
+[node name="MidTower_3" type="MeshInstance3D" parent="." unique_id=1524916051]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.764389, 47.5, -8.814656)
+material_override = ExtResource("3_grfon")
+mesh = SubResource("BoxMesh_d5c4e")
+
+[node name="MidTower_4" type="MeshInstance3D" parent="." unique_id=1541829184]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.907764, 65, -1.4890509)
+material_override = ExtResource("1_83nu3")
+mesh = SubResource("BoxMesh_wa6h8")
+
+[node name="MidTower_5" type="MeshInstance3D" parent="." unique_id=1499734922]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.60843, 57.5, -9.422569)
+material_override = ExtResource("2_2767w")
+mesh = SubResource("BoxMesh_dob3x")
+
+[node name="MidTower_6" type="MeshInstance3D" parent="." unique_id=234990770]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65.100494, 75, 8.885096)
+material_override = ExtResource("3_grfon")
+mesh = SubResource("BoxMesh_irg3m")
+
+[node name="MidTower_7" type="MeshInstance3D" parent="." unique_id=791632833]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 86.39358, 42.5, -4.0572205)
+material_override = ExtResource("3_grfon")
+mesh = SubResource("BoxMesh_wbote")
+
+[node name="MidTower_8" type="MeshInstance3D" parent="." unique_id=558082189]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 108.555016, 52.5, -3.897634)
+material_override = ExtResource("1_83nu3")
+mesh = SubResource("BoxMesh_8wlv5")
+
+[node name="MidTower_9" type="MeshInstance3D" parent="." unique_id=1662895093]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 131.98943, 37.5, 3.3531837)
+material_override = ExtResource("2_2767w")
+mesh = SubResource("BoxMesh_mc3bd")

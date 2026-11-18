@@ -1,0 +1,14 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/vehicles/tex_veh_paint_detail_01.png" id="1_f7jhp"]
+
+[resource]
+albedo_color = Color(0.788, 0.796, 0.839, 1)
+metallic = 0.85
+roughness = 0.28
+normal_enabled = true
+normal_texture = ExtResource("1_f7jhp")
+rim_enabled = true
+rim = 0.15
+clearcoat_enabled = true
+clearcoat_roughness = 0.05

@@ -1,0 +1,16 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/environments/tex_ref_asphalt_albedo.png" id="1_s6wu6"]
+[ext_resource type="Texture2D" path="res://assets/textures/environments/tex_ref_asphalt_normal.png" id="2_cmbif"]
+[ext_resource type="Texture2D" path="res://assets/textures/environments/tex_ref_asphalt_roughness.png" id="3_86cis"]
+
+[resource]
+albedo_color = Color(0.065, 0.065, 0.075, 1)
+albedo_texture = ExtResource("1_s6wu6")
+roughness_texture = ExtResource("3_86cis")
+normal_enabled = true
+normal_texture = ExtResource("2_cmbif")
+clearcoat_enabled = true
+clearcoat = 0.35
+clearcoat_roughness = 0.1
+uv1_scale = Vector3(18, 18, 18)

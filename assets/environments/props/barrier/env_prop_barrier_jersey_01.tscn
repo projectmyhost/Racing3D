@@ -1,0 +1,22 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_concrete_01.tres" id="1_un86c"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_kmli8"]
+size = Vector3(0.45, 0.82, 3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_un86c"]
+size = Vector3(0.45, 0.82, 3)
+
+[node name="JerseyBarrier" type="Node3D" unique_id=561874590]
+
+[node name="BarrierMesh" type="MeshInstance3D" parent="." unique_id=1865270121]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.41, 0)
+material_override = ExtResource("1_un86c")
+mesh = SubResource("BoxMesh_kmli8")
+
+[node name="BarrierStaticBody" type="StaticBody3D" parent="." unique_id=441297055]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarrierStaticBody" unique_id=1223363970]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.41, 0)
+shape = SubResource("BoxShape3D_un86c")

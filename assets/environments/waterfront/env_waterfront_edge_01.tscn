@@ -1,0 +1,21 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_concrete_01.tres" id="1_qlbes"]
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_water_far.tres" id="2_y2wjw"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_hvjpw"]
+size = Vector3(200, 3, 10)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_dnh8l"]
+size = Vector2(240, 90)
+
+[node name="Waterfront" type="Node3D" unique_id=1042027338]
+
+[node name="QuayEdge" type="MeshInstance3D" parent="." unique_id=1260181734]
+material_override = ExtResource("1_qlbes")
+mesh = SubResource("BoxMesh_hvjpw")
+
+[node name="WaterPlane" type="MeshInstance3D" parent="." unique_id=392097342]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.2, 45)
+material_override = ExtResource("2_y2wjw")
+mesh = SubResource("PlaneMesh_dnh8l")

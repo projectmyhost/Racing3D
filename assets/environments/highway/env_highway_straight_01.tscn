@@ -1,0 +1,101 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_concrete_01.tres" id="1_bln7l"]
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_metal_rail.tres" id="2_jlumd"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_bkf0q"]
+size = Vector3(12, 1.4, 90)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lych2"]
+size = Vector3(0.2, 0.8, 90)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ms57e"]
+size = Vector3(0.2, 0.8, 90)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_5ucn0"]
+top_radius = 1.0
+bottom_radius = 1.2
+height = 8.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_bk63d"]
+top_radius = 1.0
+bottom_radius = 1.2
+height = 8.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_70qcf"]
+top_radius = 1.0
+bottom_radius = 1.2
+height = 8.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_85nkd"]
+top_radius = 1.0
+bottom_radius = 1.2
+height = 8.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_q1oge"]
+top_radius = 1.0
+bottom_radius = 1.2
+height = 8.0
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_bln7l"]
+data = PackedVector3Array(-6, 0.7, 45, 6, 0.7, 45, -6, -0.7, 45, 6, 0.7, 45, 6, -0.7, 45, -6, -0.7, 45, 6, 0.7, -45, -6, 0.7, -45, 6, -0.7, -45, -6, 0.7, -45, -6, -0.7, -45, 6, -0.7, -45, 6, 0.7, 45, 6, 0.7, -45, 6, -0.7, 45, 6, 0.7, -45, 6, -0.7, -45, 6, -0.7, 45, -6, 0.7, -45, -6, 0.7, 45, -6, -0.7, -45, -6, 0.7, 45, -6, -0.7, 45, -6, -0.7, -45, 6, 0.7, 45, -6, 0.7, 45, 6, 0.7, -45, -6, 0.7, 45, -6, 0.7, -45, 6, 0.7, -45, -6, -0.7, 45, 6, -0.7, 45, -6, -0.7, -45, 6, -0.7, 45, 6, -0.7, -45, -6, -0.7, -45)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_jlumd"]
+size = Vector3(0.2, 0.8, 90)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bkf0q"]
+size = Vector3(0.2, 0.8, 90)
+
+[node name="HighwayStraight" type="Node3D" unique_id=1365301571]
+
+[node name="StraightDeck" type="MeshInstance3D" parent="." unique_id=1548141346]
+material_override = ExtResource("1_bln7l")
+mesh = SubResource("BoxMesh_bkf0q")
+
+[node name="Guardrail_L" type="MeshInstance3D" parent="." unique_id=429167205]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.8, 1.1, 0)
+material_override = ExtResource("2_jlumd")
+mesh = SubResource("BoxMesh_lych2")
+
+[node name="Guardrail_R" type="MeshInstance3D" parent="." unique_id=1384147780]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8, 1.1, 0)
+material_override = ExtResource("2_jlumd")
+mesh = SubResource("BoxMesh_ms57e")
+
+[node name="Pillar_Z-36" type="MeshInstance3D" parent="." unique_id=539746223]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.7, -36)
+material_override = ExtResource("1_bln7l")
+mesh = SubResource("CylinderMesh_5ucn0")
+
+[node name="Pillar_Z-18" type="MeshInstance3D" parent="." unique_id=2130160762]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.7, -18)
+material_override = ExtResource("1_bln7l")
+mesh = SubResource("CylinderMesh_bk63d")
+
+[node name="Pillar_Z0" type="MeshInstance3D" parent="." unique_id=533394599]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.7, 0)
+material_override = ExtResource("1_bln7l")
+mesh = SubResource("CylinderMesh_70qcf")
+
+[node name="Pillar_Z18" type="MeshInstance3D" parent="." unique_id=675252805]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.7, 18)
+material_override = ExtResource("1_bln7l")
+mesh = SubResource("CylinderMesh_85nkd")
+
+[node name="Pillar_Z36" type="MeshInstance3D" parent="." unique_id=1658986956]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.7, 36)
+material_override = ExtResource("1_bln7l")
+mesh = SubResource("CylinderMesh_q1oge")
+
+[node name="HighwayStaticBody" type="StaticBody3D" parent="." unique_id=1813649073]
+
+[node name="DeckCollision" type="CollisionShape3D" parent="HighwayStaticBody" unique_id=702321044]
+shape = SubResource("ConcavePolygonShape3D_bln7l")
+
+[node name="GuardrailL_Collision" type="CollisionShape3D" parent="HighwayStaticBody" unique_id=386468145]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.8, 1.1, 0)
+shape = SubResource("BoxShape3D_jlumd")
+
+[node name="GuardrailR_Collision" type="CollisionShape3D" parent="HighwayStaticBody" unique_id=1136046650]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.8, 1.1, 0)
+shape = SubResource("BoxShape3D_bkf0q")

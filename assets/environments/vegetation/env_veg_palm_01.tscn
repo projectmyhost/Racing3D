@@ -1,0 +1,112 @@
+[gd_scene format=3]
+
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_concrete_01.tres" id="1_n1h0n"]
+[ext_resource type="Material" path="res://assets/materials/environments/mat_env_palm_leaf.tres" id="2_t6761"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_wa3ss"]
+top_radius = 0.22
+bottom_radius = 0.38
+height = 9.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_8pcka"]
+size = Vector2(2.5, 4.2)
+
+[sub_resource type="QuadMesh" id="QuadMesh_g46ou"]
+size = Vector2(2.5, 4.2)
+
+[sub_resource type="QuadMesh" id="QuadMesh_vdmp8"]
+size = Vector2(2.5, 4.2)
+
+[sub_resource type="QuadMesh" id="QuadMesh_t450o"]
+size = Vector2(2.5, 4.2)
+
+[sub_resource type="QuadMesh" id="QuadMesh_hv8sd"]
+size = Vector2(2.5, 4.2)
+
+[sub_resource type="QuadMesh" id="QuadMesh_t88r3"]
+size = Vector2(2.5, 4.2)
+
+[sub_resource type="QuadMesh" id="QuadMesh_gthb8"]
+size = Vector2(2.5, 4.2)
+
+[sub_resource type="QuadMesh" id="QuadMesh_ganya"]
+size = Vector2(2.5, 4.2)
+
+[sub_resource type="QuadMesh" id="QuadMesh_d2wlh"]
+size = Vector2(2.5, 4.2)
+
+[sub_resource type="QuadMesh" id="QuadMesh_n0j5f"]
+size = Vector2(2.5, 4.2)
+
+[sub_resource type="QuadMesh" id="QuadMesh_o5wrf"]
+size = Vector2(2.5, 4.2)
+
+[sub_resource type="QuadMesh" id="QuadMesh_aqga4"]
+size = Vector2(2.5, 4.2)
+
+[node name="HeroPalm" type="Node3D" unique_id=1105077042]
+
+[node name="Trunk" type="MeshInstance3D" parent="." unique_id=583879161]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, 0)
+material_override = ExtResource("1_n1h0n")
+mesh = SubResource("CylinderMesh_wa3ss")
+
+[node name="Frond_0" type="MeshInstance3D" parent="." unique_id=1786471542]
+transform = Transform3D(1, 0, 0, 0, 0.81915206, -0.57357645, 0, 0.57357645, 0.81915206, 0, 8.8, 1.5)
+material_override = ExtResource("2_t6761")
+mesh = SubResource("QuadMesh_8pcka")
+
+[node name="Frond_1" type="MeshInstance3D" parent="." unique_id=1078949684]
+transform = Transform3D(0.8660254, 0.28678823, 0.40957603, 0, 0.81915206, -0.57357645, -0.5, 0.49673176, 0.7094065, 0.75, 8.8, 1.299038)
+material_override = ExtResource("2_t6761")
+mesh = SubResource("QuadMesh_g46ou")
+
+[node name="Frond_2" type="MeshInstance3D" parent="." unique_id=404012907]
+transform = Transform3D(0.49999997, 0.4967318, 0.70940655, 0, 0.81915206, -0.57357645, -0.86602545, 0.2867882, 0.409576, 1.299038, 8.8, 0.75)
+material_override = ExtResource("2_t6761")
+mesh = SubResource("QuadMesh_vdmp8")
+
+[node name="Frond_3" type="MeshInstance3D" parent="." unique_id=1078606862]
+transform = Transform3D(-4.371139e-08, 0.57357645, 0.81915206, 0, 0.81915206, -0.57357645, -1, -2.5071824e-08, -3.5806274e-08, 1.5, 8.8, 9.1845477e-17)
+material_override = ExtResource("2_t6761")
+mesh = SubResource("QuadMesh_t450o")
+
+[node name="Frond_4" type="MeshInstance3D" parent="." unique_id=2126275688]
+transform = Transform3D(-0.50000006, 0.49673176, 0.7094065, 0, 0.81915206, -0.57357645, -0.8660254, -0.28678825, -0.4095761, 1.299038, 8.8, -0.75)
+material_override = ExtResource("2_t6761")
+mesh = SubResource("QuadMesh_hv8sd")
+
+[node name="Frond_5" type="MeshInstance3D" parent="." unique_id=1482474658]
+transform = Transform3D(-0.8660254, 0.28678825, 0.4095761, 0, 0.81915206, -0.57357645, -0.50000006, -0.49673176, -0.7094065, 0.75, 8.8, -1.299038)
+material_override = ExtResource("2_t6761")
+mesh = SubResource("QuadMesh_t88r3")
+
+[node name="Frond_6" type="MeshInstance3D" parent="." unique_id=414560976]
+transform = Transform3D(-1, -5.0143647e-08, -7.161255e-08, 0, 0.81915206, -0.57357645, 8.742278e-08, -0.57357645, -0.81915206, 1.8369095e-16, 8.8, -1.5)
+material_override = ExtResource("2_t6761")
+mesh = SubResource("QuadMesh_gthb8")
+
+[node name="Frond_7" type="MeshInstance3D" parent="." unique_id=1188023719]
+transform = Transform3D(-0.8660254, -0.2867882, -0.409576, 0, 0.81915206, -0.57357645, 0.49999997, -0.49673176, -0.7094065, -0.75, 8.8, -1.299038)
+material_override = ExtResource("2_t6761")
+mesh = SubResource("QuadMesh_ganya")
+
+[node name="Frond_8" type="MeshInstance3D" parent="." unique_id=738157370]
+transform = Transform3D(-0.4999999, -0.4967318, -0.70940655, 0, 0.81915206, -0.57357645, 0.86602545, -0.28678817, -0.40957597, -1.299038, 8.8, -0.75)
+material_override = ExtResource("2_t6761")
+mesh = SubResource("QuadMesh_d2wlh")
+
+[node name="Frond_9" type="MeshInstance3D" parent="." unique_id=312941581]
+transform = Transform3D(1.1924881e-08, -0.57357645, -0.81915206, 0, 0.81915206, -0.57357645, 1, 6.839831e-09, 9.76829e-09, -1.5, 8.8, -2.7553643e-16)
+material_override = ExtResource("2_t6761")
+mesh = SubResource("QuadMesh_n0j5f")
+
+[node name="Frond_10" type="MeshInstance3D" parent="." unique_id=2082464215]
+transform = Transform3D(0.4999999, -0.4967318, -0.70940655, 0, 0.81915206, -0.57357645, 0.86602545, 0.28678817, 0.40957597, -1.299038, 8.8, 0.75)
+material_override = ExtResource("2_t6761")
+mesh = SubResource("QuadMesh_o5wrf")
+
+[node name="Frond_11" type="MeshInstance3D" parent="." unique_id=1822807868]
+transform = Transform3D(0.8660253, -0.2867883, -0.40957618, 0, 0.81915206, -0.57357645, 0.5000002, 0.49673173, 0.70940644, -0.75, 8.8, 1.299038)
+material_override = ExtResource("2_t6761")
+mesh = SubResource("QuadMesh_aqga4")

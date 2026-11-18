@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/environments/tex_ref_drainage_grate.png" id="1_fmg0c"]
+
+[resource]
+albedo_texture = ExtResource("1_fmg0c")
+metallic = 0.85
+roughness = 0.35
+uv1_scale = Vector3(1, 35, 1)
