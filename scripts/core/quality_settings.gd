@@ -3,6 +3,9 @@ extends Node
 ## Adaptive Graphics Quality Settings Autoload for Sunset Street Racing (Forward+ AAA).
 ## Note: Never modifies Engine.max_fps (handled by HomeScreenUI FPS / Smart VSync controls).
 
+const VehicleMaterialEnhancer = preload("res://vehicles/core/VehicleMaterialEnhancer.gd")
+const EnvironmentMaterialEnhancer = preload("res://scripts/core/environment_material_enhancer.gd")
+
 enum Tier { LOW = 0, MEDIUM = 1, HIGH = 2, ULTRA = 3 }
 
 signal tier_changed(tier: Tier)

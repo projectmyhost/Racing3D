@@ -43,6 +43,7 @@ class WheelState:
 	var prev_compression: float = 0.0
 	var was_grounded: bool = false
 	var suspension_velocity: float = 0.0
+	var mount_compress_vel: float = 0.0
 	var spring_force_mag: float = 0.0
 	var normal_force_mag: float = 0.0
 	var wheel_angular_velocity: float = 0.0
@@ -85,11 +86,12 @@ func set_driver_input(throttle: float, brake: float, steer: float, handbrake: fl
 
 # Calculates optimal spawn Y coordinate above ground for immediate equilibrium
 func get_spawn_height() -> float:
-	if not config: return 0.55
-	var k_total = (config.spring_stiffness_front + config.spring_stiffness_rear) * 2.0
-	var eq_compression = (config.mass * 9.8) / maxf(k_total, 1000.0)
-	var mount_y = config.suspension_rest_length * 0.5
-	return config.wheel_radius + config.suspension_rest_length - eq_compression - mount_y
+	if not config: return 0.55 * VehicleConfig.WORLD_SCALE
+	var c := config.create_world_scaled_copy()
+	var k_total = (c.spring_stiffness_front + c.spring_stiffness_rear) * 2.0
+	var eq_compression = (c.mass * 9.8) / maxf(k_total, 1000.0)
+	var mount_y = c.suspension_rest_length * 0.5
+	return c.wheel_radius + c.suspension_rest_length - eq_compression - mount_y
 
 func _ready() -> void:
 	continuous_cd = true
@@ -126,16 +128,20 @@ func initialize_vehicle(target: Variant) -> void:
 	if not p_config:
 		push_error("VehiclePhysicsCore: Cannot initialize with null config.")
 		return
-	config = p_config
+	config = p_config.create_world_scaled_copy()
 	
 	mass = config.mass
 	center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
 	center_of_mass = config.center_of_mass_offset
 	max_steer_angle = deg_to_rad(config.max_steer_angle_deg)
+	var chassis_mat := PhysicsMaterial.new()
+	chassis_mat.bounce = 0.0
+	chassis_mat.friction = 0.04
+	physics_material_override = chassis_mat
 	
-	_setup_chassis_collision()
 	_setup_wheel_states()
 	_setup_visual_adapter()
+	_setup_chassis_collision()
 	
 	forward_speed = 0.0
 	lateral_speed = 0.0
@@ -159,7 +165,8 @@ func _setup_chassis_collision() -> void:
 	for child in get_children():
 		if child is CollisionShape3D and child != chassis_collision:
 			child.queue_free()
-	chassis_collision.shape = VehicleCollisionBuilder.build_chassis_shape(config)
+	var body_min_y: float = visual_adapter.get_visual_body_min_y() if visual_adapter else -999.0
+	chassis_collision.shape = VehicleCollisionBuilder.build_chassis_shape(config, body_min_y)
 	chassis_collision.position = Vector3.ZERO
 
 func _setup_wheel_states() -> void:
@@ -347,16 +354,21 @@ func _update_transmission_and_rpm(delta: float) -> void:
 			gear_changed.emit(current_gear)
 
 func _solve_suspension_raycasts(_delta: float) -> void:
+	var s: float = config.get_world_scale()
 	var space = get_world_3d().direct_space_state
 	var self_rid = get_rid()
-	var ray_headroom = 0.15
+	var ray_headroom = 0.15 * s
 	var max_cast_dist = config.suspension_rest_length + config.suspension_travel + config.wheel_radius + ray_headroom
 	var chassis_up = global_transform.basis.y.normalized()
 	
-	for w in _wheels:
+	for i in range(4):
+		var w = _wheels[i]
 		w.was_grounded = w.is_grounded
 		w.prev_compression = w.compression
 		var mount_world = global_transform * w.mount_local_pos
+		var mount_rel = mount_world - global_position
+		var mount_vel = linear_velocity + angular_velocity.cross(mount_rel)
+		w.mount_compress_vel = -mount_vel.dot(chassis_up)
 		var ray_origin = mount_world + chassis_up * ray_headroom
 		var ray_target = ray_origin - chassis_up * max_cast_dist
 		
@@ -376,6 +388,9 @@ func _solve_suspension_raycasts(_delta: float) -> void:
 			w.is_grounded = true
 			w.contact_point = hit.position
 			w.contact_normal = hit.normal.normalized()
+			var slope_compress_vel := -mount_vel.dot(w.contact_normal)
+			if slope_compress_vel > w.mount_compress_vel:
+				w.mount_compress_vel = slope_compress_vel
 			
 			# Displacement measured strictly along chassis suspension strut axis
 			var dist_along_axis = (ray_origin - hit.position).dot(chassis_up) - ray_headroom
@@ -391,10 +406,16 @@ func _solve_suspension_raycasts(_delta: float) -> void:
 			w.contact_normal = chassis_up
 
 func _solve_suspension_forces(delta: float) -> void:
+	var s: float = config.get_world_scale()
 	for w in _wheels:
-		# Allow hydraulic landing stroke velocity while capping extreme curb/seam spikes
-		var raw_vel = (w.compression - w.prev_compression) / maxf(delta, 0.001)
-		w.suspension_velocity = clampf(raw_vel, -5.5, 5.5)
+		var raw_vel := (w.compression - w.prev_compression) / maxf(delta, 0.001)
+		if w.is_grounded and not w.was_grounded:
+			# Engage hydraulic compression damping immediately on touchdown frame
+			raw_vel = maxf(w.mount_compress_vel, raw_vel)
+		elif w.is_grounded and w.compression >= config.suspension_travel * 0.985:
+			# Bottomed out: compression saturates at max travel, so track real strut body velocity
+			raw_vel = w.mount_compress_vel
+		w.suspension_velocity = clampf(raw_vel, -6.5 * s, 6.5 * s)
 		
 	# Anti-Roll Bar Force computation
 	var arb_f = (_wheels[0].compression - _wheels[1].compression) * config.anti_roll_front
@@ -402,8 +423,8 @@ func _solve_suspension_forces(delta: float) -> void:
 	var arb_forces = [arb_f, -arb_f, arb_r, -arb_r]
 	
 	var chassis_up = global_transform.basis.y.normalized()
-	# Cap peak shock impulse so crest/ramp landings absorb smoothly without bouncing skyward
-	var max_allowed_force = (config.mass * 9.8 / 4.0) * 2.8
+	var corner_mass := config.mass * 0.25
+	var corner_weight := corner_mass * 9.8
 	
 	for i in range(4):
 		var w = _wheels[i]
@@ -415,21 +436,43 @@ func _solve_suspension_forces(delta: float) -> void:
 		var k = config.spring_stiffness_front if w.is_front else config.spring_stiffness_rear
 		var c_bump = config.bump_damping_front if w.is_front else config.bump_damping_rear
 		var c_reb = config.rebound_damping_front if w.is_front else config.rebound_damping_rear
+		var c_crit := 2.0 * sqrt(maxf(k * corner_mass, 1.0))
 		
-		var c = c_bump if w.suspension_velocity >= 0.0 else c_reb
 		var f_spring = k * w.compression
-		var f_damp = c * w.suspension_velocity
+		var f_damp := 0.0
+		var hs_impact := 0.0
+		if w.suspension_velocity >= 0.0:
+			var comp_ratio := clampf(w.compression / maxf(config.suspension_travel, 0.01), 0.0, 1.0)
+			var hs_blend := clampf((w.suspension_velocity - 0.45 * s) / (1.4 * s), 0.0, 1.0)
+			var deep_blend := clampf((comp_ratio - 0.50) / 0.50, 0.0, 1.0)
+			hs_impact = clampf((w.suspension_velocity - 0.75 * s) / (2.2 * s), 0.0, 1.0)
+			var c_bump_eff := lerpf(c_bump, maxf(c_bump * 1.85, c_crit * 1.15), clampf(hs_blend * 0.65 + deep_blend * 0.65, 0.0, 1.0))
+			f_damp = c_bump_eff * w.suspension_velocity
+		else:
+			# Critically damped asymmetric rebound absorbs jump energy without catapulting back into the air
+			var c_reb_eff := maxf(c_reb, c_crit * 1.25)
+			f_damp = c_reb_eff * w.suspension_velocity
 		var f_arb = arb_forces[i]
 		
-		# Progressive viscoelastic bump-stop (spring + hydraulic compression damper near full stroke)
+		# Progressive viscoelastic elastomer bump-stop (high hysteresis, minimal spring-back)
 		var f_bump_stop = 0.0
-		var bump_threshold = config.suspension_travel * 0.78
+		var bump_threshold = config.suspension_travel * 0.75
 		if w.compression > bump_threshold:
-			var excess_norm = (w.compression - bump_threshold) / maxf(config.suspension_travel - bump_threshold, 0.001)
-			var bs_damp = config.bump_stop_damping * maxf(0.0, w.suspension_velocity) * excess_norm
-			f_bump_stop = config.bump_stop_stiffness * (excess_norm * excess_norm) + bs_damp
+			var excess_norm = clampf((w.compression - bump_threshold) / maxf(config.suspension_travel - bump_threshold, 0.001), 0.0, 1.0)
+			if w.suspension_velocity >= 0.0:
+				var bs_spring = minf(config.bump_stop_stiffness, k * 0.30) * (excess_norm * excess_norm)
+				var bs_damp = maxf(config.bump_stop_damping, c_crit * 1.05) * w.suspension_velocity * excess_norm
+				f_bump_stop = bs_spring + bs_damp
+			else:
+				var bs_reb_spring = minf(config.bump_stop_stiffness, k * 0.10) * (excess_norm * excess_norm)
+				var bs_reb_damp = (c_crit * 0.75) * w.suspension_velocity * excess_norm
+				f_bump_stop = maxf(0.0, bs_reb_spring + bs_reb_damp)
 			
-		var f_total_normal = clampf(f_spring + f_damp + f_arb + f_bump_stop, 0.0, max_allowed_force)
+		# Allow high-speed hydraulic absorption on hard landings, while softly clamping rebound push
+		var rebound_fade := clampf((-w.mount_compress_vel - 0.05 * s) / (0.35 * s), 0.0, 1.0)
+		var comp_cap := lerpf(corner_weight * 4.2, corner_weight * 7.8, hs_impact)
+		var force_cap := lerpf(comp_cap, corner_weight * 1.12, rebound_fade)
+		var f_total_normal = clampf(f_spring + f_damp + f_arb + f_bump_stop, 0.0, force_cap)
 		w.spring_force_mag = f_spring
 		w.normal_force_mag = f_total_normal
 		
@@ -438,17 +481,22 @@ func _solve_suspension_forces(delta: float) -> void:
 		var contact_offset = w.contact_point - global_position
 		apply_force(force_vec, contact_offset)
 
-	# GTA V Crest & Landing Shock Absorber: damps excessive pitch oscillation when settling on slopes/bumps
+	# GTA V Crest & Landing Shock Absorber: damps pitch/roll oscillation cleanly
 	var grounded_wheels := 0
 	for w in _wheels:
 		if w.is_grounded:
 			grounded_wheels += 1
+	var pitch_rate := angular_velocity.dot(global_transform.basis.x)
+	var roll_rate := angular_velocity.dot(-global_transform.basis.z)
+	var s2 := s * s
 	if grounded_wheels >= 2:
-		var pitch_rate := angular_velocity.dot(global_transform.basis.x)
-		var roll_rate := angular_velocity.dot(-global_transform.basis.z)
-		var pitch_damper_torque := -global_transform.basis.x * (pitch_rate * config.mass * 2.2)
-		var roll_damper_torque := global_transform.basis.z * (roll_rate * config.mass * 1.4)
+		var pitch_damper_torque := -global_transform.basis.x * (pitch_rate * config.mass * 2.8 * s2)
+		var roll_damper_torque := global_transform.basis.z * (roll_rate * config.mass * 1.6 * s2)
 		apply_torque(pitch_damper_torque + roll_damper_torque)
+	else:
+		var air_pitch_damp := -global_transform.basis.x * (pitch_rate * config.mass * 0.45 * s2)
+		var air_roll_damp := global_transform.basis.z * (roll_rate * config.mass * 0.55 * s2)
+		apply_torque(air_pitch_damp + air_roll_damp)
 
 func _solve_tire_forces(delta: float) -> void:
 	var drive_count = 0
@@ -710,16 +758,21 @@ func _update_visual_adapter(delta: float) -> void:
 	if not visual_adapter:
 		return
 		
+	var grounded_count := 0
+	var max_comp_ratio := 0.0
 	for i in range(4):
 		var w = _wheels[i]
-		var spin_step = -w.wheel_angular_velocity * delta
+		if w.is_grounded:
+			grounded_count += 1
+		max_comp_ratio = maxf(max_comp_ratio, w.compression / maxf(config.suspension_travel, 0.01))
+		visual_adapter.set_wheel_angular_velocity(i, w.wheel_angular_velocity)
 		visual_adapter.update_wheel_visual(
 			i,
 			w.is_grounded,
 			w.contact_point,
 			w.contact_normal,
 			w.steer_angle,
-			spin_step
+			0.0
 		)
 		
 	var chassis_fwd = -global_transform.basis.z
@@ -756,7 +809,12 @@ func _update_visual_adapter(delta: float) -> void:
 	heave_velocity += heave_spring_acc * delta
 	current_heave += heave_velocity * delta
 	
-	visual_adapter.set_chassis_lean(current_pitch, target_roll, current_heave)
+	var lean_scale := 1.0
+	if grounded_count == 0:
+		lean_scale = 0.25
+	elif max_comp_ratio > 0.68:
+		lean_scale = clampf(1.0 - (max_comp_ratio - 0.68) / 0.30, 0.15, 1.0)
+	visual_adapter.set_chassis_lean(current_pitch * lean_scale, target_roll * lean_scale, current_heave * lean_scale)
 
 func respawn(target_position: Vector3, yaw_rad: float) -> void:
 	linear_velocity = Vector3.ZERO

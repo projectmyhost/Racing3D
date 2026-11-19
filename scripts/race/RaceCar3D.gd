@@ -20,18 +20,19 @@ func _ready() -> void:
 	_setup_drift_particles()
 
 func _setup_vehicle_lights() -> void:
-	var half_wb: float = config.wheelbase * 0.5 if config else 1.4
-	var front_z: float = -(half_wb + 0.78)
-	var rear_z: float = half_wb + 0.96
+	var s: float = config.get_world_scale() if config else VehicleConfig.WORLD_SCALE
+	var half_wb: float = config.wheelbase * 0.5 if config else 1.4 * s
+	var front_z: float = -(half_wb + 0.78 * s)
+	var rear_z: float = half_wb + 0.96 * s
 	for x_sign in [-1.0, 1.0]:
 		var spot := SpotLight3D.new()
 		spot.name = "HeadlightSpotL" if x_sign < 0.0 else "HeadlightSpotR"
-		spot.position = Vector3(0.62 * x_sign, 0.50, front_z)
+		spot.position = Vector3(0.62 * s * x_sign, 0.50 * s, front_z)
 		spot.rotation = Vector3(deg_to_rad(-8.0), 0.0, 0.0)
 		spot.light_color = Color(0.98, 0.96, 0.9, 1.0)
 		spot.light_energy = 1.5
 		spot.light_specular = 0.25
-		spot.spot_range = 16.0
+		spot.spot_range = 16.0 * s
 		spot.spot_attenuation = 1.45
 		spot.spot_angle = 35.0
 		spot.shadow_enabled = false
@@ -39,22 +40,23 @@ func _setup_vehicle_lights() -> void:
 
 	var rear_glow := OmniLight3D.new()
 	rear_glow.name = "RearTaillightGlow"
-	rear_glow.position = Vector3(0.0, 0.46, rear_z)
+	rear_glow.position = Vector3(0.0, 0.46 * s, rear_z)
 	rear_glow.light_color = Color(1.0, 0.12, 0.08, 1.0)
 	rear_glow.light_energy = 0.55
 	rear_glow.light_specular = 0.12
-	rear_glow.omni_range = 2.6
+	rear_glow.omni_range = 2.6 * s
 	rear_glow.omni_attenuation = 1.4
 	rear_glow.shadow_enabled = false
 	add_child(rear_glow)
 
 func _setup_reflection_probe() -> void:
+	var s: float = config.get_world_scale() if config else VehicleConfig.WORLD_SCALE
 	_reflection_probe = ReflectionProbe.new()
 	_reflection_probe.name = "VehicleReflectionProbe"
-	_reflection_probe.size = Vector3(4.8, 2.4, 4.8)
-	_reflection_probe.origin_offset = Vector3(0.0, 1.0, 0.0)
+	_reflection_probe.size = Vector3(4.8, 2.4, 4.8) * s
+	_reflection_probe.origin_offset = Vector3(0.0, 1.0 * s, 0.0)
 	_reflection_probe.ambient_mode = ReflectionProbe.AMBIENT_DISABLED
-	_reflection_probe.max_distance = 45.0
+	_reflection_probe.max_distance = 45.0 * s
 	_reflection_probe.enable_shadows = false
 	_reflection_probe.update_mode = ReflectionProbe.UPDATE_ONCE
 	_reflection_probe.intensity = 0.75
@@ -72,6 +74,7 @@ func _setup_drift_particles() -> void:
 	_update_smoke_positions()
 
 func _create_tire_smoke_emitter(emitter_name: String) -> CPUParticles3D:
+	var s: float = config.get_world_scale() if config else VehicleConfig.WORLD_SCALE
 	var particles = CPUParticles3D.new()
 	particles.name = emitter_name
 	particles.emitting = false
@@ -80,16 +83,16 @@ func _create_tire_smoke_emitter(emitter_name: String) -> CPUParticles3D:
 	particles.speed_scale = 1.0
 	particles.explosiveness = 0.0
 	particles.randomness = 0.3
-	particles.gravity = Vector3(0.0, 1.2, 0.0)
-	particles.initial_velocity_min = 0.5
-	particles.initial_velocity_max = 2.0
+	particles.gravity = Vector3(0.0, 1.2 * s, 0.0)
+	particles.initial_velocity_min = 0.5 * s
+	particles.initial_velocity_max = 2.0 * s
 	particles.scale_amount_min = 0.15
 	particles.scale_amount_max = 0.45
 	particles.color = Color(0.9, 0.9, 0.95, 0.4)
 	
 	var mesh = SphereMesh.new()
-	mesh.radius = 0.18
-	mesh.height = 0.36
+	mesh.radius = 0.18 * s
+	mesh.height = 0.36 * s
 	mesh.radial_segments = 6
 	mesh.rings = 4
 	var mat = StandardMaterial3D.new()
@@ -104,9 +107,10 @@ func _create_tire_smoke_emitter(emitter_name: String) -> CPUParticles3D:
 func _update_smoke_positions() -> void:
 	if not config or not _smoke_left or not _smoke_right:
 		return
+	var s: float = config.get_world_scale()
 	var half_wb = config.wheelbase * 0.5
 	var half_tw_r = config.track_width_rear * 0.5
-	var y_pos = 0.08
+	var y_pos = 0.08 * s
 	_smoke_left.position = Vector3(-half_tw_r, y_pos, half_wb)
 	_smoke_right.position = Vector3(half_tw_r, y_pos, half_wb)
 

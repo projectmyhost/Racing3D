@@ -1,9 +1,51 @@
 class_name VehicleConfig
 extends Resource
 
+## World-scale factor aligning 1:1 metric car specs with the 1.48x CityMap track & props.
+const WORLD_SCALE: float = 1.48
+
 # Universal Data-Driven Vehicle Configuration.
 # Holds all physical, powertrain, suspension, tire, and visual parameters
 # for any vehicle in the game without writing custom physics code.
+
+var _world_scale_applied: float = 1.0
+
+func get_world_scale() -> float:
+	return _world_scale_applied
+
+func create_world_scaled_copy(target_scale: float = WORLD_SCALE) -> VehicleConfig:
+	if absf(_world_scale_applied - 1.0) > 0.01 or absf(target_scale - 1.0) <= 0.001:
+		return self
+	var c := duplicate(false) as VehicleConfig
+	var s := target_scale
+	var inv_sqrt_s := 1.0 / sqrt(s)
+	c._world_scale_applied = s
+	c.wheelbase *= s
+	c.track_width_front *= s
+	c.track_width_rear *= s
+	c.chassis_size *= s
+	c.chassis_offset *= s
+	c.center_of_mass_offset *= s
+	c.ground_clearance_chamfer *= s
+	c.suspension_rest_length *= s
+	c.suspension_travel *= s
+	c.spring_stiffness_front /= s
+	c.spring_stiffness_rear /= s
+	c.bump_damping_front *= inv_sqrt_s
+	c.bump_damping_rear *= inv_sqrt_s
+	c.rebound_damping_front *= inv_sqrt_s
+	c.rebound_damping_rear *= inv_sqrt_s
+	c.bump_stop_stiffness /= s
+	c.bump_stop_damping *= inv_sqrt_s
+	c.wheel_radius *= s
+	c.wheel_width *= s
+	c.final_drive_ratio *= s
+	c.front_brake_torque *= s
+	c.rear_brake_torque *= s
+	c.handbrake_torque *= s
+	c.visual_scale *= s
+	c.visual_offset *= s
+	return c
 
 @export_group("Identification")
 @export var id: String = "sedan"

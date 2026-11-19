@@ -2,6 +2,7 @@ class_name ShowcaseCar
 extends Node3D
 
 const VehicleMaterialEnhancer = preload("res://vehicles/core/VehicleMaterialEnhancer.gd")
+const VehicleConfigScript = preload("res://vehicles/core/VehicleConfig.gd")
 
 ## High-performance, zero-lag vehicle showcase controller.
 ## Uses background threaded ResourceLoader preloading + pre-built rig pooling
@@ -102,8 +103,10 @@ func _ready() -> void:
 		visual_root.name = "VisualRoot"
 		add_child(visual_root)
 	visual_root.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	var world_s: float = VehicleConfigScript.WORLD_SCALE
+	visual_root.scale = Vector3.ONE * world_s
 
-	VehicleMaterialEnhancer.attach_contact_shadow(self, Vector3(0.0, 0.05, 0.0), 2.25, 4.75)
+	VehicleMaterialEnhancer.attach_contact_shadow(self, Vector3(0.0, 0.05 * world_s, 0.0), 2.25 * world_s, 4.75 * world_s)
 
 	var initial_car = current_model if not current_model.is_empty() else "porsche_mission_x"
 	if has_node("/root/PlayerProfile"):
@@ -748,31 +751,32 @@ func set_paint_color(color: Color) -> void:
 
 func set_headlights(on: bool) -> void:
 	headlights_on = on
+	var s: float = VehicleConfigScript.WORLD_SCALE
 	if fx_root:
 		var spot_l = fx_root.get_node_or_null("HeadlightSpotL") as SpotLight3D
 		var spot_r = fx_root.get_node_or_null("HeadlightSpotR") as SpotLight3D
 		var rear_glow = fx_root.get_node_or_null("RearTaillightGlow") as OmniLight3D
 		if spot_l:
-			spot_l.position = Vector3(-0.65, 0.48, -2.18)
+			spot_l.position = Vector3(-0.65 * s, 0.48 * s, -2.18 * s)
 			spot_l.rotation = Vector3(deg_to_rad(-8.0), 0.0, 0.0)
 			spot_l.light_energy = 1.5
 			spot_l.light_specular = 0.25
-			spot_l.spot_range = 15.0
+			spot_l.spot_range = 15.0 * s
 			spot_l.spot_angle = 36.0
 			spot_l.visible = on
 		if spot_r:
-			spot_r.position = Vector3(0.65, 0.48, -2.18)
+			spot_r.position = Vector3(0.65 * s, 0.48 * s, -2.18 * s)
 			spot_r.rotation = Vector3(deg_to_rad(-8.0), 0.0, 0.0)
 			spot_r.light_energy = 1.5
 			spot_r.light_specular = 0.25
-			spot_r.spot_range = 15.0
+			spot_r.spot_range = 15.0 * s
 			spot_r.spot_angle = 36.0
 			spot_r.visible = on
 		if rear_glow:
-			rear_glow.position = Vector3(0.0, 0.46, 2.38)
+			rear_glow.position = Vector3(0.0, 0.46 * s, 2.38 * s)
 			rear_glow.light_energy = 0.6
 			rear_glow.light_specular = 0.12
-			rear_glow.omni_range = 2.8
+			rear_glow.omni_range = 2.8 * s
 			rear_glow.visible = on
 
 func set_steer(angle_deg: float) -> void:
@@ -811,6 +815,7 @@ func apply_visual_scene(packed: PackedScene) -> void:
 			c.queue_free()
 	var new_vis = packed.instantiate() as Node3D
 	new_vis.name = "VisualRoot"
+	new_vis.scale = Vector3.ONE * VehicleConfigScript.WORLD_SCALE
 	add_child(new_vis)
 	visual_root = new_vis
 	_setup_showcase_wheels()

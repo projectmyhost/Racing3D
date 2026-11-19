@@ -41,15 +41,15 @@ var total_checkpoints: int = 4
 
 # Cinematic Chase Camera Parameters
 @export var camera_turn_lag: float = 3.8
-@export var camera_lateral_offset_factor: float = 0.65
-@export var min_camera_distance: float = 3.8
+@export var camera_lateral_offset_factor: float = 0.85
+@export var min_camera_distance: float = 5.2
 
 # Ingame Interactive Orbit & Zoom Camera Variables
 var _cam_world_yaw: float = 0.0
-var _cam_pitch: float = deg_to_rad(14.0)
-var _cam_distance: float = 6.2
-var _cam_current_dist: float = 6.2
-var _cam_safe_dist: float = 6.2
+var _cam_pitch: float = deg_to_rad(13.5)
+var _cam_distance: float = 8.4
+var _cam_current_dist: float = 8.4
+var _cam_safe_dist: float = 8.4
 var _cam_speed_pullback: float = 0.0
 var _cam_lateral_shift: float = 0.0
 var _cam_smooth_y: float = 0.0
@@ -57,8 +57,8 @@ var _cam_y_initialized: bool = false
 var _is_dragging_cam: bool = false
 var _cam_idle_timer: float = 0.0
 var _is_manual_mode: bool = false
-const MIN_CAM_DIST: float = 3.8
-const MAX_CAM_DIST: float = 12.0
+const MIN_CAM_DIST: float = 5.2
+const MAX_CAM_DIST: float = 16.5
 const MOUSE_SENSITIVITY: float = 0.005
 
 func _ready() -> void:
@@ -93,7 +93,7 @@ func _ready() -> void:
 		_cam_world_yaw = atan2(car.global_transform.basis.z.x, car.global_transform.basis.z.z)
 		_cam_current_dist = _cam_distance
 		_cam_safe_dist = _cam_distance
-		_cam_smooth_y = car.global_position.y + 1.1
+		_cam_smooth_y = car.global_position.y + 1.55
 		_cam_y_initialized = true
 		_update_chase_camera(0.016)
 		
@@ -131,7 +131,7 @@ func _physics_process(_delta: float) -> void:
 	if not car:
 		return
 	var desired_dist = _cam_distance + _cam_speed_pullback
-	var look_target = car.global_position + Vector3(0.0, 1.1, 0.0)
+	var look_target = car.global_position + Vector3(0.0, 1.55, 0.0)
 	var horiz_dist = desired_dist * cos(_cam_pitch)
 	var vert_dist = desired_dist * sin(_cam_pitch)
 	var cam_offset = Vector3(
@@ -141,8 +141,8 @@ func _physics_process(_delta: float) -> void:
 	)
 	var cam_right = Vector3(cos(_cam_world_yaw), 0.0, -sin(_cam_world_yaw))
 	var ray_target = look_target + cam_offset + cam_right * _cam_lateral_shift
-	ray_target.y = maxf(ray_target.y, car.global_position.y + 0.65)
-	ray_target.y = maxf(ray_target.y, 1.1)
+	ray_target.y = maxf(ray_target.y, car.global_position.y + 0.90)
+	ray_target.y = maxf(ray_target.y, 1.4)
 
 	var w3d = get_world_3d()
 	if w3d and w3d.direct_space_state:
@@ -150,7 +150,7 @@ func _physics_process(_delta: float) -> void:
 		ray_query.exclude = [car.get_rid()]
 		var hit = w3d.direct_space_state.intersect_ray(ray_query)
 		if hit:
-			var hit_dist = look_target.distance_to(hit.position) - 0.45
+			var hit_dist = look_target.distance_to(hit.position) - 0.65
 			_cam_safe_dist = maxf(hit_dist, min_camera_distance)
 		else:
 			_cam_safe_dist = desired_dist
@@ -222,7 +222,7 @@ func _update_chase_camera(delta: float) -> void:
 
 	# Subtle speed-based pullback (gives sense of acceleration without world-space lag stutter)
 	var speed_ratio = clampf(absf(car.forward_speed) / 65.0, 0.0, 1.0)
-	var target_pullback = speed_ratio * 0.85
+	var target_pullback = speed_ratio * 1.15
 	_cam_speed_pullback = lerpf(_cam_speed_pullback, target_pullback, 1.0 - exp(-4.5 * safe_delta))
 
 	# Smoothly track safe obstacle-free camera distance
@@ -232,7 +232,7 @@ func _update_chase_camera(delta: float) -> void:
 	_cam_current_dist = lerpf(_cam_current_dist, desired_dist, 1.0 - exp(-dist_rate * safe_delta))
 
 	# Smooth vertical target slightly to absorb micro suspension bumps while locking XZ tightly to interpolated car
-	var target_y = car_pos.y + 1.1
+	var target_y = car_pos.y + 1.55
 	if not _cam_y_initialized:
 		_cam_smooth_y = target_y
 		_cam_y_initialized = true
@@ -253,8 +253,8 @@ func _update_chase_camera(delta: float) -> void:
 
 	var final_pos = look_target + cam_offset
 	# Absolute ground protection: camera must NEVER go below ground or view into void
-	final_pos.y = maxf(final_pos.y, car_pos.y + 0.65)
-	final_pos.y = maxf(final_pos.y, 1.1)
+	final_pos.y = maxf(final_pos.y, car_pos.y + 0.90)
+	final_pos.y = maxf(final_pos.y, 1.4)
 
 	# Anti-clip enforcement: never penetrate inside car body
 	var to_cam_vec = final_pos - look_target

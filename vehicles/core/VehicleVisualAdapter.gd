@@ -20,15 +20,21 @@ var steer_pivots: Array[Node3D] = [null, null, null, null]
 var spin_pivots: Array[Node3D] = [null, null, null, null]
 var wheel_meshes: Array[Node3D] = [null, null, null, null]
 var wheel_rest_positions: Array[Vector3] = [Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO]
+var wheel_spin_axes: Array[Vector3] = [Vector3.RIGHT, Vector3.RIGHT, Vector3.RIGHT, Vector3.RIGHT]
+var wheel_visual_radii: Array[float] = [0.35, 0.35, 0.35, 0.35]
 
 # Current visual dynamic state
 var current_wheel_spins: Array[float] = [0.0, 0.0, 0.0, 0.0]
+var wheel_angular_velocities: Array[float] = [0.0, 0.0, 0.0, 0.0]
+var _render_spin_driven: bool = false
 var in_situ_wheels: Array[Node3D] = [null, null, null, null]
 var in_situ_initial_bases: Array[Basis] = [Basis.IDENTITY, Basis.IDENTITY, Basis.IDENTITY, Basis.IDENTITY]
 var in_situ_initial_positions: Array[Vector3] = [Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO]
 var in_situ_rel_bases: Array[Basis] = [Basis.IDENTITY, Basis.IDENTITY, Basis.IDENTITY, Basis.IDENTITY]
 var in_situ_parent_centers: Array[Vector3] = [Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO]
 var in_situ_node_centers: Array[Vector3] = [Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3.ZERO]
+var _measured_body_min_y: float = -0.30
+var _visual_ground_clearance_offset: float = 0.0
 
 func setup(p_config: VehicleConfig) -> bool:
 	config = p_config
@@ -70,11 +76,50 @@ func setup(p_config: VehicleConfig) -> bool:
 	_locate_body_node()
 	_prepare_vehicle_wheels()
 	_setup_wheel_rigs()
+	_calibrate_all_wheel_axes()
 	_calibrate_visual_ride_height()
+	_measure_body_floor_bounds()
 	_apply_enhanced_materials()
 	_attach_underbody_contact_shadow()
 	
 	return true
+
+func _process(delta: float) -> void:
+	if not _render_spin_driven:
+		return
+	var safe_delta := clampf(delta, 0.0, 0.05)
+	for i in range(4):
+		var spin_step := -wheel_angular_velocities[i] * safe_delta
+		current_wheel_spins[i] = wrapf(current_wheel_spins[i] + spin_step, -PI, PI)
+		if spin_pivots[i] and is_instance_valid(spin_pivots[i]):
+			spin_pivots[i].transform.basis = Basis(wheel_spin_axes[i], current_wheel_spins[i])
+		var in_situ = in_situ_wheels[i]
+		if in_situ and is_instance_valid(in_situ):
+			var st_ang: float = steer_pivots[i].rotation.y if (steer_pivots[i] and i < 2) else 0.0
+			var R_steer := Basis(Vector3.UP, st_ang)
+			var steered_axle := R_steer * wheel_spin_axes[i]
+			var R_spin := Basis(steered_axle, current_wheel_spins[i])
+			var R_net := R_spin * R_steer
+			var b_rel := in_situ_rel_bases[i]
+			var R_local := b_rel.inverse() * R_net * b_rel
+			var new_basis := in_situ_initial_bases[i] * R_local
+			in_situ.transform.basis = new_basis
+			var C_par := in_situ_parent_centers[i]
+			var C_nod := in_situ_node_centers[i]
+			in_situ.transform.origin = C_par - new_basis * C_nod
+
+func set_wheel_angular_velocity(wheel_idx: int, angular_vel: float) -> void:
+	if wheel_idx >= 0 and wheel_idx < 4:
+		_render_spin_driven = true
+		wheel_angular_velocities[wheel_idx] = angular_vel
+
+func get_visual_body_min_y() -> float:
+	return _measured_body_min_y
+
+func get_wheel_visual_radius(wheel_idx: int) -> float:
+	if wheel_idx >= 0 and wheel_idx < 4:
+		return wheel_visual_radii[wheel_idx]
+	return config.wheel_radius if config else 0.35
 
 func _attach_underbody_contact_shadow() -> void:
 	if not config:
@@ -85,10 +130,12 @@ func _attach_underbody_contact_shadow() -> void:
 	var k_total := (config.spring_stiffness_front + config.spring_stiffness_rear) * 2.0
 	var eq_comp := (config.mass * 9.8) / maxf(k_total, 1000.0)
 	var mount_y := config.suspension_rest_length * 0.5
-	var ground_y := mount_y - (config.suspension_rest_length - eq_comp) - config.wheel_radius + 0.08
+	var scale_y := visual_root.scale.y if visual_root else 1.0
+	var ground_y := mount_y - (config.suspension_rest_length - eq_comp) - config.wheel_radius + 0.08 * scale_y
 	VehicleMaterialEnhancer.attach_contact_shadow(self, Vector3(0.0, ground_y, 0.0), shadow_w, shadow_l)
 
 func cleanup() -> void:
+	_render_spin_driven = false
 	for i in range(4):
 		wheel_hubs[i] = null
 		steer_pivots[i] = null
@@ -99,6 +146,9 @@ func cleanup() -> void:
 		in_situ_initial_positions[i] = Vector3.ZERO
 		in_situ_rel_bases[i] = Basis.IDENTITY
 		wheel_rest_positions[i] = Vector3.ZERO
+		wheel_spin_axes[i] = Vector3.RIGHT
+		wheel_visual_radii[i] = config.wheel_radius if config else 0.35
+		wheel_angular_velocities[i] = 0.0
 		current_wheel_spins[i] = 0.0
 	body_pivot = null
 	body_node = null
@@ -114,50 +164,51 @@ func update_wheel_visual(wheel_idx: int, is_grounded: bool, contact_point: Vecto
 		return
 	var hub = wheel_hubs[wheel_idx]
 	var rest_pos = wheel_rest_positions[wheel_idx]
+	var scale_y := visual_root.scale.y if visual_root else 1.0
+	var inv_sy := 1.0 / maxf(scale_y, 0.01)
 	if is_grounded and visual_root and visual_root.is_inside_tree():
-		var target_world_pos = contact_point + contact_normal * config.wheel_radius
+		var w_rad := wheel_visual_radii[wheel_idx] * scale_y
+		var target_world_pos = contact_point + contact_normal * w_rad
 		var local_target = visual_root.to_local(target_world_pos)
 		
-		# Realistic suspension bump-stop limit:
-		# Prevents wheel from penetrating upward through fender arch during heavy compression, bumps, or gravity shock
-		var max_upward = config.suspension_travel * 0.25
-		if config and config.id.to_lower() == "porsche_mission_x":
-			max_upward = 0.012
+		# Allow full suspension bump travel while keeping tires seated flush on road
+		var max_upward := (config.suspension_travel * 0.70) * inv_sy if config else 0.085
 		var max_y = rest_pos.y + max_upward
-		var min_y = rest_pos.y - config.suspension_travel
+		var min_y = rest_pos.y - ((config.suspension_travel * inv_sy) if config else 0.16)
 		var clamped_y = clampf(local_target.y, min_y, max_y)
 		hub.position = Vector3(rest_pos.x, clamped_y, rest_pos.z)
 	else:
-		hub.position = rest_pos + Vector3(0.0, -config.suspension_travel, 0.0)
+		hub.position = rest_pos + Vector3(0.0, -(config.suspension_travel * inv_sy if config else 0.16), 0.0)
 		
-	current_wheel_spins[wheel_idx] = wrapf(current_wheel_spins[wheel_idx] + spin_step, -PI, PI)
-	
 	if steer_pivots[wheel_idx]:
 		steer_pivots[wheel_idx].rotation.y = steer_angle
-	if spin_pivots[wheel_idx]:
-		spin_pivots[wheel_idx].rotation.x = current_wheel_spins[wheel_idx]
-		
-	# In-situ wheels embedded in model hierarchy
-	var in_situ = in_situ_wheels[wheel_idx]
-	if in_situ and is_instance_valid(in_situ):
-		var st_ang = steer_angle if wheel_idx < 2 else 0.0
-		var R_steer = Basis(Vector3.UP, st_ang)
-		var steered_axle = R_steer * Vector3.RIGHT
-		var R_spin = Basis(steered_axle, current_wheel_spins[wheel_idx])
-		var R_net = R_spin * R_steer
-		var b_rel = in_situ_rel_bases[wheel_idx]
-		var R_local = b_rel.inverse() * R_net * b_rel
-		var new_basis = in_situ_initial_bases[wheel_idx] * R_local
-		in_situ.transform.basis = new_basis
-		var C_par = in_situ_parent_centers[wheel_idx]
-		var C_nod = in_situ_node_centers[wheel_idx]
-		in_situ.transform.origin = C_par - new_basis * C_nod
+
+	# If not driven at render rate via set_wheel_angular_velocity, step spin here for test compatibility
+	if not _render_spin_driven or absf(spin_step) > 0.00001:
+		current_wheel_spins[wheel_idx] = wrapf(current_wheel_spins[wheel_idx] + spin_step, -PI, PI)
+		if spin_pivots[wheel_idx]:
+			spin_pivots[wheel_idx].transform.basis = Basis(wheel_spin_axes[wheel_idx], current_wheel_spins[wheel_idx])
+		var in_situ = in_situ_wheels[wheel_idx]
+		if in_situ and is_instance_valid(in_situ):
+			var st_ang = steer_angle if wheel_idx < 2 else 0.0
+			var R_steer = Basis(Vector3.UP, st_ang)
+			var steered_axle = R_steer * wheel_spin_axes[wheel_idx]
+			var R_spin = Basis(steered_axle, current_wheel_spins[wheel_idx])
+			var R_net = R_spin * R_steer
+			var b_rel = in_situ_rel_bases[wheel_idx]
+			var R_local = b_rel.inverse() * R_net * b_rel
+			var new_basis = in_situ_initial_bases[wheel_idx] * R_local
+			in_situ.transform.basis = new_basis
+			var C_par = in_situ_parent_centers[wheel_idx]
+			var C_nod = in_situ_node_centers[wheel_idx]
+			in_situ.transform.origin = C_par - new_basis * C_nod
 
 # Backward compatibility wrappers
 func set_wheel_suspension_offset(wheel_idx: int, compression_displacement: float) -> void:
 	if wheel_idx >= 0 and wheel_idx < 4 and wheel_hubs[wheel_idx]:
 		var rest_pos = wheel_rest_positions[wheel_idx]
-		wheel_hubs[wheel_idx].position = rest_pos + Vector3(0.0, compression_displacement, 0.0)
+		var inv_sy := 1.0 / maxf(visual_root.scale.y if visual_root else 1.0, 0.01)
+		wheel_hubs[wheel_idx].position = rest_pos + Vector3(0.0, compression_displacement * inv_sy, 0.0)
 
 func set_wheel_steer_angle(wheel_idx: int, steer_angle_rad: float) -> void:
 	if wheel_idx >= 0 and wheel_idx < 4 and steer_pivots[wheel_idx]:
@@ -166,7 +217,7 @@ func set_wheel_steer_angle(wheel_idx: int, steer_angle_rad: float) -> void:
 func add_wheel_spin(wheel_idx: int, delta_spin_rad: float) -> void:
 	if wheel_idx >= 0 and wheel_idx < 4 and spin_pivots[wheel_idx]:
 		current_wheel_spins[wheel_idx] = wrapf(current_wheel_spins[wheel_idx] + delta_spin_rad, -PI, PI)
-		spin_pivots[wheel_idx].rotation.x = current_wheel_spins[wheel_idx]
+		spin_pivots[wheel_idx].transform.basis = Basis(wheel_spin_axes[wheel_idx], current_wheel_spins[wheel_idx])
 
 # Updates chassis body roll, pitch, and heave generated by physics forces
 func set_chassis_lean(pitch_rad: float, roll_rad: float, heave_m: float) -> void:
@@ -174,34 +225,36 @@ func set_chassis_lean(pitch_rad: float, roll_rad: float, heave_m: float) -> void
 		var safe_pitch := clampf(pitch_rad, deg_to_rad(-1.6), deg_to_rad(1.8))
 		var safe_roll := clampf(roll_rad, deg_to_rad(-3.2), deg_to_rad(3.2))
 		body_pivot.rotation = Vector3(safe_pitch, 0.0, safe_roll)
-		var clamped_heave = heave_m
+		var inv_sy := 1.0 / maxf(visual_root.scale.y if visual_root else 1.0, 0.01)
+		var clamped_heave = heave_m * inv_sy
 		if config:
-			var max_squat = minf(config.suspension_travel * 0.12, 0.008)
-			clamped_heave = clampf(heave_m, -max_squat, 0.008)
+			var max_squat = minf(config.suspension_travel * 0.12 * inv_sy, 0.008)
+			clamped_heave = clampf(clamped_heave, -max_squat, 0.008)
 		body_pivot.position = Vector3(0.0, clamped_heave, 0.0)
 
 func _calibrate_visual_ride_height() -> void:
 	if not visual_root or not config:
 		return
-	var k_total = (config.spring_stiffness_front + config.spring_stiffness_rear) * 2.0
-	var eq_compression = (config.mass * 9.8) / maxf(k_total, 1000.0)
-	var eq_susp_len = config.suspension_rest_length - eq_compression
-	var mount_y = config.suspension_rest_length * 0.5
-	var local_wheel_center_y = mount_y - eq_susp_len
+	var k_total := (config.spring_stiffness_front + config.spring_stiffness_rear) * 2.0
+	var eq_compression := (config.mass * 9.8) / maxf(k_total, 1000.0)
+	var eq_susp_len := config.suspension_rest_length - eq_compression
+	var mount_y := config.suspension_rest_length * 0.5
+	var eq_ground_local_y := mount_y - eq_susp_len - config.wheel_radius
 	
-	var avg_model_wheel_y = 0.0
-	var valid_wheels = 0
+	var avg_tire_bottom_y := 0.0
+	var valid_wheels := 0
+	var scale_y := visual_root.scale.y
 	for i in range(4):
 		if wheel_rest_positions[i] != Vector3.ZERO:
-			avg_model_wheel_y += wheel_rest_positions[i].y
+			avg_tire_bottom_y += (wheel_rest_positions[i].y * scale_y - wheel_visual_radii[i] * scale_y)
 			valid_wheels += 1
 	if valid_wheels > 0:
-		avg_model_wheel_y /= float(valid_wheels)
+		avg_tire_bottom_y /= float(valid_wheels)
 	else:
-		avg_model_wheel_y = config.wheel_radius
+		avg_tire_bottom_y = 0.0
 		
-	var visual_y_offset = local_wheel_center_y - avg_model_wheel_y
-	visual_root.position = config.visual_offset + Vector3(0.0, visual_y_offset, 0.0)
+	var visual_y_offset := eq_ground_local_y - avg_tire_bottom_y
+	visual_root.position = Vector3(config.visual_offset.x, visual_y_offset, config.visual_offset.z)
 
 func _locate_body_node() -> void:
 	if not visual_instance:
@@ -227,142 +280,131 @@ func _locate_body_node() -> void:
 			for c in curr.get_children():
 				stack.push_back(c)
 
+func _get_transform_in(node: Node3D, ancestor: Node3D) -> Transform3D:
+	if not node or not ancestor:
+		return Transform3D.IDENTITY
+	var xform := Transform3D.IDENTITY
+	var curr: Node = node
+	while curr and curr != ancestor:
+		if curr is Node3D:
+			xform = (curr as Node3D).transform * xform
+		curr = curr.get_parent()
+	return xform
+
+func _reparent_preserving_transform(child: Node3D, new_parent: Node3D, common_ancestor: Node3D) -> void:
+	if not child or not new_parent or not common_ancestor:
+		return
+	var child_xform := _get_transform_in(child, common_ancestor)
+	var parent_xform := _get_transform_in(new_parent, common_ancestor)
+	child.owner = null
+	var p := child.get_parent()
+	if p:
+		p.remove_child(child)
+	new_parent.add_child(child)
+	child.transform = parent_xform.affine_inverse() * child_xform
+
 func _prepare_vehicle_wheels() -> void:
 	if not visual_instance or not config:
 		return
-	var cid = config.id.to_lower()
-	var w_fl = visual_instance.get_node_or_null("Wheel_FL") as Node3D
-	var w_fr = visual_instance.get_node_or_null("Wheel_FR") as Node3D
-	var w_rl = visual_instance.get_node_or_null("Wheel_RL") as Node3D
-	var w_rr = visual_instance.get_node_or_null("Wheel_RR") as Node3D
+	var cid := config.id.to_lower()
+	var w_fl := visual_instance.get_node_or_null("Wheel_FL") as Node3D
+	var w_fr := visual_instance.get_node_or_null("Wheel_FR") as Node3D
+	var w_rl := visual_instance.get_node_or_null("Wheel_RL") as Node3D
+	var w_rr := visual_instance.get_node_or_null("Wheel_RR") as Node3D
 	if not w_fl or not w_fr or not w_rl or not w_rr:
 		return
 		
 	if cid == "porsche_mission_x":
-		var m_fl = visual_instance.find_child("WHEEL_LF", true, false) as Node3D
-		var m_fr = visual_instance.find_child("WHEEL_RF", true, false) as Node3D
-		var m_rl = visual_instance.find_child("WHEEL_LR", true, false) as Node3D
-		var m_rr = visual_instance.find_child("WHEEL_RR", true, false) as Node3D
-		var c_fl: Vector3 = _get_primary_tyre_center(m_fl, Vector3(-0.8016, 0.3986, -1.3472))
-		var c_fr: Vector3 = _get_primary_tyre_center(m_fr, Vector3(0.8326, 0.3986, -1.3472))
-		var c_rl: Vector3 = _get_primary_tyre_center(m_rl, Vector3(-0.8176, 0.4170, 1.3827))
-		var c_rr: Vector3 = _get_primary_tyre_center(m_rr, Vector3(0.875, 0.4176, 1.3827))
-		w_fl.position = c_fl
-		w_fr.position = c_fr
-		w_rl.position = c_rl
-		w_rr.position = c_rr
-		if m_fl:
-			for c in m_fl.get_children():
-				c.owner = null
-				c.reparent(w_fl, true)
-		if m_fr:
-			for c in m_fr.get_children():
-				c.owner = null
-				c.reparent(w_fr, true)
-		if m_rl:
-			for c in m_rl.get_children():
-				c.owner = null
-				c.reparent(w_rl, true)
-		if m_rr:
-			for c in m_rr.get_children():
-				c.owner = null
-				c.reparent(w_rr, true)
+		var mappings := [
+			["WHEEL_LF", w_fl, Vector3(-0.8016, 0.3986, -1.3472)],
+			["WHEEL_RF", w_fr, Vector3(0.8326, 0.3986, -1.3472)],
+			["WHEEL_LR", w_rl, Vector3(-0.8176, 0.4170, 1.3827)],
+			["WHEEL_RR", w_rr, Vector3(0.875, 0.4176, 1.3827)]
+		]
+		for entry in mappings:
+			var m_node := visual_instance.find_child(entry[0], true, false) as Node3D
+			var target_w: Node3D = entry[1]
+			target_w.position = _get_primary_tyre_center(m_node, entry[2])
+			if m_node:
+				for c in m_node.get_children():
+					if c is Node3D:
+						_reparent_preserving_transform(c as Node3D, target_w, visual_instance)
 				
 	elif cid == "porsche_carrera_gt":
 		w_fl.position = Vector3(-0.8, 0.326, -1.369)
 		w_fr.position = Vector3(0.8, 0.326, -1.369)
 		w_rl.position = Vector3(-0.774, 0.345, 1.363)
 		w_rr.position = Vector3(0.774, 0.345, 1.363)
-		var cw = visual_instance.find_child("Combined_Wheels_3D_", true, false)
+		var cw := visual_instance.find_child("Combined_Wheels_3D_", true, false)
 		if cw:
 			for m in cw.find_children("*", "MeshInstance3D", true, false):
-				if m.mesh:
-					var c = m.position
-					m.owner = null
+				var mi := m as MeshInstance3D
+				if mi and mi.mesh:
+					var c := mi.position
 					if c.z >= 0 and c.x >= 0:
-						m.reparent(w_fl, true)
+						_reparent_preserving_transform(mi, w_fl, visual_instance)
 					elif c.z >= 0 and c.x < 0:
-						m.reparent(w_fr, true)
+						_reparent_preserving_transform(mi, w_fr, visual_instance)
 					elif c.z < 0 and c.x >= 0:
-						m.reparent(w_rl, true)
+						_reparent_preserving_transform(mi, w_rl, visual_instance)
 					elif c.z < 0 and c.x < 0:
-						m.reparent(w_rr, true)
+						_reparent_preserving_transform(mi, w_rr, visual_instance)
 						
 	elif cid == "kia_carnival":
-		var t1 = visual_instance.find_child("tire 1", true, false)
-		var t2 = visual_instance.find_child("tire 2", true, false)
-		var t3 = visual_instance.find_child("tire 3", true, false)
+		var t1 := visual_instance.find_child("tire 1", true, false) as Node3D
+		var t2 := visual_instance.find_child("tire 2", true, false) as Node3D
+		var t3 := visual_instance.find_child("tire 3", true, false) as Node3D
 		if t1:
-			w_fl.position = visual_instance.to_local(t1.global_position)
+			w_fl.position = _get_transform_in(t1, visual_instance).origin
 			for c in t1.get_children():
-				c.owner = null
-				c.reparent(w_fl, true)
+				if c is Node3D:
+					_reparent_preserving_transform(c as Node3D, w_fl, visual_instance)
 		if t2:
-			w_fr.position = visual_instance.to_local(t2.global_position)
+			w_fr.position = _get_transform_in(t2, visual_instance).origin
 			for c in t2.get_children():
-				c.owner = null
-				c.reparent(w_fr, true)
+				if c is Node3D:
+					_reparent_preserving_transform(c as Node3D, w_fr, visual_instance)
 		if t3:
-			var t_rl = t3.find_child("tire_001", true, false)
-			var t_rr = t3.find_child("tire001", true, false)
+			var t_rl := t3.find_child("tire_001", true, false) as Node3D
+			var t_rr := t3.find_child("tire001", true, false) as Node3D
 			if t_rl:
-				w_rl.position = visual_instance.to_local(t_rl.global_position)
+				w_rl.position = _get_transform_in(t_rl, visual_instance).origin
 			if t_rr:
-				w_rr.position = visual_instance.to_local(t_rr.global_position)
+				w_rr.position = _get_transform_in(t_rr, visual_instance).origin
 			for nm in ["tire_001", "GSMBiDim_108423", "brake_pad_003", "brake_003"]:
-				var p = t3.find_child(nm, true, false)
+				var p := t3.find_child(nm, true, false) as Node3D
 				if p:
-					p.owner = null
-					p.reparent(w_rl, true)
+					_reparent_preserving_transform(p, w_rl, visual_instance)
 			for nm in ["tire001", "GSMBiDim_108425"]:
-				var p = t3.find_child(nm, true, false)
+				var p := t3.find_child(nm, true, false) as Node3D
 				if p:
-					p.owner = null
-					p.reparent(w_rr, true)
+					_reparent_preserving_transform(p, w_rr, visual_instance)
 					
 	elif cid == "kia_seltos":
-		var s_fl = visual_instance.find_child("00_203 tire FL", true, false)
-		var s_fr = visual_instance.find_child("00_211 tire FR", true, false)
-		var s_rl = visual_instance.find_child("00_188 tire RL", true, false)
-		var s_rr = visual_instance.find_child("00_195 tire RR", true, false)
-		if s_fl:
-			w_fl.position = visual_instance.to_local(s_fl.global_position)
-			s_fl.owner = null
-			s_fl.reparent(w_fl, true)
-		if s_fr:
-			w_fr.position = visual_instance.to_local(s_fr.global_position)
-			s_fr.owner = null
-			s_fr.reparent(w_fr, true)
-		if s_rl:
-			w_rl.position = visual_instance.to_local(s_rl.global_position)
-			s_rl.owner = null
-			s_rl.reparent(w_rl, true)
-		if s_rr:
-			w_rr.position = visual_instance.to_local(s_rr.global_position)
-			s_rr.owner = null
-			s_rr.reparent(w_rr, true)
+		for entry in [
+			["00_203 tire FL", w_fl],
+			["00_211 tire FR", w_fr],
+			["00_188 tire RL", w_rl],
+			["00_195 tire RR", w_rr]
+		]:
+			var s_node := visual_instance.find_child(entry[0], true, false) as Node3D
+			var target_w: Node3D = entry[1]
+			if s_node:
+				target_w.position = _get_transform_in(s_node, visual_instance).origin
+				_reparent_preserving_transform(s_node, target_w, visual_instance)
 			
 	elif cid == "mclaren":
-		var m_fl = visual_instance.find_child("3DWheel Front L", true, false) as Node3D
-		var m_fr = visual_instance.find_child("3DWheel Front R", true, false) as Node3D
-		var m_rl = visual_instance.find_child("3DWheel Rear L", true, false) as Node3D
-		var m_rr = visual_instance.find_child("3DWheel Rear R", true, false) as Node3D
-		if m_fl:
-			w_fl.position = visual_instance.to_local(m_fl.global_position) if visual_instance.is_inside_tree() else m_fl.position
-			m_fl.owner = null
-			m_fl.reparent(w_fl, true)
-		if m_fr:
-			w_fr.position = visual_instance.to_local(m_fr.global_position) if visual_instance.is_inside_tree() else m_fr.position
-			m_fr.owner = null
-			m_fr.reparent(w_fr, true)
-		if m_rl:
-			w_rl.position = visual_instance.to_local(m_rl.global_position) if visual_instance.is_inside_tree() else m_rl.position
-			m_rl.owner = null
-			m_rl.reparent(w_rl, true)
-		if m_rr:
-			w_rr.position = visual_instance.to_local(m_rr.global_position) if visual_instance.is_inside_tree() else m_rr.position
-			m_rr.owner = null
-			m_rr.reparent(w_rr, true)
+		for entry in [
+			["3DWheel Front L", w_fl],
+			["3DWheel Front R", w_fr],
+			["3DWheel Rear L", w_rl],
+			["3DWheel Rear R", w_rr]
+		]:
+			var m_node := visual_instance.find_child(entry[0], true, false) as Node3D
+			var target_w: Node3D = entry[1]
+			if m_node:
+				target_w.position = _get_transform_in(m_node, visual_instance).origin
+				_reparent_preserving_transform(m_node, target_w, visual_instance)
 
 func _get_primary_tyre_center(group_node: Node3D, fallback: Vector3) -> Vector3:
 	if not group_node or not visual_instance:
@@ -387,15 +429,7 @@ func _get_primary_tyre_center(group_node: Node3D, fallback: Vector3) -> Vector3:
 	if not best_mi or not best_mi.mesh:
 		return fallback
 	var local_c := best_mi.mesh.get_aabb().get_center()
-	if best_mi.is_inside_tree() and visual_instance.is_inside_tree():
-		return visual_instance.to_local(best_mi.global_transform * local_c)
-	var xform := best_mi.transform
-	var p := best_mi.get_parent()
-	while p and p != visual_instance:
-		if p is Node3D:
-			xform = (p as Node3D).transform * xform
-		p = p.get_parent()
-	return xform * local_c
+	return _get_transform_in(best_mi, visual_instance) * local_c
 
 func _setup_wheel_rigs() -> void:
 	var wheel_tags = ["FL", "FR", "RL", "RR"]
@@ -459,6 +493,7 @@ func _setup_wheel_rigs() -> void:
 		# 3. SpinPivot placed as child of SteerPivot
 		var spin_pivot = Node3D.new()
 		spin_pivot.name = "SpinPivot_" + tag
+		spin_pivot.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 		steer_pivot.add_child(spin_pivot)
 		spin_pivot.position = Vector3.ZERO
 		spin_pivot.rotation = Vector3.ZERO
@@ -475,6 +510,7 @@ func _setup_wheel_rigs() -> void:
 			w_node.position = Vector3.ZERO
 			w_node.transform.basis = orig_basis
 		else:
+			w_node.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 			in_situ_wheels[i] = w_node
 			in_situ_initial_bases[i] = w_node.transform.basis
 			in_situ_initial_positions[i] = w_node.transform.origin
@@ -641,6 +677,148 @@ func _find_wheel_by_tag(root_node: Node3D, tag: String) -> Node3D:
 		for c in curr.get_children():
 			stack.push_back(c)
 	return null
+
+func _is_static_caliper_mesh(mi: MeshInstance3D) -> bool:
+	if not mi:
+		return false
+	var nm := mi.name.to_lower()
+	if nm.contains("caliper") or nm.contains("disc brake") or nm.contains("brake_pad") or nm.contains("brake pad"):
+		return true
+	# Kia Carnival imported rear/front calipers with opaque CAD names
+	if config and config.id.to_lower() == "kia_carnival":
+		if nm.begins_with("mi217") or nm.begins_with("mi226") or nm.begins_with("brake_003"):
+			return true
+	return false
+
+func _calibrate_all_wheel_axes() -> void:
+	for i in range(4):
+		var w_node := wheel_meshes[i]
+		var spin_pivot := spin_pivots[i]
+		var steer_pivot := steer_pivots[i]
+		var hub := wheel_hubs[i]
+		if not w_node or not spin_pivot or not steer_pivot or not hub or in_situ_wheels[i]:
+			continue
+		var all_verts: Array[Vector3] = []
+		var calipers: Array[MeshInstance3D] = []
+		var v_min := Vector3(1e9, 1e9, 1e9)
+		var v_max := Vector3(-1e9, -1e9, -1e9)
+		for m in spin_pivot.find_children("*", "MeshInstance3D", true, false):
+			var mi := m as MeshInstance3D
+			if not mi or not mi.mesh:
+				continue
+			if _is_static_caliper_mesh(mi):
+				calipers.append(mi)
+				continue
+			var rel_xf := _get_transform_in(mi, spin_pivot)
+			for s in range(mi.mesh.get_surface_count()):
+				var arr := mi.mesh.surface_get_arrays(s)
+				if arr.size() <= Mesh.ARRAY_VERTEX:
+					continue
+				var verts: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+				for v in verts:
+					var p := rel_xf * v
+					all_verts.append(p)
+					v_min = v_min.min(p)
+					v_max = v_max.max(p)
+		if all_verts.is_empty():
+			continue
+		var c := (v_min + v_max) * 0.5
+		var ring_thresh := (v_max.y - v_min.y) * 0.35
+		var min_l := Vector3(1e9, 1e9, 1e9)
+		var max_l := Vector3(-1e9, -1e9, -1e9)
+		var min_r := Vector3(1e9, 1e9, 1e9)
+		var max_r := Vector3(-1e9, -1e9, -1e9)
+		var has_l := false
+		var has_r := false
+		for p in all_verts:
+			var rel := p - c
+			if Vector2(rel.y, rel.z).length() > ring_thresh:
+				if rel.x < 0.0:
+					min_l = min_l.min(rel)
+					max_l = max_l.max(rel)
+					has_l = true
+				else:
+					min_r = min_r.min(rel)
+					max_r = max_r.max(rel)
+					has_r = true
+		var c_true := c
+		var axis := Vector3.RIGHT
+		if has_l and has_r:
+			var cl := (min_l + max_l) * 0.5
+			var cr := (min_r + max_r) * 0.5
+			c_true = c + (cl + cr) * 0.5
+			var diff := cr - cl
+			if diff.length() > 0.01:
+				axis = diff.normalized()
+				if axis.x < 0.0:
+					axis = -axis
+		# Intersect the true wheel symmetry line (c_true + t*axis) with x=0 so wheel track X is unchanged
+		var pivot_yz := c_true
+		if absf(axis.x) > 0.5:
+			pivot_yz = c_true - axis * (c_true.x / axis.x)
+		pivot_yz.x = 0.0
+		w_node.position -= pivot_yz
+		hub.position += pivot_yz
+		wheel_rest_positions[i] += pivot_yz
+		wheel_spin_axes[i] = axis
+		var measured_bottom_dist := -(v_min.y - pivot_yz.y)
+		var measured_half_h := 0.5 * (v_max.y - v_min.y)
+		wheel_visual_radii[i] = maxf(measured_bottom_dist, measured_half_h * 0.95)
+		# Keep non-rotating brake calipers anchored to SteerPivot so they do not spin with the wheel
+		for cal_mi in calipers:
+			if is_instance_valid(cal_mi):
+				_reparent_preserving_transform(cal_mi, steer_pivot, steer_pivot)
+
+func _is_descendant_of_any(node: Node, roots: Array[Node3D]) -> bool:
+	var curr: Node = node
+	while curr:
+		for r in roots:
+			if curr == r:
+				return true
+		if curr == visual_root:
+			break
+		curr = curr.get_parent()
+	return false
+
+func _is_node_visible_to(node: Node, stop_at: Node) -> bool:
+	var curr: Node = node
+	while curr:
+		if curr is Node3D and not (curr as Node3D).visible:
+			return false
+		if curr == stop_at:
+			break
+		curr = curr.get_parent()
+	return true
+
+func _measure_body_floor_bounds() -> void:
+	if not visual_root:
+		return
+	var min_y := 1e9
+	var found := false
+	for m in visual_root.find_children("*", "MeshInstance3D", true, false):
+		var mi := m as MeshInstance3D
+		if not mi or not mi.mesh:
+			continue
+		if _is_descendant_of_any(mi, wheel_hubs):
+			continue
+		if not _is_node_visible_to(mi, visual_root):
+			continue
+		var nm := mi.name.to_lower()
+		if nm.contains("shadow") or nm.contains("ground"):
+			continue
+		var xf := _get_transform_in(mi, self)
+		for s in range(mi.mesh.get_surface_count()):
+			var arr := mi.mesh.surface_get_arrays(s)
+			if arr.size() <= Mesh.ARRAY_VERTEX:
+				continue
+			var verts: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+			for v in verts:
+				var p := xf * v
+				if p.y < min_y:
+					min_y = p.y
+					found = true
+	if found:
+		_measured_body_min_y = min_y
 
 func _apply_enhanced_materials() -> void:
 	if not visual_instance or not config:
