@@ -9,4 +9,4 @@ current_xp = 236
 coins = 29053500
 gems = 31250
 equipped_car = "porsche_mission_x"
-unlocked_cars = Array[String](["sedan", "coupe", "hatchback", "compact", "wagon", "sport", "offroad", "minivan", "mclaren", "pickup", "suv", "porsche_mission_x", "porsche_carrera_gt", "kia_seltos", "kia_carnival"])
+unlocked_cars = Array[String](["sedan", "coupe", "hatchback", "compact", "wagon", "sport", "offroad", "minivan", "mclaren", "pickup", "suv", "porsche_mission_x", "porsche_carrera_gt", "kia_seltos", "kia_carnival", "angkot_dki"])

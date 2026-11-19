@@ -18,6 +18,7 @@ static func run_guard(scene_root: Node) -> Dictionary:
 		print("[COLLISION GUARD] Error: scene_root is null")
 		return stats
 		
+	_harden_track_colliders(scene_root)
 	_audit_node_recursive(scene_root, stats)
 	
 	print("[COLLISION GUARD] AUDIT COMPLETE:")
@@ -114,4 +115,71 @@ static func _process_collision_polygon(cp: CollisionPolygon3D, stats: Dictionary
 		cp.disabled = true
 		stats["ghost_colliders_disabled"] += 1
 		print("[COLLISION GUARD] Disabled active polygon collider under hidden branch: ", cp.get_path())
+
+static func _harden_track_colliders(scene_root: Node) -> void:
+	var track_colliders := scene_root.get_node_or_null("TrackColliders") as StaticBody3D
+	if not track_colliders:
+		return
+	
+	# Enable smooth wall-glancing physics material so barrier scrapes don't catch or launch chassis
+	if track_colliders.physics_material_override == null:
+		var track_mat := PhysicsMaterial.new()
+		track_mat.bounce = 0.0
+		track_mat.absorbent = true
+		track_mat.friction = 0.08
+		track_colliders.physics_material_override = track_mat
+	
+	# Fix reverse-wound CityMap trimesh faces across all track colliders so downward wheel rays never pass through
+	var backface_fixed := 0
+	for child in track_colliders.get_children():
+		if child is CollisionShape3D:
+			var cs := child as CollisionShape3D
+			if not cs.disabled and cs.shape is ConcavePolygonShape3D:
+				var concave := cs.shape as ConcavePolygonShape3D
+				if not concave.backface_collision:
+					concave.backface_collision = true
+					backface_fixed += 1
+	
+	# Build trimesh collider for drivable CityMap backdrop_* road meshes omitted from RoadSurfacesCollision
+	if track_colliders.get_node_or_null("BackdropRoadCollision") == null:
+		var city_map := scene_root.get_node_or_null("CityMap")
+		if city_map:
+			var road_faces := PackedVector3Array()
+			var tc_inv: Transform3D = track_colliders.global_transform.affine_inverse()
+			_collect_backdrop_road_faces(city_map, tc_inv, road_faces)
+			if road_faces.size() >= 3:
+				var bd_shape := ConcavePolygonShape3D.new()
+				bd_shape.backface_collision = true
+				bd_shape.set_faces(road_faces)
+				var bd_col := CollisionShape3D.new()
+				bd_col.name = "BackdropRoadCollision"
+				bd_col.shape = bd_shape
+				track_colliders.add_child(bd_col)
+				print("[COLLISION GUARD] Added BackdropRoadCollision (%d tris), hardened %d concave colliders" % [road_faces.size() / 3, backface_fixed])
+				return
+	if backface_fixed > 0:
+		print("[COLLISION GUARD] Enabled double-sided collision on %d concave track colliders" % backface_fixed)
+
+static func _collect_backdrop_road_faces(node: Node, tc_inv: Transform3D, out_faces: PackedVector3Array) -> void:
+	if node is MeshInstance3D:
+		var mi := node as MeshInstance3D
+		if mi.visible and mi.mesh and mi.name.begins_with("backdrop_grp_"):
+			var xform: Transform3D = tc_inv * mi.global_transform
+			var faces: PackedVector3Array = mi.mesh.get_faces()
+			var tri_count := faces.size() / 3
+			for i in range(tri_count):
+				var idx := i * 3
+				var a: Vector3 = xform * faces[idx]
+				var b: Vector3 = xform * faces[idx + 1]
+				var c: Vector3 = xform * faces[idx + 2]
+				var n: Vector3 = (b - a).cross(c - a)
+				# Keep horizontal / ramp road surfaces and curbs; skip pure vertical distant scenery billboards
+				if n.length_squared() > 1e-8 and absf(n.normalized().y) > 0.35:
+					out_faces.append(a)
+					out_faces.append(b)
+					out_faces.append(c)
+	for child in node.get_children():
+		if child is Node3D and not (child as Node3D).visible:
+			continue
+		_collect_backdrop_road_faces(child, tc_inv, out_faces)
 

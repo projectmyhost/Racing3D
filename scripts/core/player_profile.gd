@@ -12,7 +12,8 @@ const DEFAULT_DATA_PATH = "res://data/player_profile.tres"
 const VALID_CARS = [
 	"sedan", "compact", "hatchback", "coupe", "wagon", "minivan",
 	"suv", "pickup", "offroad", "sport", "mclaren",
-	"kia_carnival", "kia_seltos", "porsche_carrera_gt", "porsche_mission_x"
+	"kia_carnival", "kia_seltos", "porsche_carrera_gt", "porsche_mission_x",
+	"angkot_dki"
 ]
 
 func _ready() -> void:
@@ -53,6 +54,8 @@ func load_profile() -> void:
 				valid_unlocked.append(c)
 		if not ("sedan" in valid_unlocked):
 			valid_unlocked.append("sedan")
+		if not ("angkot_dki" in valid_unlocked):
+			valid_unlocked.append("angkot_dki")
 		if valid_unlocked.size() != data.unlocked_cars.size():
 			data.unlocked_cars = valid_unlocked
 			changed = true

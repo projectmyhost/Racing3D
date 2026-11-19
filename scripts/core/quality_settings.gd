@@ -18,16 +18,16 @@ const TIER_NAMES: Array[String] = ["LOW", "MEDIUM", "HIGH", "ULTRA AAA"]
 
 const TIER_PROFILES := {
 	Tier.LOW: {
-		"shadow_size": 1024,
-		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_VERY_LOW,
-		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS,
-		"shadow_dist_scale": 0.48,
+		"shadow_size": 2048,
+		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_LOW,
+		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS,
+		"shadow_max_dist": 220.0,
 		"use_taa": false,
 		"msaa": Viewport.MSAA_DISABLED,
 		"ssaa": Viewport.SCREEN_SPACE_AA_FXAA,
-		"anisotropy": Viewport.ANISOTROPY_2X,
-		"scaling_scale": 0.78,
-		"mesh_lod_threshold": 4.0,
+		"anisotropy": Viewport.ANISOTROPY_4X,
+		"scaling_scale": 0.85,
+		"mesh_lod_threshold": 2.5,
 		"ssr": false,
 		"ssr_steps": 16,
 		"ssao": false,
@@ -42,30 +42,30 @@ const TIER_PROFILES := {
 		"fog": true,
 		"glow": false,
 		"glow_bicubic": false,
-		"shader_detail": 0.0,
-		"exposure": 0.74,
-		"ambient_energy": 0.34,
-		"sky_contrib": 0.50,
-		"sun_energy_scale": 0.68,
-		"fill_energy_scale": 0.82,
-		"sky_intensity": 1.02,
-		"adj_brightness": 0.96,
+		"shader_detail": 0.35,
+		"exposure": 0.94,
+		"ambient_energy": 0.30,
+		"sky_contrib": 0.52,
+		"sun_energy_scale": 0.80,
+		"fill_energy_scale": 0.80,
+		"sky_intensity": 1.15,
+		"adj_brightness": 0.97,
 		"adj_contrast": 1.15,
-		"adj_saturation": 1.02,
+		"adj_saturation": 1.04,
 	},
 	Tier.MEDIUM: {
 		"shadow_size": 2048,
 		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_LOW,
 		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS,
-		"shadow_dist_scale": 0.75,
+		"shadow_max_dist": 280.0,
 		"use_taa": false,
 		"msaa": Viewport.MSAA_2X,
 		"ssaa": Viewport.SCREEN_SPACE_AA_FXAA,
 		"anisotropy": Viewport.ANISOTROPY_8X,
 		"scaling_scale": 1.0,
-		"mesh_lod_threshold": 1.5,
+		"mesh_lod_threshold": 1.2,
 		"ssr": false,
-		"ssr_steps": 24,
+		"ssr_steps": 16,
 		"ssao": true,
 		"ssao_quality": RenderingServer.ENV_SSAO_QUALITY_LOW,
 		"ssao_half": true,
@@ -78,13 +78,13 @@ const TIER_PROFILES := {
 		"fog": true,
 		"glow": true,
 		"glow_bicubic": false,
-		"shader_detail": 0.45,
-		"exposure": 0.84,
+		"shader_detail": 0.75,
+		"exposure": 0.94,
 		"ambient_energy": 0.42,
 		"sky_contrib": 0.62,
-		"sun_energy_scale": 0.86,
+		"sun_energy_scale": 0.90,
 		"fill_energy_scale": 0.95,
-		"sky_intensity": 1.22,
+		"sky_intensity": 1.28,
 		"adj_brightness": 0.98,
 		"adj_contrast": 1.14,
 		"adj_saturation": 1.06,
@@ -93,7 +93,7 @@ const TIER_PROFILES := {
 		"shadow_size": 4096,
 		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_MEDIUM,
 		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS,
-		"shadow_dist_scale": 0.9,
+		"shadow_max_dist": 350.0,
 		"use_taa": true,
 		"msaa": Viewport.MSAA_DISABLED,
 		"ssaa": Viewport.SCREEN_SPACE_AA_FXAA,
@@ -101,37 +101,37 @@ const TIER_PROFILES := {
 		"scaling_scale": 1.0,
 		"mesh_lod_threshold": 0.8,
 		"ssr": true,
-		"ssr_steps": 40,
+		"ssr_steps": 24,
 		"ssao": true,
 		"ssao_quality": RenderingServer.ENV_SSAO_QUALITY_MEDIUM,
 		"ssao_half": true,
-		"ssil": true,
+		"ssil": false,
 		"ssil_quality": RenderingServer.ENV_SSIL_QUALITY_LOW,
 		"ssil_half": true,
 		"sdfgi": false,
 		"gi_half": true,
-		"volumetric_fog": false,
+		"volumetric_fog": true,
 		"fog": true,
 		"glow": true,
 		"glow_bicubic": true,
-		"shader_detail": 0.85,
-		"exposure": 0.90,
+		"shader_detail": 0.92,
+		"exposure": 0.95,
 		"ambient_energy": 0.48,
 		"sky_contrib": 0.68,
-		"sun_energy_scale": 0.95,
+		"sun_energy_scale": 0.96,
 		"fill_energy_scale": 1.0,
-		"sky_intensity": 1.35,
+		"sky_intensity": 1.38,
 		"adj_brightness": 0.99,
 		"adj_contrast": 1.14,
 		"adj_saturation": 1.08,
 	},
 	Tier.ULTRA: {
 		"shadow_size": 4096,
-		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_MEDIUM,
+		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_HIGH,
 		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS,
-		"shadow_dist_scale": 1.0,
+		"shadow_max_dist": 420.0,
 		"use_taa": true,
-		"msaa": Viewport.MSAA_DISABLED,
+		"msaa": Viewport.MSAA_2X,
 		"ssaa": Viewport.SCREEN_SPACE_AA_DISABLED,
 		"anisotropy": Viewport.ANISOTROPY_16X,
 		"scaling_scale": 1.0,
@@ -139,24 +139,24 @@ const TIER_PROFILES := {
 		"ssr": true,
 		"ssr_steps": 48,
 		"ssao": true,
-		"ssao_quality": RenderingServer.ENV_SSAO_QUALITY_MEDIUM,
-		"ssao_half": true,
+		"ssao_quality": RenderingServer.ENV_SSAO_QUALITY_HIGH,
+		"ssao_half": false,
 		"ssil": true,
-		"ssil_quality": RenderingServer.ENV_SSIL_QUALITY_LOW,
+		"ssil_quality": RenderingServer.ENV_SSIL_QUALITY_MEDIUM,
 		"ssil_half": true,
-		"sdfgi": true,
+		"sdfgi": false,
 		"gi_half": true,
 		"volumetric_fog": true,
 		"fog": true,
 		"glow": true,
 		"glow_bicubic": true,
 		"shader_detail": 1.0,
-		"exposure": 0.94,
+		"exposure": 0.95,
 		"ambient_energy": 0.52,
 		"sky_contrib": 0.72,
 		"sun_energy_scale": 1.0,
 		"fill_energy_scale": 1.0,
-		"sky_intensity": 1.42,
+		"sky_intensity": 1.45,
 		"adj_brightness": 0.99,
 		"adj_contrast": 1.14,
 		"adj_saturation": 1.09,
@@ -263,29 +263,35 @@ func apply_to_current_scene() -> void:
 		env.adjustment_contrast = float(cfg["adj_contrast"])
 		env.adjustment_saturation = float(cfg["adj_saturation"])
 
-		if env.sky and env.sky.sky_material is ShaderMaterial:
-			var sky_mat := env.sky.sky_material as ShaderMaterial
-			sky_mat.set_shader_parameter("hdr_sky_intensity", float(cfg["sky_intensity"]))
+		if env.sky:
+			var target_sky_int := float(cfg["sky_intensity"])
+			if env.sky.sky_material is ShaderMaterial:
+				var sky_mat := env.sky.sky_material as ShaderMaterial
+				var cur_sky := float(sky_mat.get_shader_parameter("hdr_sky_intensity"))
+				if absf(cur_sky - target_sky_int) > 0.005:
+					sky_mat.set_shader_parameter("hdr_sky_intensity", target_sky_int)
+			elif env.sky.sky_material is ProceduralSkyMaterial:
+				var proc_mat := env.sky.sky_material as ProceduralSkyMaterial
+				if absf(proc_mat.energy_multiplier - target_sky_int) > 0.005:
+					proc_mat.energy_multiplier = target_sky_int
 
 	var sun := scene.find_child("SunLight", true, false) as DirectionalLight3D
 	if sun:
-		if not sun.has_meta("_base_shadow_dist"):
-			sun.set_meta("_base_shadow_dist", sun.directional_shadow_max_distance)
 		if not sun.has_meta("_base_light_energy"):
 			sun.set_meta("_base_light_energy", sun.light_energy)
 		if not sun.has_meta("_base_shadow_bias"):
 			sun.set_meta("_base_shadow_bias", sun.shadow_bias)
 		if not sun.has_meta("_base_normal_bias"):
 			sun.set_meta("_base_normal_bias", sun.shadow_normal_bias)
-		var base_dist: float = float(sun.get_meta("_base_shadow_dist"))
 		var base_sun_e: float = float(sun.get_meta("_base_light_energy"))
 		sun.directional_shadow_mode = cfg["shadow_mode"]
-		sun.directional_shadow_max_distance = base_dist * float(cfg["shadow_dist_scale"])
+		sun.directional_shadow_blend_splits = true
+		sun.directional_shadow_pancake_size = 0.0
+		sun.directional_shadow_max_distance = float(cfg["shadow_max_dist"])
 		sun.light_energy = base_sun_e * float(cfg["sun_energy_scale"])
-		# Slightly higher bias on LOW 1024 shadow atlas prevents shadow acne on rounded fenders
 		if current_tier == Tier.LOW:
-			sun.shadow_bias = 0.038
-			sun.shadow_normal_bias = 1.85
+			sun.shadow_bias = 0.028
+			sun.shadow_normal_bias = 1.35
 		else:
 			sun.shadow_bias = float(sun.get_meta("_base_shadow_bias"))
 			sun.shadow_normal_bias = float(sun.get_meta("_base_normal_bias"))

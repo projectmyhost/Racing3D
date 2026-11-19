@@ -8,6 +8,7 @@ extends RefCounted
 static var _asphalt_shader: Shader = null
 static var _asphalt_detail_normal: ImageTexture = null
 static var _asphalt_mat_refs: Array[WeakRef] = []
+static var _global_mat_cache: Dictionary = {}
 static var _current_quality_detail: float = 1.0
 
 static func set_quality_detail(detail_level: float) -> void:
@@ -29,7 +30,6 @@ static func enhance_city_stage(stage_root: Node) -> void:
 	if _asphalt_detail_normal == null:
 		_asphalt_detail_normal = _build_asphalt_detail_normal()
 
-	var mat_cache: Dictionary = {}
 	var meshes: Array[Node] = stage_root.find_children("*", "MeshInstance3D", true, false)
 
 	for node in meshes:
@@ -45,12 +45,16 @@ static func enhance_city_stage(stage_root: Node) -> void:
 
 			var sm := active_mat as StandardMaterial3D
 			var mat_id: int = sm.get_instance_id()
-			if mat_cache.has(mat_id):
-				mi.set_surface_override_material(s, mat_cache[mat_id])
-				continue
+			if _global_mat_cache.has(mat_id):
+				var entry: Dictionary = _global_mat_cache[mat_id]
+				if is_instance_valid(entry["src"].get_ref()) and entry["src"].get_ref() == sm:
+					var cached_out := entry["out"] as Material
+					if is_instance_valid(cached_out):
+						mi.set_surface_override_material(s, cached_out)
+						continue
 
 			var enhanced := _calibrate_material(sm)
-			mat_cache[mat_id] = enhanced
+			_global_mat_cache[mat_id] = {"src": weakref(sm), "out": enhanced}
 			mi.set_surface_override_material(s, enhanced)
 
 static func _calibrate_material(sm: StandardMaterial3D) -> Material:
@@ -104,10 +108,15 @@ static func _calibrate_material(sm: StandardMaterial3D) -> Material:
 		out.metallic_specular = 0.85
 		return out
 
-	# 4. Architectural Concrete / Urban Facades (eliminate overly chalky roughness=0.96-1.0)
-	if sm.roughness >= 0.90:
-		out.roughness = 0.78
+	# 4. Architectural Concrete / Urban Facades (add crisp surface depth & micro-normal relief)
+	if sm.roughness >= 0.70:
+		if sm.roughness >= 0.90:
+			out.roughness = 0.78
 		out.metallic_specular = 0.36
+		if sm.albedo_texture != null and not sm.normal_enabled and _asphalt_detail_normal != null:
+			out.normal_enabled = true
+			out.normal_texture = _asphalt_detail_normal
+			out.normal_scale = 0.22
 
 	return out
 

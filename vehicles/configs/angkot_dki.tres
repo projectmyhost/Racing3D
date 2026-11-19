@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="VehicleConfig" format=3]
+
+[ext_resource type="Script" path="res://vehicles/core/VehicleConfig.gd" id="1_angkot"]
+
+[resource]
+script = ExtResource("1_angkot")
+id = "angkot_dki"
+display_name = "Angkot DKI Mikrolet"
+vehicle_class = "Urban Microbus"
+mass = 1380.0
+center_of_mass_offset = Vector3(0, -0.38, -0.04)
+wheelbase = 2.266
+track_width_front = 1.517
+track_width_rear = 1.517
+chassis_size = Vector3(1.75, 1.45, 4.2)
+drivetrain_type = 1
+peak_power_kw = 215.0
+max_engine_rpm = 6800.0
+gear_ratios = Array[float]([3.65, 2.18, 1.48, 1.12, 0.88, 0.72])
+max_steer_angle_deg = 35.0
+min_steer_angle_deg = 12.2
+high_speed_steer_angle_deg = 5.4
+stability_assist = 0.88
+suspension_rest_length = 0.3
+suspension_travel = 0.16
+spring_stiffness_front = 36000.0
+spring_stiffness_rear = 35000.0
+bump_damping_front = 3300.0
+bump_damping_rear = 3200.0
+rebound_damping_front = 6600.0
+rebound_damping_rear = 6400.0
+anti_roll_front = 7600.0
+anti_roll_rear = 7000.0
+bump_stop_stiffness = 30000.0
+bump_stop_damping = 5000.0
+wheel_radius = 0.326
+wheel_width = 0.205
+tire_longitudinal_friction = 1.65
+tire_lateral_friction = 1.68
+slip_angle_peak_deg = 8.5
+drag_coefficient = 0.34
+downforce_coefficient = 0.28
+visual_scene_path = "res://assets/models/cars/car_angkot_dki.tscn"

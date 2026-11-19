@@ -22,6 +22,7 @@ uniform float quality_detail : hint_range(0.0, 1.0) = 1.0;
 
 varying vec3 v_obj_pos;
 varying vec3 v_obj_norm;
+varying vec3 v_world_norm;
 varying float v_model_scale;
 
 float hash31(vec3 p) {
@@ -42,6 +43,7 @@ vec3 hash33(vec3 p) {
 void vertex() {
 	v_obj_pos = VERTEX;
 	v_obj_norm = NORMAL;
+	v_world_norm = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	v_model_scale = length(MODEL_MATRIX[0].xyz);
 }
 
@@ -49,14 +51,27 @@ void fragment() {
 	vec4 tex = has_albedo_tex ? texture(albedo_tex, UV) : vec4(1.0);
 	vec3 paint_rgb = albedo_color.rgb * tex.rgb;
 
-	// Fresnel pigment richness: slightly deeper metallic saturation at grazing angles
-	float ndotv = clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0);
+	// World-space sky-horizon-ground ambient/bounce grading + panel curvature crease AO
+	vec3 wn = normalize(v_world_norm);
+	vec3 n_view_raw = normalize(NORMAL);
+	float crease = clamp((length(dFdx(n_view_raw)) + length(dFdy(n_view_raw))) * 0.28, 0.0, 0.34);
+
+	float ndotv = clamp(dot(n_view_raw, normalize(VIEW)), 0.0, 1.0);
 	float fresnel_curve = pow(1.0 - ndotv, 2.5);
 	paint_rgb = mix(paint_rgb, paint_rgb * vec3(0.76, 0.78, 0.82), fresnel_curve * fresnel_richness);
 
-	// Subtle ground-facing panel cavity occlusion for heavy automotive grounding
-	float down_facing = clamp(dot(normalize(v_obj_norm), vec3(0.0, -1.0, 0.0)), 0.0, 1.0);
-	float sill_ao = 1.0 - down_facing * ao_sill_strength;
+	// Horizon golden-hour rim reflection tint on sky-facing upper curves vs cool ground shadow below
+	float up_factor = clamp(wn.y * 0.5 + 0.5, 0.0, 1.0);
+	vec3 sky_env_tint = mix(vec3(0.84, 0.86, 0.90), vec3(1.04, 0.99, 0.94), smoothstep(0.35, 0.95, up_factor));
+	float tint_blend = has_albedo_tex ? 0.35 : 0.72;
+	paint_rgb *= mix(vec3(1.0), sky_env_tint, tint_blend);
+	float rim_sunset = pow(1.0 - ndotv, 3.2) * smoothstep(-0.1, 0.5, wn.y);
+	paint_rgb += vec3(0.11, 0.07, 0.04) * rim_sunset * (has_albedo_tex ? 0.35 : 0.75);
+
+	// Ground-facing rocker/wheel-arch cavity occlusion + panel crease darkening (origin-invariant)
+	float down_facing = clamp(-wn.y, 0.0, 1.0);
+	float arch_cavity = smoothstep(-0.08, -0.78, wn.y);
+	float cavity_ao = clamp(1.0 - down_facing * (ao_sill_strength * 1.35) - arch_cavity * 0.22 - crease * 0.70, 0.20, 1.0);
 
 	// Object-fixed meter-space micro metallic flakes + orange-peel undulation
 	vec3 meter_pos = v_obj_pos * max(v_model_scale, 0.001);
@@ -72,13 +87,12 @@ void fragment() {
 		vec3 peel_p = meter_pos * 34.0;
 		float px = sin(peel_p.x * 6.283 + cos(peel_p.z * 4.1));
 		float pz = cos(peel_p.z * 6.283 + sin(peel_p.x * 3.7));
-		vec3 pert = (TANGENT * px + BINORMAL * pz) * (orange_peel * quality_detail);
-		vec3 flake_tilt = (TANGENT * (flake_rand.y - 0.5) + BINORMAL * (flake_rand.z - 0.5)) * (0.045 * flake_intensity * quality_detail * flake_sparkle);
+		vec3 pert = (TANGENT * px + BINORMAL * pz) * (orange_peel * 0.45 * quality_detail);
+		vec3 flake_tilt = (TANGENT * (flake_rand.y - 0.5) + BINORMAL * (flake_rand.z - 0.5)) * (0.012 * flake_intensity * quality_detail * flake_sparkle);
 		NORMAL = normalize(NORMAL + pert + flake_tilt);
 
-		paint_rgb *= mix(0.97, 1.06, flake_sparkle * flake_intensity * quality_detail);
-		metal = clamp(metallic_base + flake_sparkle * 0.22 * flake_intensity * quality_detail, 0.0, 1.0);
-		rough = clamp(base_roughness + (flake_rand.y - 0.5) * 0.06 * flake_intensity * quality_detail, 0.03, 0.75);
+		metal = clamp(metallic_base + flake_sparkle * 0.14 * flake_intensity * quality_detail, 0.0, 1.0);
+		rough = clamp(base_roughness + (flake_rand.y - 0.5) * 0.03 * flake_intensity * quality_detail, 0.03, 0.75);
 	}
 
 	if (has_normal_tex) {
@@ -92,5 +106,6 @@ void fragment() {
 	SPECULAR = 0.85;
 	CLEARCOAT = clearcoat_strength * mix(0.65, 1.0, quality_detail);
 	CLEARCOAT_ROUGHNESS = mix(0.055, clearcoat_roughness, quality_detail);
-	AO = sill_ao;
+	AO = cavity_ao;
+	AO_LIGHT_AFFECT = 0.88;
 }

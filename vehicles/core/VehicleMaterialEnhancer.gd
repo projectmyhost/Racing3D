@@ -18,6 +18,7 @@ const KIA_STARBRIGHT_YELLOW = Color(0.94, 0.74, 0.08, 1.0)
 static var _paint_shader: Shader = null
 static var _paint_mat_refs: Array[WeakRef] = []
 static var _contact_shadow_tex: ImageTexture = null
+static var _tire_detail_normal: ImageTexture = null
 static var _current_quality_detail: float = 1.0
 
 static func set_quality_detail(detail_level: float) -> void:
@@ -45,8 +46,8 @@ static func attach_contact_shadow(parent_node: Node3D, local_pos: Vector3, width
 	decal.position = local_pos
 	decal.size = Vector3(width, 0.95, length)
 	decal.texture_albedo = _contact_shadow_tex
-	decal.albedo_mix = 0.82
-	decal.modulate = Color(1.0, 1.0, 1.0, 0.88)
+	decal.albedo_mix = 0.90
+	decal.modulate = Color(1.0, 1.0, 1.0, 0.94)
 	decal.upper_fade = 0.35
 	decal.lower_fade = 0.55
 	decal.distance_fade_enabled = true
@@ -60,17 +61,63 @@ static func _build_contact_shadow_texture() -> ImageTexture:
 	var w: int = 128
 	var h: int = 128
 	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	var wheel_spots := [
+		Vector2(-0.72, -0.60),
+		Vector2(0.72, -0.60),
+		Vector2(-0.72, 0.60),
+		Vector2(0.72, 0.60),
+	]
 	for y in range(h):
 		var ny: float = (float(y) + 0.5) / float(h) * 2.0 - 1.0
 		for x in range(w):
 			var nx: float = (float(x) + 0.5) / float(w) * 2.0 - 1.0
-			# Rounded-box superellipse matches automotive chassis footprint
+			# Rounded-box superellipse matches automotive underbody footprint
 			var box_d: float = pow(pow(absf(nx), 2.8) + pow(absf(ny), 3.6), 1.0 / 3.2)
-			var alpha: float = clampf(1.0 - smoothstep(0.32, 0.98, box_d), 0.0, 1.0)
-			alpha = alpha * alpha * 0.92
-			img.set_pixel(x, y, Color(0.015, 0.015, 0.02, alpha))
+			var core_alpha: float = clampf(1.0 - smoothstep(0.28, 0.98, box_d), 0.0, 1.0)
+			core_alpha = core_alpha * core_alpha * 0.88
+			# Concentrated dark wheel-well / tire contact patches
+			var wheel_alpha: float = 0.0
+			for ws in wheel_spots:
+				var dx: float = (nx - ws.x) / 0.24
+				var dy: float = (ny - ws.y) / 0.26
+				var wd: float = sqrt(dx * dx + dy * dy)
+				var w_fade: float = clampf(1.0 - smoothstep(0.18, 1.0, wd), 0.0, 1.0)
+				wheel_alpha = maxf(wheel_alpha, w_fade * w_fade * 0.96)
+			var alpha: float = clampf(maxf(core_alpha, wheel_alpha), 0.0, 0.96)
+			img.set_pixel(x, y, Color(0.01, 0.01, 0.014, alpha))
 	img.generate_mipmaps()
 	return ImageTexture.create_from_image(img)
+
+static func _get_tire_detail_normal() -> ImageTexture:
+	if _tire_detail_normal != null:
+		return _tire_detail_normal
+	var sz: int = 128
+	var hmap := PackedFloat32Array()
+	hmap.resize(sz * sz)
+	for y in range(sz):
+		var vy: float = float(y) / float(sz)
+		for x in range(sz):
+			var ux: float = float(x) / float(sz)
+			var ribs: float = 0.5 + 0.5 * cos(ux * TAU * 4.0)
+			var sipes: float = 0.5 + 0.5 * sin((vy * 8.0 + absf(ux - 0.5) * 3.0) * TAU)
+			var g_raw: float = sin(float(x) * 12.9898 + float(y) * 78.233) * 43758.5453
+			var grain: float = g_raw - floor(g_raw)
+			hmap[y * sz + x] = ribs * 0.55 + sipes * 0.30 + grain * 0.15
+	var img := Image.create(sz, sz, false, Image.FORMAT_RGBA8)
+	var strength: float = 2.4
+	for y in range(sz):
+		var ym: int = (y - 1 + sz) % sz
+		var yp: int = (y + 1) % sz
+		for x in range(sz):
+			var xm: int = (x - 1 + sz) % sz
+			var xp: int = (x + 1) % sz
+			var dx: float = (hmap[y * sz + xp] - hmap[y * sz + xm]) * strength
+			var dy: float = (hmap[yp * sz + x] - hmap[ym * sz + x]) * strength
+			var n := Vector3(-dx, -dy, 1.0).normalized()
+			img.set_pixel(x, y, Color(n.x * 0.5 + 0.5, n.y * 0.5 + 0.5, n.z * 0.5 + 0.5, 1.0))
+	img.generate_mipmaps()
+	_tire_detail_normal = ImageTexture.create_from_image(img)
+	return _tire_detail_normal
 
 static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_paint: Color = Color.WHITE) -> void:
 	if not root_node:
@@ -171,6 +218,23 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 					light_mat.clearcoat_enabled = true
 					light_mat.clearcoat = 1.0
 					light_mat.emission_enabled = false
+				elif id_lower == "angkot_dki":
+					if sm.albedo_texture != null:
+						light_mat.albedo_texture = sm.albedo_texture
+					light_mat.albedo_color = Color.WHITE
+					light_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+					light_mat.metallic = 0.12
+					light_mat.roughness = 0.14
+					light_mat.clearcoat_enabled = true
+					light_mat.clearcoat = 1.0
+					if m_name.contains("indicator") or mat_name == "material_8":
+						light_mat.emission_enabled = true
+						light_mat.emission_texture = sm.albedo_texture
+						light_mat.emission_energy_multiplier = 0.65
+					elif sm.albedo_texture != null:
+						light_mat.emission_enabled = true
+						light_mat.emission_texture = sm.albedo_texture
+						light_mat.emission_energy_multiplier = 1.35
 				elif mat_name.contains("rojo") or mat_name == "rear_led" or mat_name == "t_b_l":
 					# Deep ruby red taillight / rear LED lightbar optic
 					light_mat.albedo_color = Color(0.85, 0.04, 0.02, 1.0)
@@ -216,6 +280,23 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 					mat_cache[cache_key] = trim_mat
 					mi.set_surface_override_material(s, trim_mat)
 					continue
+				if id_lower == "angkot_dki":
+					trim_mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
+					trim_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+					if sm.albedo_texture != null:
+						trim_mat.albedo_texture = sm.albedo_texture
+						trim_mat.albedo_color = Color.WHITE
+					else:
+						trim_mat.albedo_color = Color(0.08, 0.09, 0.10, 1.0)
+					trim_mat.roughness = 0.42
+					trim_mat.metallic = 0.25
+					trim_mat.metallic_specular = 0.45
+					trim_mat.clearcoat_enabled = false
+					trim_mat.emission_enabled = false
+					trim_mat.set_meta("_vm_enhanced", true)
+					mat_cache[cache_key] = trim_mat
+					mi.set_surface_override_material(s, trim_mat)
+					continue
 				# Perforated Grille Meshes (preserve honeycomb texture with alpha scissor)
 				if sm.albedo_texture != null and (mat_name.contains("grill") or mat_name.contains("grilla") or mat_name == "mat_199247473"):
 					trim_mat.albedo_texture = sm.albedo_texture
@@ -249,6 +330,13 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 				if id_lower == "porsche_carrera_gt":
 					glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 					glass_mat.albedo_color = Color(0.04, 0.05, 0.07, 0.70)
+				elif id_lower == "angkot_dki":
+					glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+					glass_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+					glass_mat.albedo_texture = null
+					glass_mat.albedo_color = Color(0.08, 0.11, 0.14, 0.28)
+					glass_mat.metallic = 0.15
+					glass_mat.roughness = 0.02
 				else:
 					glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
 					glass_mat.albedo_color = Color(0.015, 0.016, 0.022, 1.0)
@@ -264,7 +352,7 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 				mi.set_surface_override_material(s, glass_mat)
 				continue
 				
-			# 5. Tires (Dark Charcoal Matte Rubber)
+			# 5. Tires (Dark Charcoal Matte Rubber + Procedural Tread Normal Map)
 			if _is_tire(id_lower, m_name, mat_name):
 				var tire_mat = sm.duplicate() as StandardMaterial3D
 				tire_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
@@ -279,9 +367,18 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 					if tex_nm:
 						tire_mat.normal_enabled = true
 						tire_mat.normal_texture = tex_nm
+				elif sm.albedo_texture != null:
+					tire_mat.albedo_texture = sm.albedo_texture
+					tire_mat.albedo_color = Color(0.86, 0.86, 0.88, 1.0)
 				else:
 					tire_mat.albedo_color = Color(0.10, 0.10, 0.11, 1.0)
-				tire_mat.roughness = 0.86
+				if not tire_mat.normal_enabled or tire_mat.normal_texture == null:
+					var tread_nm := _get_tire_detail_normal()
+					if tread_nm:
+						tire_mat.normal_enabled = true
+						tire_mat.normal_texture = tread_nm
+						tire_mat.normal_scale = 0.55
+				tire_mat.roughness = 0.82
 				tire_mat.metallic = 0.0
 				tire_mat.metallic_specular = 0.24
 				tire_mat.clearcoat_enabled = false
@@ -383,6 +480,23 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 					metal_val = 0.44
 					rough_val = 0.16
 					flake_val = 0.22
+				elif id_lower == "angkot_dki":
+					var enamel_mat := StandardMaterial3D.new()
+					enamel_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+					enamel_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+					enamel_mat.albedo_texture = sm.albedo_texture
+					enamel_mat.albedo_color = tint_col
+					enamel_mat.metallic = 0.04
+					enamel_mat.roughness = 0.22
+					enamel_mat.metallic_specular = 0.48
+					enamel_mat.clearcoat_enabled = true
+					enamel_mat.clearcoat = 0.72
+					enamel_mat.clearcoat_roughness = 0.05
+					enamel_mat.emission_enabled = false
+					enamel_mat.set_meta("_vm_enhanced", true)
+					mat_cache[cache_key] = enamel_mat
+					mi.set_surface_override_material(s, enamel_mat)
+					continue
 				elif sm.albedo_texture != null:
 					metal_val = 0.26
 					rough_val = 0.17
@@ -430,14 +544,14 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 				mi.set_surface_override_material(s, paint_mat)
 				continue
 				
-			# 9. Interior & Cockpit Trim (Solid, non-transparent, double-sided to prevent see-through holes)
+			# 9. Interior, Cockpit & Cabin Characters (Solid, non-transparent, double-sided to prevent see-through holes)
 			if _is_interior(id_lower, m_name, mat_name):
 				var int_mat = sm.duplicate() as StandardMaterial3D
 				int_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 				int_mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
 				int_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-				int_mat.roughness = 0.56
-				int_mat.metallic = 0.05
+				int_mat.roughness = 0.65 if m_name.contains("character_") else (0.48 if id_lower == "angkot_dki" else 0.56)
+				int_mat.metallic = 0.02 if m_name.contains("character_") else 0.05
 				int_mat.metallic_specular = 0.35
 				int_mat.clearcoat_enabled = false
 				int_mat.emission_enabled = false
@@ -478,6 +592,8 @@ static func _is_glass(car_id: String, mesh_name: String, mat_name: String) -> bo
 		return mat_name == "mat_199550035" \
 			or mat_name == "mat_199247462" or mat_name == "mat_199247551" or mat_name == "mat_199247550" \
 			or mesh_name.contains("roof glass") or mesh_name.contains("win glass")
+	if car_id == "angkot_dki":
+		return mesh_name == "body_glass" or mat_name == "material_0"
 	if car_id == "porsche_carrera_gt":
 		return mat_name == "c1_vidrios_tr"
 	return mesh_name.contains("glass") or mesh_name.contains("window") or mesh_name.contains("vidrio") \
@@ -506,10 +622,14 @@ static func _is_wheel(car_id: String, mesh_name: String, mat_name: String) -> bo
 	if car_id == "porsche_carrera_gt":
 		return mat_name.contains("wheel1a") or mat_name.contains("calliper") or mesh_name.contains("polysurface") \
 			or mesh_name.contains("wheel")
+	if car_id == "angkot_dki":
+		return mesh_name.begins_with("rim_") or mat_name == "material_10"
 	return mesh_name.contains("wheel") or mesh_name.contains("rim") or mesh_name.contains("caliper") or mesh_name.contains("brake") \
 		or mat_name.contains("wheel") or mat_name.contains("rim") or mat_name.contains("caliper") or mat_name.contains("brake")
 
 static func _is_tire(car_id: String, mesh_name: String, mat_name: String) -> bool:
+	if car_id == "angkot_dki":
+		return mesh_name.begins_with("a_tyre_") or mat_name == "material_9"
 	if car_id == "kia_carnival":
 		return mat_name == "mat_199247457"
 	return mesh_name.contains("tyre") or mesh_name.contains("tire") \
@@ -531,9 +651,13 @@ static func _is_black_trim(car_id: String, mesh_name: String, mat_name: String) 
 			or mat_name == "mat_199247463" or mat_name == "mat_199247464" \
 			or mat_name == "mat_199247463_uvless" or mat_name == "mat_199247468" or mat_name == "mat_200102849_uvless" \
 			or mesh_name.contains("fg black") or mesh_name.contains("bk line") or mesh_name.contains("dr rub frame")
+	if car_id == "angkot_dki":
+		return mesh_name == "body_mirrors_and_frame" or mat_name == "material_12" or mat_name == "material_-4"
 	return mat_name.contains("ext_black") or mat_name.contains("grid") or mat_name.contains("gris_b") or mat_name.contains("front_refrac") or mat_name.contains("bulb_int")
 
 static func _is_light(car_id: String, mesh_name: String, mat_name: String) -> bool:
+	if car_id == "angkot_dki":
+		return mesh_name == "body_lights" or mesh_name == "body_dashboard_indicators" or mat_name == "material_1" or mat_name == "material_8"
 	if car_id == "porsche_carrera_gt":
 		return mat_name == "c1_light" or mat_name == "c1_vidiro_rojo" or mesh_name.contains("body3b")
 	if car_id == "kia_carnival":
@@ -546,6 +670,8 @@ static func _is_light(car_id: String, mesh_name: String, mat_name: String) -> bo
 		or mat_name == "rear_led" or mat_name == "t_b_l"
 
 static func _is_interior(car_id: String, mesh_name: String, mat_name: String) -> bool:
+	if car_id == "angkot_dki":
+		return mesh_name == "body_interior_dashboard" or mesh_name == "body_interior_mirror" or mesh_name.begins_with("character_") or mat_name == "material_2" or mat_name == "material_3" or mat_name == "material_4" or mat_name == "material_5" or mat_name == "material_6" or mat_name == "material_7" or mat_name == "material_-4"
 	if car_id == "porsche_carrera_gt":
 		return mat_name == "c1_interior" or mat_name == "c1_bealt" or mat_name == "c1_warning" \
 			or mat_name == "c1_gilla_int" or mat_name == "c1_grilla_2" or mat_name == "c1_grilla_n" \
@@ -577,6 +703,8 @@ static func _is_paint(car_id: String, mesh_name: String, mat_name: String) -> bo
 		return mat_name == "c1_paint" or mesh_name.contains("body6a_paint") or mesh_name.contains("body7a_paint")
 	if car_id == "porsche_mission_x":
 		return mat_name.contains("ext_body")
+	if car_id == "angkot_dki":
+		return mesh_name == "body_paint_shell" or mat_name == "material_11"
 	return mesh_name.contains("paint") or mesh_name.contains("body") or mesh_name.contains("carpaint") or mesh_name.contains("coloured") \
 		or mat_name.contains("paint") or mat_name.contains("body") or mat_name.contains("carpaint") or mat_name.contains("c1_paint") \
 		or mesh_name.contains("bonet") or mesh_name.contains("roof") or mesh_name.begins_with("124") or mesh_name.begins_with("125")

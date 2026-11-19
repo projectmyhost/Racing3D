@@ -137,8 +137,8 @@ func validate() -> Array[String]:
 	var errors: Array[String] = []
 	if id.strip_edges().is_empty():
 		errors.append("Vehicle id cannot be empty.")
-	if mass < 1100.0 or mass > 1600.0:
-		errors.append("Mass (%f) must be between 1100.0 and 1600.0 kg." % mass)
+	if mass < 950.0 or mass > 2400.0:
+		errors.append("Mass (%f) must be between 950.0 and 2400.0 kg." % mass)
 	if center_of_mass_offset.y < -0.55 or center_of_mass_offset.y > -0.30:
 		errors.append("Center of mass Y offset (%f) must be between -0.55 and -0.30 m." % center_of_mass_offset.y)
 	if suspension_travel < 0.12 or suspension_travel > 0.22:

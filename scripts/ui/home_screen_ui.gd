@@ -382,6 +382,24 @@ const GARAGE_FLEET_DATA = {
 		"price": "500,000 COINS",
 		"cost_coins": 500000,
 		"cost_gems": 0
+	},
+	"angkot_dki": {
+		"id": "angkot_dki",
+		"name": "ANGKOT DKI MIKROLET",
+		"class": "Jakarta Legend Microbus | 1.8L Turbo Stage-2",
+		"desc": "Authentic Jakarta street legend featuring full lossless HD cabin details, driver and passenger characters, and race-tuned rear-wheel-drive suspension.",
+		"top_speed": "265 km/h",
+		"ratio_speed": 0.74,
+		"accel": "4.3 sec",
+		"ratio_accel": 0.74,
+		"power": "290 BHP",
+		"ratio_power": 0.64,
+		"handling": "89.0%",
+		"ratio_handling": 0.89,
+		"specs": "Engine: 1.8L Turbo Stage-2 Inline-4 | Drivetrain: RWD | Weight: 1,380 kg\n0-100 km/h: 4.3s | Top Speed: 265 km/h | Cabin: Full Driver & Passenger Crew",
+		"price": "STARTER",
+		"cost_coins": 0,
+		"cost_gems": 0
 	}
 }
 
@@ -1097,8 +1115,11 @@ func open_modal(modal: Control) -> void:
 		if prof and prof.data:
 			_garage_selected_car_id = prof.data.equipped_car
 		var showcase = _get_showcase_car()
-		if showcase and showcase.has_method("warm_garage_fleet"):
-			showcase.warm_garage_fleet(GARAGE_FLEET_DATA.keys())
+		if showcase:
+			if "garage_open" in showcase:
+				showcase.garage_open = true
+			if showcase.has_method("warm_garage_fleet"):
+				showcase.warm_garage_fleet(GARAGE_FLEET_DATA.keys())
 		_refresh_garage_ui()
 
 func close_modal() -> void:
@@ -1106,8 +1127,11 @@ func close_modal() -> void:
 		var prof = _get_profile()
 		var eq = prof.data.equipped_car if prof and prof.data else "sedan"
 		var showcase = _get_showcase_car()
-		if showcase and showcase.has_method("load_car_model") and showcase.get("current_model") != eq:
-			showcase.load_car_model(eq)
+		if showcase:
+			if "garage_open" in showcase:
+				showcase.garage_open = false
+			if showcase.has_method("load_car_model") and showcase.get("current_model") != eq:
+				showcase.load_car_model(eq)
 	if pages_layer:
 		pages_layer.visible = false
 	if _active_modal:
@@ -1131,6 +1155,9 @@ func _get_showcase_car() -> Node3D:
 	return null
 
 func _close_all_modals() -> void:
+	var showcase = _get_showcase_car()
+	if showcase and "garage_open" in showcase:
+		showcase.garage_open = false
 	if pages_layer:
 		pages_layer.visible = false
 	var modals = [settings_modal, profile_modal, topup_modal, garage_modal, tuning_modal, paint_shop_modal, play_modal]

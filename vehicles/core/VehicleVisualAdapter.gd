@@ -409,6 +409,15 @@ func _prepare_vehicle_wheels() -> void:
 func _get_primary_tyre_center(group_node: Node3D, fallback: Vector3) -> Vector3:
 	if not group_node or not visual_instance:
 		return fallback
+	var best_mi := _find_primary_tyre_mesh(group_node)
+	if not best_mi or not best_mi.mesh:
+		return fallback
+	var local_c := best_mi.mesh.get_aabb().get_center()
+	return _get_transform_in(best_mi, visual_instance) * local_c
+
+func _find_primary_tyre_mesh(group_node: Node3D) -> MeshInstance3D:
+	if not group_node:
+		return null
 	var best_mi: MeshInstance3D = null
 	var best_vol: float = -1.0
 	for child in group_node.find_children("*", "MeshInstance3D", true, false):
@@ -418,18 +427,23 @@ func _get_primary_tyre_center(group_node: Node3D, fallback: Vector3) -> Vector3:
 		var cname: String = mi.name.to_lower()
 		var sname: String = mi.mesh.surface_get_name(0).to_lower() if mi.mesh.get_surface_count() > 0 else ""
 		var is_tyre: bool = cname.contains("tyre") or cname.contains("tire") or sname.contains("tyre") or sname.contains("tire")
-		if is_tyre:
-			best_mi = mi
-			break
 		var a := mi.mesh.get_aabb()
 		var vol := a.size.x * a.size.y * a.size.z
+		if is_tyre:
+			vol += 1000.0
 		if vol > best_vol:
 			best_vol = vol
 			best_mi = mi
-	if not best_mi or not best_mi.mesh:
-		return fallback
+	if best_mi == null and group_node is MeshInstance3D and (group_node as MeshInstance3D).mesh:
+		return group_node as MeshInstance3D
+	return best_mi
+
+func _get_primary_tyre_center_in(group_node: Node3D, ancestor: Node3D) -> Vector3:
+	var best_mi := _find_primary_tyre_mesh(group_node)
+	if not best_mi or not best_mi.mesh or not ancestor:
+		return Vector3.ZERO
 	var local_c := best_mi.mesh.get_aabb().get_center()
-	return _get_transform_in(best_mi, visual_instance) * local_c
+	return _get_transform_in(best_mi, ancestor) * local_c
 
 func _setup_wheel_rigs() -> void:
 	var wheel_tags = ["FL", "FR", "RL", "RR"]
@@ -509,6 +523,11 @@ func _setup_wheel_rigs() -> void:
 			spin_pivot.add_child(w_node)
 			w_node.position = Vector3.ZERO
 			w_node.transform.basis = orig_basis
+			var tyre_offset := _get_primary_tyre_center_in(w_node, spin_pivot)
+			if tyre_offset.length_squared() > 1e-10:
+				hub.position += tyre_offset
+				w_node.position = -tyre_offset
+				wheel_rest_positions[i] = hub.position
 		else:
 			w_node.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 			in_situ_wheels[i] = w_node
@@ -807,16 +826,14 @@ func _measure_body_floor_bounds() -> void:
 		if nm.contains("shadow") or nm.contains("ground"):
 			continue
 		var xf := _get_transform_in(mi, self)
-		for s in range(mi.mesh.get_surface_count()):
-			var arr := mi.mesh.surface_get_arrays(s)
-			if arr.size() <= Mesh.ARRAY_VERTEX:
-				continue
-			var verts: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
-			for v in verts:
-				var p := xf * v
-				if p.y < min_y:
-					min_y = p.y
-					found = true
+		var aabb: AABB = mi.mesh.get_aabb()
+		if aabb.size.length_squared() <= 1e-8:
+			continue
+		for ci in range(8):
+			var p: Vector3 = xf * aabb.get_endpoint(ci)
+			if p.y < min_y:
+				min_y = p.y
+				found = true
 	if found:
 		_measured_body_min_y = min_y
 

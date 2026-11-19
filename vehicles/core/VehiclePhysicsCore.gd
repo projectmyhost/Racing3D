@@ -134,9 +134,12 @@ func initialize_vehicle(target: Variant) -> void:
 	center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
 	center_of_mass = config.center_of_mass_offset
 	max_steer_angle = deg_to_rad(config.max_steer_angle_deg)
+	contact_monitor = true
+	max_contacts_reported = 6
 	var chassis_mat := PhysicsMaterial.new()
 	chassis_mat.bounce = 0.0
-	chassis_mat.friction = 0.04
+	chassis_mat.absorbent = true
+	chassis_mat.friction = 0.18
 	physics_material_override = chassis_mat
 	
 	_setup_wheel_states()
@@ -357,7 +360,7 @@ func _solve_suspension_raycasts(_delta: float) -> void:
 	var s: float = config.get_world_scale()
 	var space = get_world_3d().direct_space_state
 	var self_rid = get_rid()
-	var ray_headroom = 0.15 * s
+	var ray_headroom = 0.55 * s
 	var max_cast_dist = config.suspension_rest_length + config.suspension_travel + config.wheel_radius + ray_headroom
 	var chassis_up = global_transform.basis.y.normalized()
 	
@@ -374,20 +377,25 @@ func _solve_suspension_raycasts(_delta: float) -> void:
 		
 		var q = PhysicsRayQueryParameters3D.create(ray_origin, ray_target, collision_mask)
 		q.exclude = [self_rid]
-		var hit = space.intersect_ray(q)
+		q.hit_back_faces = true
+		var hit: Dictionary = space.intersect_ray(q)
 		
-		# Road surface normal check: must be drivable ground/ramp, never a vertical wall or steep barrier
+		# Road surface normal check: handle double-sided reverse-wound road faces while rejecting steep walls
 		var is_road_surface = false
-		if hit:
-			var world_up_dot = hit.normal.dot(Vector3.UP)
-			var chassis_up_dot = hit.normal.dot(chassis_up)
+		var hit_normal := Vector3.UP
+		if not hit.is_empty():
+			hit_normal = hit.normal
+			if hit_normal.dot(Vector3.UP) < -0.55 and hit_normal.dot(chassis_up) < -0.45:
+				hit_normal = -hit_normal
+			var world_up_dot = hit_normal.dot(Vector3.UP)
+			var chassis_up_dot = hit_normal.dot(chassis_up)
 			if world_up_dot > 0.55 and chassis_up_dot > 0.45:
 				is_road_surface = true
 				
-		if hit and is_road_surface:
+		if not hit.is_empty() and is_road_surface:
 			w.is_grounded = true
 			w.contact_point = hit.position
-			w.contact_normal = hit.normal.normalized()
+			w.contact_normal = hit_normal.normalized()
 			var slope_compress_vel := -mount_vel.dot(w.contact_normal)
 			if slope_compress_vel > w.mount_compress_vel:
 				w.mount_compress_vel = slope_compress_vel
@@ -739,7 +747,29 @@ func _perform_auto_unflip() -> void:
 	_prev_fwd_speed = 0.0
 	_long_acceleration = 0.0
 
-func _solve_aerodynamics(_delta: float) -> void:
+func _solve_aerodynamics(delta: float) -> void:
+	var s: float = config.get_world_scale()
+	var grounded_count := 0
+	var avg_ground_normal := Vector3.ZERO
+	for w in _wheels:
+		if w.is_grounded:
+			grounded_count += 1
+			avg_ground_normal += w.contact_normal
+	if grounded_count > 0:
+		avg_ground_normal = (avg_ground_normal / float(grounded_count)).normalized()
+	else:
+		avg_ground_normal = Vector3.UP
+	
+	# Anti-launch wall & curb contact damper: absorbs vertical bounce and pitch/roll spikes on hard scrapes
+	if get_contact_count() > 0:
+		var vel_along_ground_norm := linear_velocity.dot(avg_ground_normal)
+		var max_pop_speed := 1.6 * s
+		if linear_velocity.y > max_pop_speed and vel_along_ground_norm > max_pop_speed:
+			linear_velocity -= avg_ground_normal * (vel_along_ground_norm - max_pop_speed) * 0.85
+		var pitch_roll_damp := exp(-9.5 * delta)
+		angular_velocity.x *= pitch_roll_damp
+		angular_velocity.z *= pitch_roll_damp
+	
 	var speed = linear_velocity.length()
 	if speed < 0.5:
 		return
@@ -750,6 +780,9 @@ func _solve_aerodynamics(_delta: float) -> void:
 	var drag_vec = -linear_velocity.normalized() * drag_force_mag
 	
 	var downforce_mag = dyn_pressure * config.downforce_coefficient * config.frontal_area
+	if grounded_count >= 2:
+		# Extra high-speed ground-effect planting keep tires glued over crests and curbs
+		downforce_mag += dyn_pressure * 0.30 * config.frontal_area
 	var downforce_vec = -global_transform.basis.y.normalized() * downforce_mag
 	
 	apply_central_force(drag_vec + downforce_vec)

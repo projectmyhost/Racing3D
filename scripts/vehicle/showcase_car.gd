@@ -38,11 +38,12 @@ const MODEL_BASE_YAW_DEG: Dictionary = {
 	"kia_carnival": 0.0,
 	"kia_seltos": 0.0,
 	"porsche_carrera_gt": 0.0,
-	"porsche_mission_x": 0.0
+	"porsche_mission_x": 0.0,
+	"angkot_dki": 0.0
 }
 
 const DEFAULT_PRELOAD_ORDER: Array[String] = [
-	"porsche_mission_x", "mclaren", "porsche_carrera_gt",
+	"porsche_mission_x", "angkot_dki", "mclaren", "porsche_carrera_gt",
 	"kia_seltos", "kia_carnival", "sport", "coupe",
 	"sedan", "hatchback", "compact", "suv", "wagon",
 	"minivan", "pickup", "offroad"
@@ -94,6 +95,7 @@ var _bg_inflight_model: String = ""
 var _warm_rig_queue: Array[String] = []
 var _warm_cooldown_frames: int = 0
 var _preload_started: bool = false
+var garage_open: bool = false
 
 static var _packed_scene_cache: Dictionary = {}
 
@@ -202,8 +204,8 @@ func _step_background_preload() -> void:
 			_bg_inflight_model = ""
 		return
 
-	# Warm 1 idle rig at a time with frame spacing so UI stays locked 60/120 FPS
-	if not _warm_rig_queue.is_empty():
+	# Warm 1 idle rig at a time only while Garage UI is open so Homescreen buttons/camera stay 100% stutter-free on RTX 2050 / GTX 1050
+	if garage_open and not _warm_rig_queue.is_empty():
 		if _warm_cooldown_frames > 0:
 			_warm_cooldown_frames -= 1
 			return
@@ -212,7 +214,7 @@ func _step_background_preload() -> void:
 			var warm_path: String = _resolve_tscn_path(warm_id)
 			if _packed_scene_cache.has(warm_path):
 				_apply_loaded_car_scene(warm_id, _packed_scene_cache[warm_path], false)
-				_warm_cooldown_frames = 3
+				_warm_cooldown_frames = 10
 		return
 
 	# Kick off next background threaded load cleanly
