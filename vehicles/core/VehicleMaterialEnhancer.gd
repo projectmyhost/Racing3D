@@ -598,7 +598,10 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 
 		if all_interior:
 			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			if id_lower == "angkot_dki":
+			if id_lower == "porsche_mission_x":
+				# Sealed opaque-black-glass cabin: interior meshes are 100% occluded from all exterior cameras
+				mi.visible = false
+			elif id_lower == "angkot_dki":
 				mi.visibility_range_end = 120.0
 			elif id_lower != "porsche_carrera_gt":
 				mi.visibility_range_end = 90.0
@@ -611,7 +614,7 @@ static func _is_headlight_lens(car_id: String, mesh_name: String, mat_name: Stri
 	return false
 
 static func _is_glass(car_id: String, mesh_name: String, mat_name: String) -> bool:
-	if _is_headlight_lens(car_id, mesh_name, mat_name):
+	if _is_headlight_lens(car_id, mesh_name, mat_name) or _is_interior(car_id, mesh_name, mat_name):
 		return false
 	if mat_name.contains("front_refrac") or mat_name.contains("wheel_glass"):
 		return false
@@ -663,6 +666,8 @@ static func _is_tire(car_id: String, mesh_name: String, mat_name: String) -> boo
 		or mat_name.contains("tyre") or mat_name.contains("tire")
 
 static func _is_carbon(car_id: String, mesh_name: String, mat_name: String) -> bool:
+	if _is_interior(car_id, mesh_name, mat_name):
+		return false
 	if car_id == "porsche_carrera_gt":
 		return mat_name == "c1_carbon" or mesh_name.contains("carbon")
 	return mesh_name.contains("carbon") or mat_name.contains("carbon") \
@@ -697,6 +702,9 @@ static func _is_light(car_id: String, mesh_name: String, mat_name: String) -> bo
 		or mat_name == "rear_led" or mat_name == "t_b_l"
 
 static func _is_interior(car_id: String, mesh_name: String, mat_name: String) -> bool:
+	if car_id == "porsche_mission_x":
+		return mat_name.begins_with("int_") or mat_name == "nav_glass" \
+			or mat_name == "seat_porsche" or mat_name == "steer_white_alcnt"
 	if car_id == "angkot_dki":
 		return mesh_name == "body_interior_dashboard" or mesh_name == "body_interior_mirror" or mesh_name.begins_with("character_") or mat_name == "material_2" or mat_name == "material_3" or mat_name == "material_4" or mat_name == "material_5" or mat_name == "material_6" or mat_name == "material_7" or mat_name == "material_-4"
 	if car_id == "porsche_carrera_gt":
@@ -715,7 +723,8 @@ static func _is_interior(car_id: String, mesh_name: String, mat_name: String) ->
 			or mesh_name.contains("dr int") or mesh_name.contains("dr leather") or mesh_name.contains("dash") \
 			or mesh_name.contains("seat") or mesh_name.contains("str whl") or mesh_name.contains("str wheel")
 	return mesh_name.contains("interior") or mesh_name.contains("seat") or mesh_name.contains("dash") \
-		or mat_name.contains("interior") or mat_name.contains("seat") or mat_name.contains("dash")
+		or mat_name.contains("interior") or mat_name.contains("seat") or mat_name.contains("dash") \
+		or mat_name.contains("plastic_leather") or mat_name.begins_with("int_")
 
 static func _is_paint(car_id: String, mesh_name: String, mat_name: String) -> bool:
 	if _is_headlight_lens(car_id, mesh_name, mat_name) or _is_glass(car_id, mesh_name, mat_name) or _is_wheel(car_id, mesh_name, mat_name) \

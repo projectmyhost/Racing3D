@@ -49,6 +49,7 @@ const KEEP_DOUBLE_SIDED_MATS: Dictionary = {
 	"material_041_55": true,
 	"material_041_64": true,
 	"material_041_65": true,
+	"material_041_66": true,
 	"material_041_68": true,
 	"material_041_69": true,
 	"material_041_71": true,

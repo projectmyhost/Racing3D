@@ -11,8 +11,8 @@ extends SceneTree
 
 const SRC_GLB := "res://assets/models/environment/city_map/source/Untitled.glb"
 const OUT_SCN := "res://assets/models/environment/city_map/city_map_optimized.scn"
-const STRUCT_CELL_SIZE := 200.0
-const PROP_CELL_SIZE := 100.0
+const STRUCT_CELL_SIZE := 110.0
+const PROP_CELL_SIZE := 90.0
 const OCC_MIN_AREA_M2 := 16.0
 const OCC_MIN_HEIGHT_M := 8.0
 const OCC_SHRINK_FACTOR := 0.06
@@ -79,6 +79,23 @@ func _is_road_mat(mat: Material) -> bool:
 	return false
 
 func _build_cell_mesh_instance(out_root: Node3D, chunk_name: String, mat_buckets: Dictionary, vis_end: float, no_shadow: bool) -> MeshInstance3D:
+	# Compute chunk local AABB center so mi.position sits at the real chunk center (required for accurate visibility_range & culling)
+	var has_bounds := false
+	var chunk_aabb := AABB()
+	for mid in mat_buckets.keys():
+		var tris: Array = mat_buckets[mid]["tris"]
+		for t in tris:
+			for k in range(3):
+				var v: Vector3 = t["v"][k]
+				if not has_bounds:
+					chunk_aabb = AABB(v, Vector3.ZERO)
+					has_bounds = true
+				else:
+					chunk_aabb = chunk_aabb.expand(v)
+	if not has_bounds:
+		return null
+	var chunk_center: Vector3 = chunk_aabb.get_center()
+
 	var combined := ArrayMesh.new()
 	var surf_idx := 0
 	for mid in mat_buckets.keys():
@@ -108,7 +125,7 @@ func _build_cell_mesh_instance(out_root: Node3D, chunk_name: String, mat_buckets
 					st.set_uv(t["uv"][k] if t["has_uv"] else Vector2.ZERO)
 				if any_col:
 					st.set_color(t["col"][k] if t["has_col"] else Color.WHITE)
-				st.add_vertex(t["v"][k])
+				st.add_vertex(t["v"][k] - chunk_center)
 		st.index()
 		st.commit(combined)
 		combined.surface_set_material(surf_idx, mb["mat"])
@@ -119,11 +136,11 @@ func _build_cell_mesh_instance(out_root: Node3D, chunk_name: String, mat_buckets
 
 	var mi := MeshInstance3D.new()
 	mi.name = chunk_name
+	mi.position = chunk_center
 	mi.mesh = combined
 	if vis_end > 0.0:
 		mi.visibility_range_end = vis_end
-		mi.visibility_range_end_margin = 30.0
-		mi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+		mi.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	if no_shadow:
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	out_root.add_child(mi)
@@ -177,9 +194,9 @@ func _init() -> void:
 		var world_aabb := world_xf * raw_aabb
 		var world_center := world_aabb.get_center()
 		var max_dim := maxf(world_aabb.size.x, maxf(world_aabb.size.y, world_aabb.size.z))
-		var is_prop_node := mi.name.begins_with("prop_")
+		var is_prop_node := mi.name.begins_with("prop_") or mi.name.contains("_inst_")
 		var is_tiny_prop := is_prop_node and max_dim <= 2.2
-		var is_small_prop := is_prop_node and max_dim <= 8.0
+		var is_small_prop := is_prop_node and max_dim <= 6.5
 
 		var n_basis := local_xf.basis.inverse().transposed()
 		var flip_winding := local_xf.basis.determinant() < 0.0
@@ -293,7 +310,7 @@ func _init() -> void:
 	for ck in cells.keys():
 		var c: Dictionary = cells[ck]
 		var tier: String = c["tier"]
-		var vis_end := 220.0 if (tier == "prop" or tier == "tiny") else 0.0
+		var vis_end := 250.0 if (tier == "prop" or tier == "tiny") else 0.0
 		var no_sh := (tier == "tiny")
 		var chunk_name := "Chunk_%s_%d_%d_%d" % [tier, c["cx"], c["cz"], chunk_count]
 		var built := _build_cell_mesh_instance(out_root, chunk_name, c["mats"], vis_end, no_sh)
