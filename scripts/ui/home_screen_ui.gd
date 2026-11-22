@@ -440,6 +440,7 @@ func _ready() -> void:
 	_nav_buttons = [play_btn, settings_btn, garage_btn, tuning_btn, paint_shop_btn, profile_btn]
 	_connect_hud_signals()
 	_connect_modal_buttons()
+	_apply_fps_index(_selected_fps_index)
 	_connect_settings_tabs()
 	_connect_garage_system()
 	_bind_player_profile()
@@ -1220,36 +1221,28 @@ func _on_quality_selected(index: int) -> void:
 		qs.set_tier_by_index(index)
 	show_toast("[OK] Graphics profile set to " + quality_option.get_item_text(index))
 
-func _on_fps_selected(index: int) -> void:
-	_selected_fps_index = index
+func _apply_fps_index(index: int) -> void:
+	_selected_fps_index = clampi(index, 0, 1)
 	Engine.physics_jitter_fix = 0.0
 	var screen_hz: float = DisplayServer.screen_get_refresh_rate()
-	match index:
-		0:
-			# 30 FPS: disable VSync so software limiter paces cleanly at 33.33ms without double-vblank judder
+	if _selected_fps_index == 0:
+		# 30 FPS: disable VSync so software limiter paces cleanly at 33.33ms without double-vblank judder
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+		Engine.max_fps = 30
+	else:
+		# 60 FPS hard release ceiling: native VSync on 60Hz panels, explicit 60 FPS cap on 120Hz/144Hz+ panels
+		if screen_hz > 0.0 and absf(screen_hz - 60.0) <= 2.0:
+			DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED)
+		else:
 			DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
-			Engine.max_fps = 30
-		1:
-			# 60 FPS: use native VSync only on 60Hz displays; on 120/144Hz+ disable VSync to prevent uneven frame pacing
-			if screen_hz > 0.0 and absf(screen_hz - 60.0) <= 2.0:
-				DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED)
-				Engine.max_fps = 0
-			else:
-				DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
-				Engine.max_fps = 60
-		2:
-			# 120 FPS: use native VSync only on 120Hz displays; on 60/144Hz+ disable VSync to eliminate 3:2 pulldown stutter
-			if screen_hz > 0.0 and absf(screen_hz - 120.0) <= 2.0:
-				DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED)
-				Engine.max_fps = 0
-			else:
-				DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
-				Engine.max_fps = 120
-		3:
-			# Unlimited FPS
-			DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
-			Engine.max_fps = 0
-	show_toast("[OK] Frame Rate Target locked to " + fps_option.get_item_text(index))
+		Engine.max_fps = 60
+
+func _on_fps_selected(index: int) -> void:
+	_apply_fps_index(index)
+	if fps_option and fps_option.selected != _selected_fps_index:
+		fps_option.select(_selected_fps_index)
+	if fps_option and _selected_fps_index < fps_option.item_count:
+		show_toast("[OK] Frame Rate Target locked to " + fps_option.get_item_text(_selected_fps_index))
 
 func _on_window_mode_selected(index: int) -> void:
 	match index:
