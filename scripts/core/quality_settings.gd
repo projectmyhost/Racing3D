@@ -286,7 +286,7 @@ func apply_to_current_scene() -> void:
 		var base_sun_e: float = float(sun.get_meta("_base_light_energy"))
 		sun.directional_shadow_mode = cfg["shadow_mode"]
 		sun.directional_shadow_blend_splits = true
-		sun.directional_shadow_pancake_size = 12.0
+		sun.directional_shadow_pancake_size = 0.0
 		sun.directional_shadow_max_distance = float(cfg["shadow_max_dist"])
 		sun.directional_shadow_split_1 = 0.06
 		sun.directional_shadow_split_2 = 0.18
