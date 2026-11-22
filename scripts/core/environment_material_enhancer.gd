@@ -11,6 +11,60 @@ static var _asphalt_mat_refs: Array[WeakRef] = []
 static var _global_mat_cache: Dictionary = {}
 static var _current_quality_detail: float = 1.0
 
+# Audited from Untitled.glb via tools/audit_city_materials.gd:
+# Materials used by transparent surfaces, props, chevrons, or thin (<0.25m) geometry stay double-sided.
+const KEEP_DOUBLE_SIDED_MATS: Dictionary = {
+	"Merged_materials": true,
+	"material_041_0": true,
+	"material_041_1": true,
+	"material_041_2": true,
+	"material_041_3": true,
+	"material_041_4": true,
+	"material_041_5": true,
+	"material_041_6": true,
+	"material_041_7": true,
+	"material_041_8": true,
+	"material_041_9": true,
+	"material_041_10": true,
+	"material_041_11": true,
+	"material_041_12": true,
+	"material_041_13": true,
+	"material_041_14": true,
+	"material_041_15": true,
+	"material_041_23": true,
+	"material_041_26": true,
+	"material_041_28": true,
+	"material_041_29": true,
+	"material_041_30": true,
+	"material_041_31": true,
+	"material_041_32": true,
+	"material_041_38": true,
+	"material_041_42": true,
+	"material_041_44": true,
+	"material_041_45": true,
+	"material_041_46": true,
+	"material_041_47": true,
+	"material_041_48": true,
+	"material_041_51": true,
+	"material_041_55": true,
+	"material_041_64": true,
+	"material_041_65": true,
+	"material_041_68": true,
+	"material_041_69": true,
+	"material_041_71": true,
+	"material_041_80": true,
+}
+
+static func _can_use_backface_cull(sm: StandardMaterial3D, mi: MeshInstance3D) -> bool:
+	if sm.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED:
+		return false
+	var nm := mi.name
+	if nm.begins_with("prop_") or nm.begins_with("chevron") or nm.begins_with("Chunk_prop_") or nm.begins_with("Chunk_tiny_"):
+		return false
+	if KEEP_DOUBLE_SIDED_MATS.has(sm.resource_name):
+		return false
+	return true
+
 static func set_quality_detail(detail_level: float) -> void:
 	_current_quality_detail = clampf(detail_level, 0.0, 1.0)
 	var alive: Array[WeakRef] = []
@@ -44,20 +98,21 @@ static func enhance_city_stage(stage_root: Node) -> void:
 				continue
 
 			var sm := active_mat as StandardMaterial3D
-			var mat_id: int = sm.get_instance_id()
-			if _global_mat_cache.has(mat_id):
-				var entry: Dictionary = _global_mat_cache[mat_id]
+			var cull_safe: bool = _can_use_backface_cull(sm, mi)
+			var cache_key := "%d:%s" % [sm.get_instance_id(), "cull_back" if cull_safe else "cull_off"]
+			if _global_mat_cache.has(cache_key):
+				var entry: Dictionary = _global_mat_cache[cache_key]
 				if is_instance_valid(entry["src"].get_ref()) and entry["src"].get_ref() == sm:
 					var cached_out := entry["out"] as Material
 					if is_instance_valid(cached_out):
 						mi.set_surface_override_material(s, cached_out)
 						continue
 
-			var enhanced := _calibrate_material(sm)
-			_global_mat_cache[mat_id] = {"src": weakref(sm), "out": enhanced}
+			var enhanced := _calibrate_material(sm, cull_safe)
+			_global_mat_cache[cache_key] = {"src": weakref(sm), "out": enhanced}
 			mi.set_surface_override_material(s, enhanced)
 
-static func _calibrate_material(sm: StandardMaterial3D) -> Material:
+static func _calibrate_material(sm: StandardMaterial3D, cull_safe: bool) -> Material:
 	var tex_path := ""
 	if sm.albedo_texture:
 		tex_path = sm.albedo_texture.resource_path.to_lower()
@@ -83,6 +138,8 @@ static func _calibrate_material(sm: StandardMaterial3D) -> Material:
 
 		var road_std := sm.duplicate() as StandardMaterial3D
 		road_std.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+		if cull_safe:
+			road_std.cull_mode = BaseMaterial3D.CULL_BACK
 		road_std.roughness = 0.60
 		road_std.metallic = 0.0
 		road_std.metallic_specular = 0.36
@@ -91,15 +148,15 @@ static func _calibrate_material(sm: StandardMaterial3D) -> Material:
 
 	var out := sm.duplicate() as StandardMaterial3D
 	out.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	if cull_safe:
+		out.cull_mode = BaseMaterial3D.CULL_BACK
 
-	# 2. Reflective Glass Skyscraper Facades
+	# 2. Reflective Glass Skyscraper Facades (crisp HDR reflections without dual-lobe clearcoat cost)
 	if sm.metallic >= 0.5 and sm.roughness <= 0.15:
-		out.roughness = 0.045
+		out.roughness = 0.055
 		out.metallic = maxf(sm.metallic, 0.74)
 		out.metallic_specular = 0.94
-		out.clearcoat_enabled = true
-		out.clearcoat = 0.85
-		out.clearcoat_roughness = 0.03
+		out.clearcoat_enabled = false
 		return out
 
 	# 3. Structural Metals / Guardrails / Street Poles
