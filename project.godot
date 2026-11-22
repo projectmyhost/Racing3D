@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 
 PlayerProfile="*res://scripts/core/player_profile.gd"
 QualitySettings="*res://scripts/core/quality_settings.gd"
+GPUPerfOverlay="*res://scripts/debug/gpu_perf_overlay.gd"
 
 [display]
 
