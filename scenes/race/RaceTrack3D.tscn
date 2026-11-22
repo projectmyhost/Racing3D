@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/race/RaceTrack3D.gd" id="1_wy80s"]
 [ext_resource type="Environment" path="res://assets/materials/environments/env_racetrack.tres" id="2_env"]
-[ext_resource type="PackedScene" path="res://assets/models/environment/city_map/source/Untitled.glb" id="3_siyt7"]
+[ext_resource type="PackedScene" path="res://assets/models/environment/city_map/city_map_optimized.scn" id="3_siyt7"]
 [ext_resource type="Script" path="res://scripts/race/RaceCar3D.gd" id="24_3qkh6"]
 
 [sub_resource type="Environment" id="Environment_siyt7"]

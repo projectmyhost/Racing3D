@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/core/home_screen.gd" id="1_g2bms"]
 [ext_resource type="Environment" path="res://assets/materials/environments/env_racetrack.tres" id="2_daytime"]
-[ext_resource type="PackedScene" path="res://assets/models/environment/city_map/source/Untitled.glb" id="2_stage"]
+[ext_resource type="PackedScene" path="res://assets/models/environment/city_map/city_map_optimized.scn" id="2_stage"]
 [ext_resource type="PackedScene" path="res://scenes/vehicles/showcase_car.tscn" id="3_u5cqg"]
 [ext_resource type="Script" path="res://scripts/vehicle/showcase_car.gd" id="4_8pt4f"]
 [ext_resource type="Script" path="res://scripts/camera/showcase_camera_rig.gd" id="5_k4g45"]
