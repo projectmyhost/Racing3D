@@ -3,27 +3,28 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://32ixxgilj364"
-path="res://.godot/imported/tyre_nm.png-2e8e7e68c6cc42568fec10e0ff0aea58.ctex"
+path.bptc="res://.godot/imported/tyre_nm.png-2e8e7e68c6cc42568fec10e0ff0aea58.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/models/cars/porsche_mission_x/tyre_nm.png"
-dest_files=["res://.godot/imported/tyre_nm.png-2e8e7e68c6cc42568fec10e0ff0aea58.ctex"]
+dest_files=["res://.godot/imported/tyre_nm.png-2e8e7e68c6cc42568fec10e0ff0aea58.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=1
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

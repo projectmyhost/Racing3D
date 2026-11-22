@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://taeg16b78ab1"
-path="res://.godot/imported/FINAL_MODEL_X_0.png-ae678196d8d3c13ace4491c82edadac4.ctex"
+path.bptc="res://.godot/imported/FINAL_MODEL_X_0.png-ae678196d8d3c13ace4491c82edadac4.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "d129688ec5c8d20d6d4811f0eccc71e5"
@@ -14,12 +15,12 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/cars/porsche_mission_x/FINAL_MODEL_X_0.png"
-dest_files=["res://.godot/imported/FINAL_MODEL_X_0.png-ae678196d8d3c13ace4491c82edadac4.ctex"]
+dest_files=["res://.godot/imported/FINAL_MODEL_X_0.png-ae678196d8d3c13ace4491c82edadac4.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dn4oihrtaa7xa"
-path="res://.godot/imported/Mexico_Seltos_PE_pc13_53358302_Tire_17inch_lowpol_Ambient Occlusion_002-53358310_Tire_17inch_lowpol_Smoothness.png-33a17408f7d351da235f3ea59dc77db2.ctex"
+path.bptc="res://.godot/imported/Mexico_Seltos_PE_pc13_53358302_Tire_17inch_lowpol_Ambient Occlusion_002-53358310_Tire_17inch_lowpol_Smoothness.png-33a17408f7d351da235f3ea59dc77db2.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "dea9c4de042c52107ae494df9d85194f"
@@ -14,12 +15,12 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/cars/kia_seltos/source/Mexico_Seltos_PE_pc13_53358302_Tire_17inch_lowpol_Ambient Occlusion_002-53358310_Tire_17inch_lowpol_Smoothness.png"
-dest_files=["res://.godot/imported/Mexico_Seltos_PE_pc13_53358302_Tire_17inch_lowpol_Ambient Occlusion_002-53358310_Tire_17inch_lowpol_Smoothness.png-33a17408f7d351da235f3ea59dc77db2.ctex"]
+dest_files=["res://.godot/imported/Mexico_Seltos_PE_pc13_53358302_Tire_17inch_lowpol_Ambient Occlusion_002-53358310_Tire_17inch_lowpol_Smoothness.png-33a17408f7d351da235f3ea59dc77db2.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

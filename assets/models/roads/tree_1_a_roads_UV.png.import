@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://v04w8t5asf5n"
-path="res://.godot/imported/tree_1_a_roads_UV.png-04f021ef98edb8f79dbb6eb38ca64cec.ctex"
+path.bptc="res://.godot/imported/tree_1_a_roads_UV.png-04f021ef98edb8f79dbb6eb38ca64cec.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "1ed07d56bb79d82e63d22e8619353fe0"
@@ -14,12 +15,12 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/roads/tree_1_a_roads_UV.png"
-dest_files=["res://.godot/imported/tree_1_a_roads_UV.png-04f021ef98edb8f79dbb6eb38ca64cec.ctex"]
+dest_files=["res://.godot/imported/tree_1_a_roads_UV.png-04f021ef98edb8f79dbb6eb38ca64cec.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

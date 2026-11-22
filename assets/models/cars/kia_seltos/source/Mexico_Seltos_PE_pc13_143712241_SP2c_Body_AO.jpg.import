@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c0d2a674xd36f"
-path="res://.godot/imported/Mexico_Seltos_PE_pc13_143712241_SP2c_Body_AO.jpg-dba9c50ca86ec835a646c21afd4e884f.ctex"
+path.bptc="res://.godot/imported/Mexico_Seltos_PE_pc13_143712241_SP2c_Body_AO.jpg-dba9c50ca86ec835a646c21afd4e884f.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "23a9c3fe0d584bfc2e6508c387f1a4ca"
@@ -14,12 +15,12 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/cars/kia_seltos/source/Mexico_Seltos_PE_pc13_143712241_SP2c_Body_AO.jpg"
-dest_files=["res://.godot/imported/Mexico_Seltos_PE_pc13_143712241_SP2c_Body_AO.jpg-dba9c50ca86ec835a646c21afd4e884f.ctex"]
+dest_files=["res://.godot/imported/Mexico_Seltos_PE_pc13_143712241_SP2c_Body_AO.jpg-dba9c50ca86ec835a646c21afd4e884f.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

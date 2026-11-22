@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://flrri2ddcqyh"
-path="res://.godot/imported/traffic_barell_1_roads_UV.png-8fe3f88d280ebd7db4d867dd0ff14409.ctex"
+path.bptc="res://.godot/imported/traffic_barell_1_roads_UV.png-8fe3f88d280ebd7db4d867dd0ff14409.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "1ed07d56bb79d82e63d22e8619353fe0"
@@ -14,12 +15,12 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/roads/traffic_barell_1_roads_UV.png"
-dest_files=["res://.godot/imported/traffic_barell_1_roads_UV.png-8fe3f88d280ebd7db4d867dd0ff14409.ctex"]
+dest_files=["res://.godot/imported/traffic_barell_1_roads_UV.png-8fe3f88d280ebd7db4d867dd0ff14409.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

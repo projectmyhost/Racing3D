@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bfyhxgxdtggmm"
-path="res://.godot/imported/Final_Model_14.png-0896c17d052295380afbf8f8ff524955.ctex"
+path.bptc="res://.godot/imported/Final_Model_14.png-0896c17d052295380afbf8f8ff524955.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "1b031a0a424340643f64343b70c4627a"
@@ -14,12 +15,12 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/cars/porsche_carrera_gt/Final_Model_14.png"
-dest_files=["res://.godot/imported/Final_Model_14.png-0896c17d052295380afbf8f8ff524955.ctex"]
+dest_files=["res://.godot/imported/Final_Model_14.png-0896c17d052295380afbf8f8ff524955.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

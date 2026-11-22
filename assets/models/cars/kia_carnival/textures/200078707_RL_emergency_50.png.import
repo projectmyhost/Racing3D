@@ -3,27 +3,28 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bhfxsgr3qa7ui"
-path="res://.godot/imported/200078707_RL_emergency_50.png-39ff92351cdb6e7e833388c90cf3cdae.ctex"
+path.bptc="res://.godot/imported/200078707_RL_emergency_50.png-39ff92351cdb6e7e833388c90cf3cdae.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/models/cars/kia_carnival/textures/200078707_RL_emergency_50.png"
-dest_files=["res://.godot/imported/200078707_RL_emergency_50.png-39ff92351cdb6e7e833388c90cf3cdae.ctex"]
+dest_files=["res://.godot/imported/200078707_RL_emergency_50.png-39ff92351cdb6e7e833388c90cf3cdae.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

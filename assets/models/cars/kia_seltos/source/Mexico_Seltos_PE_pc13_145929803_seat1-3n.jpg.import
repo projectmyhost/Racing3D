@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b2akhpt54ccy7"
-path="res://.godot/imported/Mexico_Seltos_PE_pc13_145929803_seat1-3n.jpg-ea8abf76e6324569b7ff7d4c676de3ba.ctex"
+path.bptc="res://.godot/imported/Mexico_Seltos_PE_pc13_145929803_seat1-3n.jpg-ea8abf76e6324569b7ff7d4c676de3ba.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "2f07405201eb20d742890ace8d539d76"
@@ -14,12 +15,12 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/cars/kia_seltos/source/Mexico_Seltos_PE_pc13_145929803_seat1-3n.jpg"
-dest_files=["res://.godot/imported/Mexico_Seltos_PE_pc13_145929803_seat1-3n.jpg-ea8abf76e6324569b7ff7d4c676de3ba.ctex"]
+dest_files=["res://.godot/imported/Mexico_Seltos_PE_pc13_145929803_seat1-3n.jpg-ea8abf76e6324569b7ff7d4c676de3ba.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

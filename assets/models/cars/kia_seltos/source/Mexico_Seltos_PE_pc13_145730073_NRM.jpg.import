@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://scyj2l5j4k4w"
-path="res://.godot/imported/Mexico_Seltos_PE_pc13_145730073_NRM.jpg-46633c23854ff29aa734bb973258d2c7.ctex"
+path.bptc="res://.godot/imported/Mexico_Seltos_PE_pc13_145730073_NRM.jpg-46633c23854ff29aa734bb973258d2c7.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "6c359171dc4ef123df0ac5558e75bdfa"
@@ -14,17 +15,17 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/cars/kia_seltos/source/Mexico_Seltos_PE_pc13_145730073_NRM.jpg"
-dest_files=["res://.godot/imported/Mexico_Seltos_PE_pc13_145730073_NRM.jpg-46633c23854ff29aa734bb973258d2c7.ctex"]
+dest_files=["res://.godot/imported/Mexico_Seltos_PE_pc13_145730073_NRM.jpg-46633c23854ff29aa734bb973258d2c7.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=1
 compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1
