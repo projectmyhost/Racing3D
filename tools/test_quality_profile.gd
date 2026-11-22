@@ -22,12 +22,16 @@ func _init() -> void:
 		printerr("FAIL: ULTRA SSAO should use half-res while keeping HIGH quality")
 		quit(1)
 		return
-	if float(u_cfg["shadow_max_dist"]) > 280.0:
-		printerr("FAIL: Shadow max distance should focus atlas density <= 280m, got %.1f" % float(u_cfg["shadow_max_dist"]))
+	if float(u_cfg["shadow_max_dist"]) > 180.0:
+		printerr("FAIL: Shadow max distance should focus atlas density <= 180m, got %.1f" % float(u_cfg["shadow_max_dist"]))
 		quit(1)
 		return
-	if u_cfg["shadow_quality"] != RenderingServer.SHADOW_QUALITY_SOFT_MEDIUM:
-		printerr("FAIL: Expected SOFT_MEDIUM shadow filter")
+	if bool(u_cfg.get("shadow_blend_splits", true)):
+		printerr("FAIL: ULTRA should disable redundant 32-tap shadow_blend_splits (TAA handles seams)")
+		quit(1)
+		return
+	if u_cfg["shadow_quality"] > RenderingServer.SHADOW_QUALITY_SOFT_LOW:
+		printerr("FAIL: Expected <= SOFT_LOW shadow filter to prevent close-wall PCF cache thrashing")
 		quit(1)
 		return
 	print("PASS: QualitySettings Tier.ULTRA eliminates MSAA+TAA redundancy & tightens shadows")

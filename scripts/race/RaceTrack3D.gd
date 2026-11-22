@@ -57,6 +57,7 @@ var _cam_y_initialized: bool = false
 var _is_dragging_cam: bool = false
 var _cam_idle_timer: float = 0.0
 var _is_manual_mode: bool = false
+var _cam_ray_query: PhysicsRayQueryParameters3D = null
 const MIN_CAM_DIST: float = 5.2
 const MAX_CAM_DIST: float = 16.5
 const MOUSE_SENSITIVITY: float = 0.005
@@ -116,6 +117,21 @@ func _ready() -> void:
 	# Execute runtime anti-bug collision guard
 	CollisionGuard.run_guard(self)
 
+	# Pre-warm particle/smoke pipelines on first frame so first corner drift never stutters
+	_prewarm_race_pipelines()
+
+func _prewarm_race_pipelines() -> void:
+	if car and car.get("_smoke_left") and car.get("_smoke_right"):
+		var sl := car.get("_smoke_left") as CPUParticles3D
+		var sr := car.get("_smoke_right") as CPUParticles3D
+		if sl and sr:
+			sl.emitting = true
+			sr.emitting = true
+			get_tree().create_timer(0.05).timeout.connect(func():
+				if is_instance_valid(sl): sl.emitting = false
+				if is_instance_valid(sr): sr.emitting = false
+			)
+
 func _setup_checkpoints() -> void:
 	for i in range(total_checkpoints):
 		var chk = get_node_or_null("Checkpoints/Checkpoint_" + str(i)) as Area3D
@@ -146,9 +162,13 @@ func _physics_process(_delta: float) -> void:
 
 	var w3d = get_world_3d()
 	if w3d and w3d.direct_space_state:
-		var ray_query = PhysicsRayQueryParameters3D.create(look_target, ray_target, 1)
-		ray_query.exclude = [car.get_rid()]
-		var hit = w3d.direct_space_state.intersect_ray(ray_query)
+		if _cam_ray_query == null:
+			_cam_ray_query = PhysicsRayQueryParameters3D.new()
+			_cam_ray_query.collision_mask = 1
+			_cam_ray_query.exclude = [car.get_rid()]
+		_cam_ray_query.from = look_target
+		_cam_ray_query.to = ray_target
+		var hit = w3d.direct_space_state.intersect_ray(_cam_ray_query)
 		if hit:
 			var hit_dist = look_target.distance_to(hit.position) - 0.65
 			_cam_safe_dist = maxf(hit_dist, min_camera_distance)

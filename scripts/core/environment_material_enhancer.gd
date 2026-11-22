@@ -152,6 +152,11 @@ static func _calibrate_material(sm: StandardMaterial3D, cull_safe: bool) -> Mate
 	if cull_safe:
 		out.cull_mode = BaseMaterial3D.CULL_BACK
 
+	# Convert heavy dual-pass ALPHA_DEPTH_PRE_PASS cutouts (signs/foliage) to crisp single-pass ALPHA_SCISSOR
+	if sm.transparency == BaseMaterial3D.TRANSPARENCY_ALPHA_DEPTH_PRE_PASS:
+		out.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+		out.alpha_scissor_threshold = 0.45
+
 	# 2. Reflective Glass Skyscraper Facades (crisp HDR reflections without dual-lobe clearcoat cost)
 	if sm.metallic >= 0.5 and sm.roughness <= 0.15:
 		out.roughness = 0.055
@@ -166,15 +171,11 @@ static func _calibrate_material(sm: StandardMaterial3D, cull_safe: bool) -> Mate
 		out.metallic_specular = 0.85
 		return out
 
-	# 4. Architectural Concrete / Urban Facades (add crisp surface depth & micro-normal relief)
+	# 4. Architectural Concrete / Urban Facades (clean roughness/specular without redundant asphalt-gravel normal maps)
 	if sm.roughness >= 0.70:
 		if sm.roughness >= 0.90:
 			out.roughness = 0.78
 		out.metallic_specular = 0.36
-		if sm.albedo_texture != null and not sm.normal_enabled and _asphalt_detail_normal != null:
-			out.normal_enabled = true
-			out.normal_texture = _asphalt_detail_normal
-			out.normal_scale = 0.22
 
 	return out
 

@@ -105,7 +105,9 @@ func _build_smoke_material(base_tint: Color) -> StandardMaterial3D:
 	var s: float = config.get_world_scale() if config else VehicleConfig.WORLD_SCALE
 	var mat := StandardMaterial3D.new()
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	# Per-vertex shading + no depth-texture proximity copy prevents corner-drift GPU spikes
+	# while preserving smooth sunset-lit volumetric tire smoke appearance.
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
 	mat.diffuse_mode = BaseMaterial3D.DIFFUSE_LAMBERT_WRAP
 	mat.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
 	mat.roughness = 0.96
@@ -120,8 +122,7 @@ func _build_smoke_material(base_tint: Color) -> StandardMaterial3D:
 	mat.distance_fade_mode = BaseMaterial3D.DISTANCE_FADE_PIXEL_ALPHA
 	mat.distance_fade_min_distance = 2.2 * s
 	mat.distance_fade_max_distance = 3.8 * s
-	mat.proximity_fade_enabled = true
-	mat.proximity_fade_distance = 0.55 * s
+	mat.proximity_fade_enabled = false
 	return mat
 
 func _build_exhaust_material(base_tint: Color) -> StandardMaterial3D:

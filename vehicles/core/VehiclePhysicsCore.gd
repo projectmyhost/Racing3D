@@ -74,6 +74,7 @@ var _is_shifting: bool = false
 var override_inputs: bool = false
 var _unflip_timer: float = 0.0
 var _unflip_cooldown: float = 0.0
+var _wheel_ray_query: PhysicsRayQueryParameters3D = null
 
 # Allows AI, replays, or automated test harnesses to control vehicle inputs
 func set_driver_input(throttle: float, brake: float, steer: float, handbrake: float) -> void:
@@ -364,6 +365,12 @@ func _solve_suspension_raycasts(_delta: float) -> void:
 	var max_cast_dist = config.suspension_rest_length + config.suspension_travel + config.wheel_radius + ray_headroom
 	var chassis_up = global_transform.basis.y.normalized()
 	
+	if _wheel_ray_query == null:
+		_wheel_ray_query = PhysicsRayQueryParameters3D.new()
+		_wheel_ray_query.hit_back_faces = true
+	_wheel_ray_query.collision_mask = collision_mask
+	_wheel_ray_query.exclude = [self_rid]
+
 	for i in range(4):
 		var w = _wheels[i]
 		w.was_grounded = w.is_grounded
@@ -375,10 +382,9 @@ func _solve_suspension_raycasts(_delta: float) -> void:
 		var ray_origin = mount_world + chassis_up * ray_headroom
 		var ray_target = ray_origin - chassis_up * max_cast_dist
 		
-		var q = PhysicsRayQueryParameters3D.create(ray_origin, ray_target, collision_mask)
-		q.exclude = [self_rid]
-		q.hit_back_faces = true
-		var hit: Dictionary = space.intersect_ray(q)
+		_wheel_ray_query.from = ray_origin
+		_wheel_ray_query.to = ray_target
+		var hit: Dictionary = space.intersect_ray(_wheel_ray_query)
 		
 		# Road surface normal check: handle double-sided reverse-wound road faces while rejecting steep walls
 		var is_road_surface = false
