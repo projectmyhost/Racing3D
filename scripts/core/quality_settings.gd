@@ -57,9 +57,9 @@ const TIER_PROFILES := {
 		"shadow_size": 2048,
 		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_LOW,
 		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS,
-		"shadow_max_dist": 280.0,
+		"shadow_max_dist": 220.0,
 		"use_taa": false,
-		"msaa": Viewport.MSAA_2X,
+		"msaa": Viewport.MSAA_DISABLED,
 		"ssaa": Viewport.SCREEN_SPACE_AA_FXAA,
 		"anisotropy": Viewport.ANISOTROPY_8X,
 		"scaling_scale": 1.0,
@@ -93,13 +93,13 @@ const TIER_PROFILES := {
 		"shadow_size": 4096,
 		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_MEDIUM,
 		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS,
-		"shadow_max_dist": 350.0,
+		"shadow_max_dist": 220.0,
 		"use_taa": true,
 		"msaa": Viewport.MSAA_DISABLED,
 		"ssaa": Viewport.SCREEN_SPACE_AA_FXAA,
 		"anisotropy": Viewport.ANISOTROPY_16X,
 		"scaling_scale": 1.0,
-		"mesh_lod_threshold": 0.8,
+		"mesh_lod_threshold": 0.95,
 		"ssr": true,
 		"ssr_steps": 24,
 		"ssao": true,
@@ -127,20 +127,20 @@ const TIER_PROFILES := {
 	},
 	Tier.ULTRA: {
 		"shadow_size": 4096,
-		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_HIGH,
+		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_MEDIUM,
 		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS,
-		"shadow_max_dist": 420.0,
+		"shadow_max_dist": 260.0,
 		"use_taa": true,
-		"msaa": Viewport.MSAA_2X,
+		"msaa": Viewport.MSAA_DISABLED,
 		"ssaa": Viewport.SCREEN_SPACE_AA_DISABLED,
 		"anisotropy": Viewport.ANISOTROPY_16X,
 		"scaling_scale": 1.0,
-		"mesh_lod_threshold": 0.4,
+		"mesh_lod_threshold": 0.85,
 		"ssr": true,
-		"ssr_steps": 48,
+		"ssr_steps": 32,
 		"ssao": true,
 		"ssao_quality": RenderingServer.ENV_SSAO_QUALITY_HIGH,
-		"ssao_half": false,
+		"ssao_half": true,
 		"ssil": true,
 		"ssil_quality": RenderingServer.ENV_SSIL_QUALITY_MEDIUM,
 		"ssil_half": true,
@@ -286,8 +286,11 @@ func apply_to_current_scene() -> void:
 		var base_sun_e: float = float(sun.get_meta("_base_light_energy"))
 		sun.directional_shadow_mode = cfg["shadow_mode"]
 		sun.directional_shadow_blend_splits = true
-		sun.directional_shadow_pancake_size = 0.0
+		sun.directional_shadow_pancake_size = 12.0
 		sun.directional_shadow_max_distance = float(cfg["shadow_max_dist"])
+		sun.directional_shadow_split_1 = 0.06
+		sun.directional_shadow_split_2 = 0.18
+		sun.directional_shadow_split_3 = 0.45
 		sun.light_energy = base_sun_e * float(cfg["sun_energy_scale"])
 		if current_tier == Tier.LOW:
 			sun.shadow_bias = 0.028
