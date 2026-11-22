@@ -21,12 +21,19 @@ void sky() {
 
 	if (dir.y >= -0.02) {
 		float sun_dot = max(dot(dir, s_dir), 0.0);
-		float corona = pow(sun_dot, 36.0) * 1.85;
-		float halo = pow(sun_dot, 180.0) * 3.2;
-		col += color_sun_glow * corona + color_sun * halo;
-		if (sun_dot > 0.9982) {
-			float disc = smoothstep(0.9982, 0.9993, sun_dot);
-			col = mix(col, color_sun * 8.5, disc);
+		if (AT_CUBEMAP_PASS) {
+			// Smooth warm IBL reflection lobe (prevents double-counted white specular hotspots on top of SunLight)
+			float corona_ibl = pow(sun_dot, 24.0) * 0.72;
+			float halo_ibl = pow(sun_dot, 96.0) * 0.95;
+			col += color_sun_glow * corona_ibl + color_sun * halo_ibl;
+		} else {
+			float corona = pow(sun_dot, 36.0) * 1.65;
+			float halo = pow(sun_dot, 180.0) * 2.6;
+			col += color_sun_glow * corona + color_sun * halo;
+			if (sun_dot > 0.9982) {
+				float disc = smoothstep(0.9982, 0.9993, sun_dot);
+				col = mix(col, color_sun * 5.2, disc);
+			}
 		}
 	}
 

@@ -19,6 +19,7 @@ static var _paint_shader: Shader = null
 static var _paint_mat_refs: Array[WeakRef] = []
 static var _contact_shadow_tex: ImageTexture = null
 static var _tire_detail_normal: ImageTexture = null
+static var _porsche_tyre_normal_fixed: ImageTexture = null
 static var _current_quality_detail: float = 1.0
 
 static func set_quality_detail(detail_level: float) -> void:
@@ -118,6 +119,43 @@ static func _get_tire_detail_normal() -> ImageTexture:
 	img.generate_mipmaps()
 	_tire_detail_normal = ImageTexture.create_from_image(img)
 	return _tire_detail_normal
+
+static func _get_fixed_porsche_tyre_normal() -> Texture2D:
+	if _porsche_tyre_normal_fixed != null:
+		return _porsche_tyre_normal_fixed
+	var raw_tex := load("res://assets/models/cars/porsche_mission_x/tyre_nm.png") as Texture2D
+	if not raw_tex:
+		return _get_tire_detail_normal()
+	var img := raw_tex.get_image()
+	if not img:
+		return raw_tex
+	if img.is_compressed():
+		img.decompress()
+	img.clear_mipmaps()
+	img.convert(Image.FORMAT_RGBA8)
+	if img.get_width() > 512 or img.get_height() > 512:
+		img.resize(512, 512, Image.INTERPOLATE_BILINEAR)
+	# tyre_nm.png was exported with sRGB gamma baked in (flat neutral ~186/255 instead of 128/255),
+	# tilting every tire normal +33 deg upward/sideways and causing wobbling specular highlights.
+	# Decode R & G back to true linear tangent space via fast 256-entry LUT (neutral = 128, 128, 255).
+	var lut := PackedByteArray()
+	lut.resize(256)
+	for i in range(256):
+		lut[i] = clampi(int(round(pow(float(i) / 255.0, 2.2) * 255.0)), 0, 255)
+	var data := img.get_data()
+	var n_bytes := data.size()
+	var idx := 0
+	while idx < n_bytes:
+		var r_lin := lut[data[idx]]
+		var g_lin := lut[data[idx + 1]]
+		data[idx] = r_lin
+		data[idx + 1] = g_lin
+		data[idx + 2] = 255
+		idx += 4
+	var out_img := Image.create_from_data(img.get_width(), img.get_height(), false, Image.FORMAT_RGBA8, data)
+	out_img.generate_mipmaps()
+	_porsche_tyre_normal_fixed = ImageTexture.create_from_image(out_img)
+	return _porsche_tyre_normal_fixed
 
 static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_paint: Color = Color.WHITE) -> void:
 	if not root_node:
@@ -354,48 +392,50 @@ static func enhance_vehicle_materials(car_id: String, root_node: Node3D, custom_
 				else:
 					glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
 					glass_mat.albedo_color = Color(0.015, 0.016, 0.022, 1.0)
-				glass_mat.metallic = 0.24
-				glass_mat.metallic_specular = 1.0
-				glass_mat.roughness = 0.015
+				glass_mat.metallic = 0.22
+				glass_mat.metallic_specular = 0.72
+				glass_mat.roughness = 0.032
 				glass_mat.clearcoat_enabled = true
-				glass_mat.clearcoat = 1.0
-				glass_mat.clearcoat_roughness = 0.01
+				glass_mat.clearcoat = 0.90
+				glass_mat.clearcoat_roughness = 0.028
 				glass_mat.emission_enabled = false
 				glass_mat.set_meta("_vm_enhanced", true)
 				mat_cache[cache_key] = glass_mat
 				mi.set_surface_override_material(s, glass_mat)
 				continue
 				
-			# 5. Tires (Dark Charcoal Matte Rubber + Procedural Tread Normal Map)
+			# 5. Tires (Dark Charcoal Matte Rubber + Linearized Tread Normal Map)
 			if _is_tire(id_lower, m_name, mat_name):
 				all_interior = false
 				var tire_mat = sm.duplicate() as StandardMaterial3D
 				tire_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 				if id_lower == "porsche_mission_x":
 					var tex_di = load("res://assets/models/cars/porsche_mission_x/tyre_Di.png") as Texture2D
-					var tex_nm = load("res://assets/models/cars/porsche_mission_x/tyre_nm.png") as Texture2D
+					var tex_nm = _get_fixed_porsche_tyre_normal()
 					if tex_di:
 						tire_mat.albedo_texture = tex_di
-						tire_mat.albedo_color = Color(0.75, 0.75, 0.76, 1.0)
+						tire_mat.albedo_color = Color(0.62, 0.62, 0.64, 1.0)
 					else:
-						tire_mat.albedo_color = Color(0.11, 0.11, 0.12, 1.0)
+						tire_mat.albedo_color = Color(0.08, 0.08, 0.09, 1.0)
 					if tex_nm:
 						tire_mat.normal_enabled = true
 						tire_mat.normal_texture = tex_nm
+						tire_mat.normal_scale = 0.60
 				elif sm.albedo_texture != null:
 					tire_mat.albedo_texture = sm.albedo_texture
-					tire_mat.albedo_color = Color(0.86, 0.86, 0.88, 1.0)
+					tire_mat.albedo_color = Color(0.72, 0.72, 0.74, 1.0)
 				else:
-					tire_mat.albedo_color = Color(0.10, 0.10, 0.11, 1.0)
+					tire_mat.albedo_color = Color(0.08, 0.08, 0.09, 1.0)
 				if not tire_mat.normal_enabled or tire_mat.normal_texture == null:
 					var tread_nm := _get_tire_detail_normal()
 					if tread_nm:
 						tire_mat.normal_enabled = true
 						tire_mat.normal_texture = tread_nm
-						tire_mat.normal_scale = 0.55
-				tire_mat.roughness = 0.82
+						tire_mat.normal_scale = 0.50
+				tire_mat.roughness = 0.88
 				tire_mat.metallic = 0.0
-				tire_mat.metallic_specular = 0.24
+				tire_mat.metallic_specular = 0.14
+				tire_mat.rim_enabled = false
 				tire_mat.clearcoat_enabled = false
 				tire_mat.emission_enabled = false
 				tire_mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED

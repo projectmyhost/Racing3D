@@ -51,10 +51,10 @@ void fragment() {
 	vec4 tex = has_albedo_tex ? texture(albedo_tex, UV) : vec4(1.0);
 	vec3 paint_rgb = albedo_color.rgb * tex.rgb;
 
-	// World-space sky-horizon-ground ambient/bounce grading + panel curvature crease AO
+	// World-space sky-horizon-ground ambient/bounce grading + subtle panel curvature crease AO
 	vec3 wn = normalize(v_world_norm);
 	vec3 n_view_raw = normalize(NORMAL);
-	float crease = clamp((length(dFdx(n_view_raw)) + length(dFdy(n_view_raw))) * 0.28, 0.0, 0.34);
+	float crease = clamp((length(dFdx(n_view_raw)) + length(dFdy(n_view_raw))) * 0.14, 0.0, 0.18);
 
 	float ndotv = clamp(dot(n_view_raw, normalize(VIEW)), 0.0, 1.0);
 	float fresnel_curve = pow(1.0 - ndotv, 2.5);
@@ -62,11 +62,11 @@ void fragment() {
 
 	// Horizon golden-hour rim reflection tint on sky-facing upper curves vs cool ground shadow below
 	float up_factor = clamp(wn.y * 0.5 + 0.5, 0.0, 1.0);
-	vec3 sky_env_tint = mix(vec3(0.84, 0.86, 0.90), vec3(1.04, 0.99, 0.94), smoothstep(0.35, 0.95, up_factor));
-	float tint_blend = has_albedo_tex ? 0.35 : 0.72;
+	vec3 sky_env_tint = mix(vec3(0.86, 0.88, 0.92), vec3(1.03, 0.99, 0.94), smoothstep(0.35, 0.95, up_factor));
+	float tint_blend = has_albedo_tex ? 0.30 : 0.65;
 	paint_rgb *= mix(vec3(1.0), sky_env_tint, tint_blend);
-	float rim_sunset = pow(1.0 - ndotv, 3.2) * smoothstep(-0.1, 0.5, wn.y);
-	paint_rgb += vec3(0.11, 0.07, 0.04) * rim_sunset * (has_albedo_tex ? 0.35 : 0.75);
+	float rim_sunset = pow(1.0 - ndotv, 3.5) * smoothstep(-0.05, 0.55, wn.y);
+	paint_rgb += vec3(0.045, 0.028, 0.015) * rim_sunset * (has_albedo_tex ? 0.30 : 0.60);
 
 	// Ground-facing rocker/wheel-arch cavity occlusion + panel crease darkening (origin-invariant)
 	float down_facing = clamp(-wn.y, 0.0, 1.0);
@@ -87,12 +87,12 @@ void fragment() {
 		vec3 peel_p = meter_pos * 34.0;
 		float px = sin(peel_p.x * 6.283 + cos(peel_p.z * 4.1));
 		float pz = cos(peel_p.z * 6.283 + sin(peel_p.x * 3.7));
-		vec3 pert = (TANGENT * px + BINORMAL * pz) * (orange_peel * 0.45 * quality_detail);
-		vec3 flake_tilt = (TANGENT * (flake_rand.y - 0.5) + BINORMAL * (flake_rand.z - 0.5)) * (0.012 * flake_intensity * quality_detail * flake_sparkle);
+		vec3 pert = (TANGENT * px + BINORMAL * pz) * (orange_peel * 0.35 * quality_detail);
+		vec3 flake_tilt = (TANGENT * (flake_rand.y - 0.5) + BINORMAL * (flake_rand.z - 0.5)) * (0.006 * flake_intensity * quality_detail * flake_sparkle);
 		NORMAL = normalize(NORMAL + pert + flake_tilt);
 
-		metal = clamp(metallic_base + flake_sparkle * 0.14 * flake_intensity * quality_detail, 0.0, 1.0);
-		rough = clamp(base_roughness + (flake_rand.y - 0.5) * 0.03 * flake_intensity * quality_detail, 0.03, 0.75);
+		metal = clamp(metallic_base + flake_sparkle * 0.12 * flake_intensity * quality_detail, 0.0, 1.0);
+		rough = clamp(base_roughness + (flake_rand.y - 0.5) * 0.025 * flake_intensity * quality_detail, 0.04, 0.75);
 	}
 
 	if (has_normal_tex) {
@@ -103,9 +103,9 @@ void fragment() {
 	ALBEDO = paint_rgb;
 	METALLIC = metal;
 	ROUGHNESS = rough;
-	SPECULAR = 0.85;
-	CLEARCOAT = clearcoat_strength * mix(0.65, 1.0, quality_detail);
-	CLEARCOAT_ROUGHNESS = mix(0.055, clearcoat_roughness, quality_detail);
+	SPECULAR = 0.52;
+	CLEARCOAT = clearcoat_strength * mix(0.60, 0.92, quality_detail);
+	CLEARCOAT_ROUGHNESS = mix(0.075, max(clearcoat_roughness, 0.038), quality_detail);
 	AO = cavity_ao;
 	AO_LIGHT_AFFECT = 0.88;
 }

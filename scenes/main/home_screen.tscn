@@ -44,10 +44,11 @@ light_specular = 0.25
 [node name="ShowroomReflectionProbe" type="ReflectionProbe" parent="." unique_id=243656011]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
 update_mode = 0
-intensity = 0.72
+intensity = 0.45
 max_distance = 65.0
 size = Vector3(26, 12, 26)
 origin_offset = Vector3(0, -1, 0)
+cull_mask = 1
 ambient_mode = 0
 enable_shadows = false
 

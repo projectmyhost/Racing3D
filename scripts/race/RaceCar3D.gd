@@ -41,8 +41,8 @@ func _setup_vehicle_lights() -> void:
 		spot.position = Vector3(0.62 * s * x_sign, 0.50 * s, front_z)
 		spot.rotation = Vector3(deg_to_rad(-8.0), 0.0, 0.0)
 		spot.light_color = Color(0.98, 0.96, 0.9, 1.0)
-		spot.light_energy = 1.5
-		spot.light_specular = 0.25
+		spot.light_energy = 0.85
+		spot.light_specular = 0.12
 		spot.spot_range = 16.0 * s
 		spot.spot_attenuation = 1.45
 		spot.spot_angle = 35.0
@@ -61,17 +61,10 @@ func _setup_vehicle_lights() -> void:
 	add_child(rear_glow)
 
 func _setup_reflection_probe() -> void:
-	var s: float = config.get_world_scale() if config else VehicleConfig.WORLD_SCALE
-	_reflection_probe = ReflectionProbe.new()
-	_reflection_probe.name = "VehicleReflectionProbe"
-	_reflection_probe.size = Vector3(4.8, 2.4, 4.8) * s
-	_reflection_probe.origin_offset = Vector3(0.0, 1.0 * s, 0.0)
-	_reflection_probe.ambient_mode = ReflectionProbe.AMBIENT_DISABLED
-	_reflection_probe.max_distance = 45.0 * s
-	_reflection_probe.enable_shadows = false
-	_reflection_probe.update_mode = ReflectionProbe.UPDATE_ONCE
-	_reflection_probe.intensity = 0.75
-	add_child(_reflection_probe)
+	# Disabled: a frozen UPDATE_ONCE ReflectionProbe parented to a moving RigidBody3D rotates
+	# rigidly with the car and stamps bright start-line cubemap blotches onto shadowed body/tires.
+	# World Sky HDR IBL + real-time per-frame SSR provide smooth, physically accurate GTA V reflections.
+	_reflection_probe = null
 
 func _setup_audio() -> void:
 	# Disabled: no vehicle sound
