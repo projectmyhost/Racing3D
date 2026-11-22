@@ -26,12 +26,16 @@ func _init() -> void:
 		printerr("FAIL: Shadow max distance should focus atlas density <= 180m, got %.1f" % float(u_cfg["shadow_max_dist"]))
 		quit(1)
 		return
-	if bool(u_cfg.get("shadow_blend_splits", true)):
-		printerr("FAIL: ULTRA should disable redundant 32-tap shadow_blend_splits (TAA handles seams)")
+	if not bool(u_cfg.get("shadow_blend_splits", false)):
+		printerr("FAIL: ULTRA must keep shadow_blend_splits enabled to prevent hard cascade seam lines")
 		quit(1)
 		return
-	if u_cfg["shadow_quality"] > RenderingServer.SHADOW_QUALITY_SOFT_LOW:
-		printerr("FAIL: Expected <= SOFT_LOW shadow filter to prevent close-wall PCF cache thrashing")
+	if u_cfg["shadow_mode"] != DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS:
+		printerr("FAIL: Expected 2-split seamless high-density shadow mode for smooth GTA V/VI shadows at low GPU cost")
+		quit(1)
+		return
+	if u_cfg["shadow_quality"] != RenderingServer.SHADOW_QUALITY_SOFT_MEDIUM:
+		printerr("FAIL: Expected SOFT_MEDIUM 16-tap Vogel shadow filter")
 		quit(1)
 		return
 	print("PASS: QualitySettings Tier.ULTRA eliminates MSAA+TAA redundancy & tightens shadows")

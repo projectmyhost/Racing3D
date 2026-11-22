@@ -20,8 +20,12 @@ const TIER_PROFILES := {
 	Tier.LOW: {
 		"shadow_size": 2048,
 		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_LOW,
-		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS,
-		"shadow_max_dist": 220.0,
+		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS,
+		"shadow_max_dist": 135.0,
+		"shadow_blend_splits": true,
+		"shadow_blur": 2.0,
+		"shadow_bias": 0.06,
+		"shadow_normal_bias": 1.95,
 		"use_taa": false,
 		"msaa": Viewport.MSAA_DISABLED,
 		"ssaa": Viewport.SCREEN_SPACE_AA_FXAA,
@@ -55,9 +59,13 @@ const TIER_PROFILES := {
 	},
 	Tier.MEDIUM: {
 		"shadow_size": 2048,
-		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_LOW,
-		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS,
-		"shadow_max_dist": 220.0,
+		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_MEDIUM,
+		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS,
+		"shadow_max_dist": 145.0,
+		"shadow_blend_splits": true,
+		"shadow_blur": 2.1,
+		"shadow_bias": 0.06,
+		"shadow_normal_bias": 1.95,
 		"use_taa": false,
 		"msaa": Viewport.MSAA_DISABLED,
 		"ssaa": Viewport.SCREEN_SPACE_AA_FXAA,
@@ -91,10 +99,13 @@ const TIER_PROFILES := {
 	},
 	Tier.HIGH: {
 		"shadow_size": 2048,
-		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_LOW,
-		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS,
-		"shadow_max_dist": 165.0,
-		"shadow_blend_splits": false,
+		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_MEDIUM,
+		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS,
+		"shadow_max_dist": 155.0,
+		"shadow_blend_splits": true,
+		"shadow_blur": 2.2,
+		"shadow_bias": 0.06,
+		"shadow_normal_bias": 1.95,
 		"use_taa": true,
 		"msaa": Viewport.MSAA_DISABLED,
 		"ssaa": Viewport.SCREEN_SPACE_AA_FXAA,
@@ -127,11 +138,14 @@ const TIER_PROFILES := {
 		"adj_saturation": 1.08,
 	},
 	Tier.ULTRA: {
-		"shadow_size": 2048,
-		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_LOW,
-		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS,
-		"shadow_max_dist": 165.0,
-		"shadow_blend_splits": false,
+		"shadow_size": 3072,
+		"shadow_quality": RenderingServer.SHADOW_QUALITY_SOFT_MEDIUM,
+		"shadow_mode": DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS,
+		"shadow_max_dist": 160.0,
+		"shadow_blend_splits": true,
+		"shadow_blur": 2.35,
+		"shadow_bias": 0.055,
+		"shadow_normal_bias": 1.90,
 		"use_taa": true,
 		"msaa": Viewport.MSAA_DISABLED,
 		"ssaa": Viewport.SCREEN_SPACE_AA_DISABLED,
@@ -287,19 +301,20 @@ func apply_to_current_scene() -> void:
 			sun.set_meta("_base_normal_bias", sun.shadow_normal_bias)
 		var base_sun_e: float = float(sun.get_meta("_base_light_energy"))
 		sun.directional_shadow_mode = cfg["shadow_mode"]
-		sun.directional_shadow_blend_splits = bool(cfg.get("shadow_blend_splits", false))
+		sun.directional_shadow_blend_splits = bool(cfg.get("shadow_blend_splits", true))
 		sun.directional_shadow_pancake_size = 0.0
 		sun.directional_shadow_max_distance = float(cfg["shadow_max_dist"])
-		sun.directional_shadow_split_1 = 0.08
-		sun.directional_shadow_split_2 = 0.22
-		sun.directional_shadow_split_3 = 0.50
+		# 2-split seamless near zone (0..38m) prevents any cascade cut-line near car/barriers,
+		# while blend_splits smoothly feathers the single distant boundary!
+		sun.directional_shadow_split_1 = 0.24
+		sun.directional_shadow_split_2 = 0.52
+		sun.directional_shadow_split_3 = 0.80
+		# Disable noisy PCSS blocker-search stripes; smooth 16-tap Vogel PCF + shadow_blur yields silky GTA V/VI shadows
+		sun.light_angular_distance = 0.0
+		sun.shadow_blur = float(cfg.get("shadow_blur", 2.2))
+		sun.shadow_bias = float(cfg.get("shadow_bias", 0.055))
+		sun.shadow_normal_bias = float(cfg.get("shadow_normal_bias", 1.90))
 		sun.light_energy = base_sun_e * float(cfg["sun_energy_scale"])
-		if current_tier == Tier.LOW:
-			sun.shadow_bias = 0.028
-			sun.shadow_normal_bias = 1.35
-		else:
-			sun.shadow_bias = float(sun.get_meta("_base_shadow_bias"))
-			sun.shadow_normal_bias = float(sun.get_meta("_base_normal_bias"))
 
 	for fill_name in ["FillCool", "FillLight"]:
 		var fill := scene.find_child(fill_name, true, false) as DirectionalLight3D

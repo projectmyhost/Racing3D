@@ -21,18 +21,18 @@ transform = Transform3D(0.6207, -0.3065, 0.7217, 0, 0.9205, 0.3909, -0.7841, -0.
 light_color = Color(1, 0.85, 0.66, 1)
 light_energy = 2.75
 light_specular = 1.0
-light_angular_distance = 1.2
+light_angular_distance = 0.0
 shadow_enabled = true
-shadow_bias = 0.025
-shadow_normal_bias = 1.15
-shadow_blur = 1.35
-directional_shadow_mode = 2
-directional_shadow_split_1 = 0.05
-directional_shadow_split_2 = 0.16
-directional_shadow_split_3 = 0.42
+shadow_bias = 0.055
+shadow_normal_bias = 1.9
+shadow_blur = 2.35
+directional_shadow_mode = 1
+directional_shadow_split_1 = 0.24
+directional_shadow_split_2 = 0.52
+directional_shadow_split_3 = 0.8
 directional_shadow_blend_splits = true
 directional_shadow_fade_start = 0.85
-directional_shadow_max_distance = 380.0
+directional_shadow_max_distance = 120.0
 directional_shadow_pancake_size = 0.0
 
 [node name="FillCool" type="DirectionalLight3D" parent="." unique_id=243656010]
