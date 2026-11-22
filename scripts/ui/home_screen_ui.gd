@@ -1,6 +1,7 @@
 class_name HomeScreenUI
 extends Control
 
+const HomeHudV2Script = preload("res://scripts/ui/home_hud_v2.gd")
 const ProfileCardWidget = preload("res://scripts/ui/profile_card_widget.gd")
 const TopNavBar = preload("res://scripts/ui/top_nav_bar.gd")
 const CurrencyBar = preload("res://scripts/ui/currency_bar.gd")
@@ -108,6 +109,7 @@ var _profile_autoload: Node
 var _toast_tween: Tween
 var _profile_widget: ProfileCardWidget = null
 var _currency_widget: CurrencyBar = null
+var _hud_v2: HomeHudV2 = null
 
 # Active selected car in garage preview
 var _garage_selected_car_id: String = "sedan"
@@ -417,18 +419,7 @@ func _ready() -> void:
 		toast_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	if profile_card:
-		profile_card.offset_left = 35.0
-		profile_card.offset_top = 30.0
-		profile_card.offset_right = 540.0
-		profile_card.offset_bottom = 210.0
-		var card_bg = profile_card.get_node_or_null("CardBG") as TextureRect
-		if card_bg:
-			var bg_img = Image.load_from_file("res://assets/ui/textures/profile_card_clean_alpha.png")
-			if bg_img:
-				card_bg.texture = ImageTexture.create_from_image(bg_img)
-		for child in profile_card.get_children():
-			if child != card_bg:
-				child.visible = false
+		profile_card.visible = false
 
 	var left_grad = get_node_or_null("LeftLegibilityGradient")
 	if left_grad:
@@ -443,12 +434,10 @@ func _ready() -> void:
 	_apply_fps_index(_selected_fps_index)
 	_connect_settings_tabs()
 	_connect_garage_system()
-	_bind_player_profile()
 	_setup_reference_widgets()
-	if avatar_rect and not avatar_rect.texture:
-		var a_img = Image.load_from_file("res://assets/ui/icons/avatar_pilot_racing.png")
-		if a_img:
-			avatar_rect.texture = ImageTexture.create_from_image(a_img)
+	_bind_player_profile()
+	if avatar_rect and not avatar_rect.texture and ResourceLoader.exists("res://assets/ui/icons/avatar_pilot_racing.png"):
+		avatar_rect.texture = load("res://assets/ui/icons/avatar_pilot_racing.png")
 	
 	var prof = _get_profile()
 	if prof:
@@ -458,173 +447,78 @@ func _ready() -> void:
 	_on_profile_updated()
 	_close_all_modals()
 	
-	if play_btn:
+	if _hud_v2 and _hud_v2.play_button:
+		_hud_v2.play_button.grab_focus()
+	elif play_btn:
 		play_btn.grab_focus()
 
 func _setup_reference_widgets() -> void:
 	if not hud_root: return
-	
-	# Hide legacy placeholder panels in HUD
-	if profile_card:
-		profile_card.visible = false
-	if currency_pill:
-		currency_pill.visible = false
-	if gear_btn:
-		gear_btn.visible = false
-		
-	# Clean any old reference cropped nodes from HUD
-	for old_name in ["TopNavBar", "CurBG", "NotifPill", "MSPingLabel", "LimitedTimeEventCard", 
+
+	# Hide legacy HUD controls while keeping nodes intact for @onready & tests
+	for legacy_ctrl in [profile_card, currency_pill, gear_btn, play_btn, settings_btn, garage_btn, tuning_btn, paint_shop_btn, profile_btn]:
+		if legacy_ctrl:
+			legacy_ctrl.visible = false
+
+	# Clean any old spawned widgets from HUD
+	for old_name in ["TopNavBar", "CurBG", "NotifPill", "MSPingLabel", "LimitedTimeEventCard",
 			"OnlineFriendsCard", "DailyMissionsCard", "MailCard", "NewsBanner", "VersionLabel", "SeasonPassCard",
-			"NativeEventCard", "NativeFriendsCard"]:
+			"NativeEventCard", "NativeFriendsCard", "NativeProfileCard", "NativeTopNavBar", "NativeCurrencyBar",
+			"NativeHexGear", "NativeNotifPing", "NativeDailyMissions", "NativeMailBtn", "NativeNewsBanner", "NativeSeasonPass"]:
 		var old_node = hud_root.get_node_or_null(old_name)
 		if old_node:
 			old_node.queue_free()
-			
-	var p: PlayerProfileData = null
-	var prof = _get_profile()
-	if prof and prof.get("data"):
-		p = prof.get("data")
-	elif ResourceLoader.exists("res://data/player_profile.tres"):
-		p = load("res://data/player_profile.tres") as PlayerProfileData
 
-	# 1. Native Procedural Profile Card
-	_profile_widget = hud_root.get_node_or_null("NativeProfileCard") as ProfileCardWidget
-	if not _profile_widget:
-		_profile_widget = ProfileCardWidget.new()
-		_profile_widget.name = "NativeProfileCard"
-		hud_root.add_child(_profile_widget)
-		_profile_widget.pressed.connect(func(): open_modal(profile_modal))
-	_profile_widget.offset_left = 35.0
-	_profile_widget.offset_top = 26.0
-	_profile_widget.offset_right = 540.0
-	_profile_widget.offset_bottom = 206.0
-	if p:
-		_profile_widget.nickname = p.nickname
-		_profile_widget.level = p.level
-		_profile_widget.current_xp = p.current_xp
-		_profile_widget.max_xp = p.max_xp
+	_profile_widget = null
+	_currency_widget = null
 
-	# 2. Native Procedural Top Navigation Bar
-	var top_bar = hud_root.get_node_or_null("NativeTopNavBar") as TopNavBar
-	if not top_bar:
-		top_bar = TopNavBar.new()
-		top_bar.name = "NativeTopNavBar"
-		hud_root.add_child(top_bar)
-		top_bar.tab_selected.connect(func(tab_name: String):
-			if tab_name == "HOME":
-				_close_all_modals()
-			else:
-				show_toast("Fitur " + tab_name + " akan segera hadir!")
+	# Mount clean rebuilt HomeHudV2 (100% procedural SDF shaders + vector SVGs + 3D car art)
+	_hud_v2 = hud_root.get_node_or_null("HomeHudV2") as HomeHudV2
+	if not _hud_v2:
+		_hud_v2 = HomeHudV2Script.new()
+		_hud_v2.name = "HomeHudV2"
+		hud_root.add_child(_hud_v2)
+		_hud_v2.play_pressed.connect(func():
+			play_pressed.emit()
+			open_modal(play_modal)
 		)
-	top_bar.offset_left = 586.0
-	top_bar.offset_top = 37.0
-	top_bar.offset_right = 1321.0
-	top_bar.offset_bottom = 86.0
+		_hud_v2.garage_pressed.connect(func():
+			garage_pressed.emit()
+			_refresh_garage_ui()
+			open_modal(garage_modal)
+		)
+		_hud_v2.settings_pressed.connect(func():
+			settings_pressed.emit()
+			open_modal(settings_modal)
+		)
+		_hud_v2.shop_pressed.connect(func():
+			open_modal(topup_modal)
+		)
+		_hud_v2.leaderboard_pressed.connect(func():
+			show_toast("Leaderboard Global Musim Ini — Segera Hadir!")
+		)
+		_hud_v2.profile_pressed.connect(func():
+			profile_pressed.emit()
+			open_modal(profile_modal)
+		)
+		_hud_v2.topup_pressed.connect(func():
+			open_modal(topup_modal)
+		)
+		_hud_v2.mail_pressed.connect(func():
+			show_toast("Kotak Masuk: 1 pesan belum dibaca.")
+		)
+		_hud_v2.stats_pressed.connect(func():
+			open_modal(profile_modal)
+		)
+		_hud_v2.gift_pressed.connect(func():
+			show_toast("Hadiah Harian: Bonus Login tersedia!")
+		)
+		_hud_v2.exit_pressed.connect(func():
+			get_tree().quit()
+		)
 
-	# 3. Native Procedural Currency Bar
-	_currency_widget = hud_root.get_node_or_null("NativeCurrencyBar") as CurrencyBar
-	if not _currency_widget:
-		_currency_widget = CurrencyBar.new()
-		_currency_widget.name = "NativeCurrencyBar"
-		hud_root.add_child(_currency_widget)
-		_currency_widget.store_pressed.connect(func(): show_toast("Toko koin dan diamond akan segera hadir!"))
-	_currency_widget.offset_left = 1345.0
-	_currency_widget.offset_top = 34.0
-	_currency_widget.offset_right = 1801.0
-	_currency_widget.offset_bottom = 86.0
-	if p:
-		_currency_widget.coins = p.coins
-		_currency_widget.gems = p.gems
-
-	# 4. Native Hexagonal Settings Button
-	var hex_gear = hud_root.get_node_or_null("NativeHexGear") as SettingsHexBtn
-	if not hex_gear:
-		hex_gear = SettingsHexBtn.new()
-		hex_gear.name = "NativeHexGear"
-		hud_root.add_child(hex_gear)
-		hex_gear.pressed.connect(func(): open_modal(settings_modal))
-	hex_gear.offset_left = 1812.0
-	hex_gear.offset_top = 22.0
-	hex_gear.offset_right = 1886.0
-	hex_gear.offset_bottom = 96.0
-
-	# 5. Native Notifications Pill & Ping Widget
-	var notif_ping = hud_root.get_node_or_null("NativeNotifPing") as NotifPingWidget
-	if not notif_ping:
-		notif_ping = NotifPingWidget.new()
-		notif_ping.name = "NativeNotifPing"
-		hud_root.add_child(notif_ping)
-		notif_ping.pressed.connect(func(): show_toast("Tidak ada notifikasi baru."))
-	notif_ping.offset_left = 1570.0
-	notif_ping.offset_top = 98.0
-	notif_ping.offset_right = 1885.0
-	notif_ping.offset_bottom = 142.0
-
-	# (NativeEventCard and NativeFriendsCard removed as requested)
-
-	# 8. Native Daily Missions Card
-	var dm_card = hud_root.get_node_or_null("NativeDailyMissions") as DailyMissionsUI
-	if not dm_card:
-		dm_card = DailyMissionsUI.new()
-		dm_card.name = "NativeDailyMissions"
-		hud_root.add_child(dm_card)
-		dm_card.pressed.connect(func(): show_toast("Daily Missions: 3/5 Selesai!"))
-	dm_card.offset_left = 40.0
-	dm_card.offset_top = 946.0
-	dm_card.offset_right = 365.0
-	dm_card.offset_bottom = 1040.0
-
-	# 9. Native Mail Button
-	var ml_btn = hud_root.get_node_or_null("NativeMailBtn") as MailBtnUI
-	if not ml_btn:
-		ml_btn = MailBtnUI.new()
-		ml_btn.name = "NativeMailBtn"
-		hud_root.add_child(ml_btn)
-		ml_btn.pressed.connect(func(): show_toast("Kotak Masuk: 2 pesan belum dibaca."))
-	ml_btn.offset_left = 360.0
-	ml_btn.offset_top = 930.0
-	ml_btn.offset_right = 480.0
-	ml_btn.offset_bottom = 1040.0
-
-	# 10. Native News Banner
-	var nw_banner = hud_root.get_node_or_null("NativeNewsBanner") as NewsBannerUI
-	if not nw_banner:
-		nw_banner = NewsBannerUI.new()
-		nw_banner.name = "NativeNewsBanner"
-		hud_root.add_child(nw_banner)
-		nw_banner.pressed.connect(func(): show_toast("Patch 1.4 Live: New Tracks & Cars!"))
-	nw_banner.offset_left = 605.0
-	nw_banner.offset_top = 940.0
-	nw_banner.offset_right = 1335.0
-	nw_banner.offset_bottom = 1040.0
-
-	# 11. Version Label
-	var ver_lbl = hud_root.get_node_or_null("VersionLabel") as Label
-	if not ver_lbl:
-		ver_lbl = Label.new()
-		ver_lbl.name = "VersionLabel"
-		hud_root.add_child(ver_lbl)
-	ver_lbl.text = "v1.04.8"
-	ver_lbl.offset_left = 1430.0
-	ver_lbl.offset_top = 998.0
-	ver_lbl.offset_right = 1515.0
-	ver_lbl.offset_bottom = 1025.0
-	if ResourceLoader.exists("res://assets/ui/fonts/Rajdhani-SemiBold.ttf"):
-		ver_lbl.add_theme_font_override("font", load("res://assets/ui/fonts/Rajdhani-SemiBold.ttf"))
-	ver_lbl.add_theme_font_size_override("font_size", 18)
-	ver_lbl.add_theme_color_override("font_color", Color(0.65, 0.72, 0.80, 0.90))
-
-	# 12. Native Season Pass Card
-	var sp_card = hud_root.get_node_or_null("NativeSeasonPass") as SeasonPassUI
-	if not sp_card:
-		sp_card = SeasonPassUI.new()
-		sp_card.name = "NativeSeasonPass"
-		hud_root.add_child(sp_card)
-		sp_card.pressed.connect(func(): show_toast("Season Pass Lv. 15 unlock tersedia!"))
-	sp_card.offset_left = 1515.0
-	sp_card.offset_top = 930.0
-	sp_card.offset_right = 1895.0
-	sp_card.offset_bottom = 1042.0
+	if _hud_v2 and not _hud_v2.nav_buttons.is_empty():
+		_nav_buttons = _hud_v2.nav_buttons
 
 func _load_texture(path: String) -> Texture2D:
 	if ResourceLoader.exists(path):
@@ -1056,6 +950,9 @@ func _bind_player_profile() -> void:
 		xp_label.add_theme_font_size_override("font_size", 14)
 		xp_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
 		
+	if _hud_v2:
+		_hud_v2.update_profile(p.nickname, p.level, p.current_xp, p.max_xp)
+		_hud_v2.update_currency(p.coins, p.gems)
 	if _profile_widget:
 		_profile_widget.nickname = p.nickname
 		_profile_widget.level = p.level
@@ -1066,6 +963,7 @@ func _bind_player_profile() -> void:
 		_currency_widget.coins = p.coins
 		_currency_widget.gems = p.gems
 		_currency_widget.queue_redraw()
+	if xp_label:
 		xp_label.add_theme_color_override("font_outline_color", Color(0.04, 0.08, 0.22, 1.0))
 		xp_label.add_theme_constant_override("outline_size", 2)
 	if avatar_rect:
@@ -1079,16 +977,16 @@ func _bind_player_profile() -> void:
 
 func _on_profile_updated() -> void:
 	_bind_player_profile()
-	if avatar_rect and not avatar_rect.texture:
-		var a_img = Image.load_from_file("res://assets/ui/icons/avatar_pilot_racing.png")
-		if a_img:
-			avatar_rect.texture = ImageTexture.create_from_image(a_img)
+	if avatar_rect and not avatar_rect.texture and ResourceLoader.exists("res://assets/ui/icons/avatar_pilot_racing.png"):
+		avatar_rect.texture = load("res://assets/ui/icons/avatar_pilot_racing.png")
 
 func _on_currency_changed(coins: int, gems: int) -> void:
 	if coin_label:
 		coin_label.text = _format_number(coins)
 	if gem_label:
 		gem_label.text = _format_number(gems)
+	if _hud_v2:
+		_hud_v2.update_currency(coins, gems)
 	if _currency_widget:
 		_currency_widget.coins = coins
 		_currency_widget.gems = gems
@@ -1139,7 +1037,9 @@ func close_modal() -> void:
 		var target = _active_modal
 		_active_modal = null
 		target.visible = false
-	if play_btn:
+	if _hud_v2 and _hud_v2.play_button:
+		_hud_v2.play_button.grab_focus()
+	elif play_btn:
 		play_btn.grab_focus()
 
 func _get_showcase_car() -> Node3D:
