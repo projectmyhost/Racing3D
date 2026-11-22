@@ -87,6 +87,8 @@ var _pending_model_name: String = ""
 var _pending_tscn_path: String = ""
 var _active_rig_model: String = ""
 var _rig_pool: Dictionary = {}
+const MAX_POOLED_RIGS: int = 4
+var _rig_lru: Array[String] = []
 
 # Background threaded preload + idle rig warmup state
 var _bg_model_queue: Array[String] = []
@@ -124,9 +126,6 @@ func _ready() -> void:
 	set_headlights(headlights_on)
 	set_steer(steer_angle)
 
-	# Defer background fleet preloading slightly so first Homescreen frame renders smoothly
-	_schedule_background_preload.call_deferred()
-
 func _schedule_background_preload() -> void:
 	if _preload_started or not is_inside_tree():
 		return
@@ -136,18 +135,23 @@ func _schedule_background_preload() -> void:
 		warm_garage_fleet(DEFAULT_PRELOAD_ORDER)
 
 func warm_garage_fleet(car_ids: Array) -> void:
-	# Prioritize uncached cars without interrupting active load
-	for i in range(car_ids.size() - 1, -1, -1):
-		var cid: String = str(car_ids[i]).to_lower()
+	# Bound background warming to MAX_POOLED_RIGS while Garage is open so VRAM stays lean
+	var queued := 0
+	for cid_raw in car_ids:
+		if queued >= MAX_POOLED_RIGS:
+			break
+		var cid: String = str(cid_raw).to_lower()
 		if cid.is_empty() or _rig_pool.has(cid):
 			continue
 		var tscn_path: String = _resolve_tscn_path(cid)
 		if _packed_scene_cache.has(tscn_path):
 			if not (cid in _warm_rig_queue):
-				_warm_rig_queue.push_front(cid)
+				_warm_rig_queue.append(cid)
+				queued += 1
 		else:
 			if not (cid in _bg_model_queue):
-				_bg_model_queue.push_front(cid)
+				_bg_model_queue.append(cid)
+				queued += 1
 
 func _exit_tree() -> void:
 	_bg_model_queue.clear()
@@ -326,6 +330,24 @@ func _activate_pooled_rig(key: String) -> void:
 
 	set_headlights(headlights_on)
 	set_steer(steer_angle)
+	_touch_and_trim_rig_pool(key)
+
+func _touch_and_trim_rig_pool(keep_key: String) -> void:
+	_rig_lru.erase(keep_key)
+	_rig_lru.append(keep_key)
+	while _rig_pool.size() > MAX_POOLED_RIGS and not _rig_lru.is_empty():
+		var oldest: String = _rig_lru.pop_front()
+		if oldest == keep_key or oldest == _active_rig_model:
+			if not (oldest in _rig_lru):
+				_rig_lru.append(oldest)
+			break
+		if not _rig_pool.has(oldest):
+			continue
+		var old_entry: Dictionary = _rig_pool[oldest]
+		var piv := old_entry.get("pivot") as Node3D
+		if piv and is_instance_valid(piv):
+			piv.queue_free()
+		_rig_pool.erase(oldest)
 
 func _apply_loaded_car_scene(model_name: String, packed: PackedScene, activate_now: bool = true) -> void:
 	if not visual_root or not packed:

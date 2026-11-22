@@ -8,7 +8,11 @@ const EnvMatEnhancer = preload("res://scripts/core/environment_material_enhancer
 func _ready() -> void:
 	EnvMatEnhancer.enhance_city_stage(get_node_or_null("Stage"))
 	if has_node("/root/QualitySettings"):
-		get_node("/root/QualitySettings").apply_to_current_scene()
+		var qs := get_node("/root/QualitySettings")
+		qs.apply_to_current_scene()
+		if not qs.tier_changed.is_connected(_on_quality_tier_changed):
+			qs.tier_changed.connect(_on_quality_tier_changed)
+	_apply_showroom_shadow_clamp()
 
 	var ui = get_node_or_null("UILayer/HomeScreenUI")
 	var car = get_node_or_null("ShowcaseCar")
@@ -33,6 +37,20 @@ func _ready() -> void:
 	# Optional capture check or initialization
 	if OS.has_feature("capture"):
 		_schedule_capture()
+
+func _exit_tree() -> void:
+	if has_node("/root/QualitySettings"):
+		var qs := get_node("/root/QualitySettings")
+		if qs.tier_changed.is_connected(_on_quality_tier_changed):
+			qs.tier_changed.disconnect(_on_quality_tier_changed)
+
+func _on_quality_tier_changed(_tier: int) -> void:
+	_apply_showroom_shadow_clamp()
+
+func _apply_showroom_shadow_clamp() -> void:
+	var sun := get_node_or_null("SunLight") as DirectionalLight3D
+	if sun:
+		sun.directional_shadow_max_distance = minf(sun.directional_shadow_max_distance, 120.0)
 
 func _schedule_capture() -> void:
 	await get_tree().create_timer(1.8).timeout
