@@ -23,6 +23,11 @@ var nitro_level: float = 0.85 # 0.0 to 1.0
 var _displayed_speed: float = 0.0
 var _displayed_rpm: float = 850.0
 var _needle_angle: float = deg_to_rad(135.0)
+var _last_drawn_speed: float = -1.0
+var _last_drawn_angle: float = -99.0
+var _last_drawn_gear: int = -99
+var _last_drawn_reverse: bool = false
+var _last_drawn_nitro: float = -1.0
 
 var _font_bold: Font
 var _font_regular: Font
@@ -90,7 +95,14 @@ func _process(delta: float) -> void:
 	var rpm_ratio = clampf(_displayed_rpm / maxf(max_engine_rpm, 1000.0), 0.0, 1.0)
 	var target_angle = lerpf(ANGLE_MIN, ANGLE_MAX, rpm_ratio)
 	_needle_angle = lerpf(_needle_angle, target_angle, 1.0 - exp(-18.0 * safe_delta))
-	queue_redraw()
+	if absf(_displayed_speed - _last_drawn_speed) > 0.15 or absf(_needle_angle - _last_drawn_angle) > 0.002 \
+		or current_gear != _last_drawn_gear or is_reverse != _last_drawn_reverse or absf(nitro_level - _last_drawn_nitro) > 0.005:
+		_last_drawn_speed = _displayed_speed
+		_last_drawn_angle = _needle_angle
+		_last_drawn_gear = current_gear
+		_last_drawn_reverse = is_reverse
+		_last_drawn_nitro = nitro_level
+		queue_redraw()
 
 func _draw() -> void:
 	var center = Vector2(size.x - 110.0, size.y - 105.0)

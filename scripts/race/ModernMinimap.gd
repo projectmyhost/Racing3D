@@ -133,8 +133,20 @@ func _generate_screen_track() -> void:
 	for chk in CHECKPOINTS_XZ:
 		_cached_checkpoint_screen.append(_world_to_map(chk.x, chk.y, dish_rect))
 
+var _last_map_pos: Vector3 = Vector3(1e9, 0.0, 1e9)
+var _last_map_yaw: float = -999.0
+var _last_rank: int = -1
+
 func _process(_delta: float) -> void:
-	queue_redraw()
+	if car_node and is_instance_valid(car_node):
+		var xf: Transform3D = car_node.get_global_transform_interpolated()
+		var fwd_3d := -xf.basis.z
+		var yaw := atan2(fwd_3d.z, fwd_3d.x)
+		if xf.origin.distance_squared_to(_last_map_pos) > 0.04 or absf(angle_difference(yaw, _last_map_yaw)) > 0.008 or player_position_rank != _last_rank:
+			_last_map_pos = xf.origin
+			_last_map_yaw = yaw
+			_last_rank = player_position_rank
+			queue_redraw()
 
 func _draw() -> void:
 	# 1. POS Badge (Positioned at top of minimap: slanted glass container)

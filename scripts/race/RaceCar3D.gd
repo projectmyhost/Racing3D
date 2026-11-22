@@ -131,6 +131,19 @@ func _build_smoke_material(base_tint: Color) -> StandardMaterial3D:
 	mat.proximity_fade_distance = 0.55 * s
 	return mat
 
+func _build_exhaust_material(base_tint: Color) -> StandardMaterial3D:
+	var mat := StandardMaterial3D.new()
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.albedo_color = base_tint
+	mat.vertex_color_use_as_albedo = true
+	mat.albedo_texture = _get_soft_smoke_texture()
+	mat.texture_repeat = false
+	mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	mat.billboard_keep_scale = true
+	mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+	return mat
+
 func _create_tire_smoke_emitter(emitter_name: String) -> CPUParticles3D:
 	var s: float = config.get_world_scale() if config else VehicleConfig.WORLD_SCALE
 	var particles := CPUParticles3D.new()
@@ -188,7 +201,7 @@ func _setup_exhaust_emitters() -> void:
 	var cls := config.vehicle_class.to_lower()
 	var is_dual := cls.contains("sport") or cls.contains("super") or config.peak_power_kw >= 260.0
 	
-	_exhaust_mat = _build_smoke_material(Color(0.72, 0.74, 0.78, 0.32))
+	_exhaust_mat = _build_exhaust_material(Color(0.72, 0.74, 0.78, 0.32))
 	_exhaust_right = _create_exhaust_emitter("ExhaustSmokeRight", _exhaust_mat)
 	_exhaust_right.position = Vector3(exhaust_x, exhaust_y, rear_z)
 	add_child(_exhaust_right)

@@ -1,23 +1,19 @@
 [gd_resource type="Environment" format=3]
 
-[ext_resource type="Shader" path="res://assets/shaders/sky_sunset.gdshader" id="1_sunset"]
+[ext_resource type="Shader" path="res://assets/shaders/sky_sunset_fast.gdshader" id="1_sunset"]
+[ext_resource type="Texture2D" path="res://assets/textures/environments/sky_sunset_clouds.exr" id="2_skytex"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sunset"]
 shader = ExtResource("1_sunset")
-shader_parameter/color_zenith = Color(0.09, 0.15, 0.34, 1)
-shader_parameter/color_mid = Color(0.32, 0.25, 0.45, 1)
-shader_parameter/color_pink = Color(0.84, 0.4, 0.36, 1)
-shader_parameter/color_horizon = Color(1, 0.6, 0.26, 1)
+shader_parameter/baked_sky_tex = ExtResource("2_skytex")
 shader_parameter/color_sun = Color(1, 0.94, 0.8, 1)
 shader_parameter/color_sun_glow = Color(1, 0.64, 0.24, 1)
-shader_parameter/color_ground = Color(0.09, 0.09, 0.12, 1)
 shader_parameter/hdr_sky_intensity = 1.45
-shader_parameter/cloud_coverage = 0.48
 shader_parameter/sun_dir = Vector3(0.7217, 0.3909, 0.5713)
 
 [sub_resource type="Sky" id="Sky_sunset"]
 sky_material = SubResource("ShaderMaterial_sunset")
-process_mode = 1
+process_mode = 2
 radiance_size = 3
 
 [resource]
