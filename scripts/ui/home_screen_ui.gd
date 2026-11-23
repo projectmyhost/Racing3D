@@ -2,6 +2,8 @@ class_name HomeScreenUI
 extends Control
 
 const HomeHudV2Script = preload("res://scripts/ui/home_hud_v2.gd")
+const VehicleCatalogScript = preload("res://scripts/core/vehicle_catalog.gd")
+const GARAGE_3D_SCENE_PATH = "res://scenes/garage/Garage3D.tscn"
 const ProfileCardWidget = preload("res://scripts/ui/profile_card_widget.gd")
 const TopNavBar = preload("res://scripts/ui/top_nav_bar.gd")
 const CurrencyBar = preload("res://scripts/ui/currency_bar.gd")
@@ -113,297 +115,9 @@ var _hud_v2: HomeHudV2 = null
 
 # Active selected car in garage preview
 var _garage_selected_car_id: String = "sedan"
+var _garage_transitioning: bool = false
 
-const GARAGE_FLEET_DATA = {
-	"sedan": {
-		"id": "sedan",
-		"name": "SEDAN PRIME",
-		"class": "Executive Sport Sedan | 2.5L Turbo I4",
-		"desc": "High-efficiency balanced executive platform with sport-tuned suspension and responsive rear-wheel drive handling.",
-		"top_speed": "260 km/h",
-		"ratio_speed": 0.72,
-		"accel": "4.2 sec",
-		"ratio_accel": 0.75,
-		"power": "310 BHP",
-		"ratio_power": 0.65,
-		"handling": "88.0%",
-		"ratio_handling": 0.88,
-		"specs": "Engine: 2.5L Inline-4 Turbo | Drivetrain: RWD | Weight: 1,520 kg\n0-100 km/h: 4.2s | Brakes: Ventilated Discs | Gearbox: 6-Speed Manual",
-		"price": "STARTER",
-		"cost_coins": 0,
-		"cost_gems": 0
-	},
-	"compact": {
-		"id": "compact",
-		"name": "URBAN COMPACT",
-		"class": "Agile City Hatch | 1.6L Inline-4",
-		"desc": "Ultra-nimble compact chassis engineered for tight city street racing and immediate cornering agility.",
-		"top_speed": "235 km/h",
-		"ratio_speed": 0.65,
-		"accel": "5.1 sec",
-		"ratio_accel": 0.68,
-		"power": "210 BHP",
-		"ratio_power": 0.55,
-		"handling": "92.0%",
-		"ratio_handling": 0.92,
-		"specs": "Engine: 1.6L Naturally Aspirated | Drivetrain: FWD | Weight: 1,120 kg\n0-100 km/h: 5.1s | Suspension: MacPherson Strut | Turning Radius: 4.8m",
-		"price": "5,000 COINS",
-		"cost_coins": 5000,
-		"cost_gems": 0
-	},
-	"hatchback": {
-		"id": "hatchback",
-		"name": "SPEED HATCHBACK",
-		"class": "Hot Hatch | 2.0L Turbo FWD",
-		"desc": "Track-focused performance hatchback featuring electronic limited-slip differential and aerodynamic roof spoiler.",
-		"top_speed": "275 km/h",
-		"ratio_speed": 0.76,
-		"accel": "3.9 sec",
-		"ratio_accel": 0.78,
-		"power": "350 BHP",
-		"ratio_power": 0.70,
-		"handling": "91.5%",
-		"ratio_handling": 0.915,
-		"specs": "Engine: 2.0L Twin-Scroll Turbo | Drivetrain: FWD e-LSD | Weight: 1,360 kg\n0-100 km/h: 3.9s | Downforce: 45 kg at 200 km/h | Gearbox: 7-Speed Dual Clutch",
-		"price": "12,000 COINS",
-		"cost_coins": 12000,
-		"cost_gems": 0
-	},
-	"coupe": {
-		"id": "coupe",
-		"name": "APEX COUPE",
-		"class": "Sport Coupe | 3.0L Twin-Turbo RWD",
-		"desc": "Classic rear-drive sports coupe with a low center of gravity, perfect 50:50 weight distribution, and high-revving turbo engine.",
-		"top_speed": "295 km/h",
-		"ratio_speed": 0.82,
-		"accel": "3.5 sec",
-		"ratio_accel": 0.82,
-		"power": "420 BHP",
-		"ratio_power": 0.78,
-		"handling": "94.0%",
-		"ratio_handling": 0.94,
-		"specs": "Engine: 3.0L Twin-Turbo Inline-6 | Drivetrain: RWD LSD | Weight: 1,480 kg\n0-100 km/h: 3.5s | Weight Dist: 50/50 | Brakes: 4-Piston Monobloc",
-		"price": "25,000 COINS",
-		"cost_coins": 25000,
-		"cost_gems": 0
-	},
-	"wagon": {
-		"id": "wagon",
-		"name": "TOURING WAGON",
-		"class": "Grand Tourer Wagon | 3.5L V6 AWD",
-		"desc": "Long-wheelbase high-speed highway touring vehicle equipped with active all-wheel drive stability control.",
-		"top_speed": "285 km/h",
-		"ratio_speed": 0.79,
-		"accel": "4.0 sec",
-		"ratio_accel": 0.76,
-		"power": "390 BHP",
-		"ratio_power": 0.74,
-		"handling": "86.5%",
-		"ratio_handling": 0.865,
-		"specs": "Engine: 3.5L Naturally Aspirated V6 | Drivetrain: Permanent AWD | Weight: 1,680 kg\n0-100 km/h: 4.0s | Chassis: High-Rigidity Steel | Suspension: Adaptive Dampers",
-		"price": "38,000 COINS",
-		"cost_coins": 38000,
-		"cost_gems": 0
-	},
-	"minivan": {
-		"id": "minivan",
-		"name": "TURBO MINIVAN",
-		"class": "Sleeper Sport Van | 3.8L Twin-Turbo",
-		"desc": "Custom tuned sleeper multi-purpose vehicle packing unexpected horsepower and wide track road presence.",
-		"top_speed": "270 km/h",
-		"ratio_speed": 0.75,
-		"accel": "4.4 sec",
-		"ratio_accel": 0.72,
-		"power": "450 BHP",
-		"ratio_power": 0.80,
-		"handling": "83.0%",
-		"ratio_handling": 0.83,
-		"specs": "Engine: 3.8L Twin-Turbo V6 | Drivetrain: AWD | Weight: 1,890 kg\n0-100 km/h: 4.4s | Exhaust: Quad Titanium Tips | Boost: 1.4 Bar High Boost",
-		"price": "45,000 COINS",
-		"cost_coins": 45000,
-		"cost_gems": 0
-	},
-	"suv": {
-		"id": "suv",
-		"name": "GRAND SUV",
-		"class": "Luxury Performance SUV | 4.0L Twin-Turbo V8",
-		"desc": "Imposing luxury sport utility machine with twin-turbocharged V8 muscle and adaptive air suspension.",
-		"top_speed": "300 km/h",
-		"ratio_speed": 0.83,
-		"accel": "3.3 sec",
-		"ratio_accel": 0.85,
-		"power": "600 BHP",
-		"ratio_power": 0.88,
-		"handling": "85.0%",
-		"ratio_handling": 0.85,
-		"specs": "Engine: 4.0L Twin-Turbo V8 | Drivetrain: Performance AWD | Weight: 2,150 kg\n0-100 km/h: 3.3s | Suspension: 3-Chamber Adaptive Air | Wheels: 22-Inch Forged",
-		"price": "60,000 COINS",
-		"cost_coins": 60000,
-		"cost_gems": 0
-	},
-	"pickup": {
-		"id": "pickup",
-		"name": "TITAN PICKUP",
-		"class": "Heavy Duty Muscle Truck | 5.7L Supercharged V8",
-		"desc": "Massive supercharged offroad power truck delivering relentless torque and reinforced steel boxed frame durability.",
-		"top_speed": "265 km/h",
-		"ratio_speed": 0.74,
-		"accel": "4.1 sec",
-		"ratio_accel": 0.74,
-		"power": "650 BHP",
-		"ratio_power": 0.90,
-		"handling": "81.0%",
-		"ratio_handling": 0.81,
-		"specs": "Engine: 5.7L Supercharged HEMI V8 | Drivetrain: 4WD Selectable | Weight: 2,340 kg\n0-100 km/h: 4.1s | Shocks: 2.5-Inch Internal Bypass | Clearance: 280mm",
-		"price": "75,000 COINS",
-		"cost_coins": 75000,
-		"cost_gems": 0
-	},
-	"offroad": {
-		"id": "offroad",
-		"name": "TRACKER 4X4",
-		"class": "Extreme Trail 4x4 | Heavy Duty Crawler",
-		"desc": "Purpose-built rock crawling and rally trail expedition vehicle with front and rear locking differentials.",
-		"top_speed": "250 km/h",
-		"ratio_speed": 0.69,
-		"accel": "4.6 sec",
-		"ratio_accel": 0.70,
-		"power": "480 BHP",
-		"ratio_power": 0.82,
-		"handling": "84.0%",
-		"ratio_handling": 0.84,
-		"specs": "Engine: 4.2L High-Torque V6 | Drivetrain: Dual Locking 4x4 | Weight: 1,980 kg\nApproach Angle: 44 Deg | Winch: 12,000 lbs Synthetic | Tires: 33-Inch All-Terrain",
-		"price": "95,000 COINS",
-		"cost_coins": 95000,
-		"cost_gems": 0
-	},
-	"sport": {
-		"id": "sport",
-		"name": "SUPER SPORT GT",
-		"class": "Supercar Flagship | 5.2L Naturally Aspirated V10",
-		"desc": "Ultra-lightweight aerodynamic flagship supercar delivering an exhilarating 9,000 RPM naturally aspirated scream and track-destroying performance.",
-		"top_speed": "345 km/h",
-		"ratio_speed": 0.96,
-		"accel": "2.8 sec",
-		"ratio_accel": 0.94,
-		"power": "740 BHP",
-		"ratio_power": 0.96,
-		"handling": "97.5%",
-		"ratio_handling": 0.975,
-		"specs": "Engine: 5.2L Mid-Mounted V10 | Redline: 9,000 RPM | Weight: 1,380 kg Dry\n0-100 km/h: 2.8s | Aero: Active Dual Tunnel Diffuser | Brakes: Carbon Ceramic 380mm",
-		"price": "150,000 COINS",
-		"cost_coins": 150000,
-		"cost_gems": 0
-	},
-	"mclaren": {
-		"id": "mclaren",
-		"name": "MCLAREN ARTURA SPIDER",
-		"class": "Flagship Hybrid Supercar | 3.0L Twin-Turbo V6 Hybrid",
-		"desc": "Ultimate high-performance British supercar engineered with carbon-fiber architecture, 690 BHP hybrid powertrain, and race-bred active aerodynamics.",
-		"top_speed": "355 km/h",
-		"ratio_speed": 1.0,
-		"accel": "2.6 sec",
-		"ratio_accel": 1.0,
-		"power": "690 BHP",
-		"ratio_power": 1.0,
-		"handling": "99.0%",
-		"ratio_handling": 0.99,
-		"specs": "Engine: 3.0L 120-Deg Twin-Turbo V6 + E-Motor | Drivetrain: RWD E-Diff | Weight: 1,457 kg Dry\n0-100 km/h: 2.6s | Top Speed: 355 km/h | Brakes: Carbon Ceramic Matrix 390mm",
-		"price": "350,000 COINS",
-		"cost_coins": 350000,
-		"cost_gems": 0
-	},
-	"kia_carnival": {
-		"id": "kia_carnival",
-		"name": "KIA CARNIVAL GT",
-		"class": "Luxury Grand MPV | 3.5L Smartstream V6",
-		"desc": "Executive VIP grand touring multi-purpose vehicle combining effortless high-speed highway cruising with advanced active safety architecture.",
-		"top_speed": "245 km/h",
-		"ratio_speed": 0.68,
-		"accel": "5.3 sec",
-		"ratio_accel": 0.66,
-		"power": "290 BHP",
-		"ratio_power": 0.62,
-		"handling": "84.0%",
-		"ratio_handling": 0.84,
-		"specs": "Engine: 3.5L GDI V6 | Drivetrain: FWD | Weight: 2,080 kg\n0-100 km/h: 5.3s | Gearbox: 8-Speed Automatic | Wheelbase: 3,082 mm",
-		"price": "42,000 COINS",
-		"cost_coins": 42000,
-		"cost_gems": 0
-	},
-	"kia_seltos": {
-		"id": "kia_seltos",
-		"name": "KIA SELTOS TURBO",
-		"class": "Dynamic Compact SUV | 1.6L T-GDI AWD",
-		"desc": "Agile turbocharged all-wheel-drive crossover engineered for rapid urban acceleration, confident bad-weather traction, and razor-sharp steering feedback.",
-		"top_speed": "250 km/h",
-		"ratio_speed": 0.70,
-		"accel": "4.8 sec",
-		"ratio_accel": 0.72,
-		"power": "195 BHP",
-		"ratio_power": 0.58,
-		"handling": "89.0%",
-		"ratio_handling": 0.89,
-		"specs": "Engine: 1.6L Turbocharged Inline-4 | Drivetrain: Active AWD | Weight: 1,480 kg\n0-100 km/h: 4.8s | Transmission: 7-Speed Dual Clutch | Wheels: 18-Inch Diamond Cut",
-		"price": "55,000 COINS",
-		"cost_coins": 55000,
-		"cost_gems": 0
-	},
-	"porsche_carrera_gt": {
-		"id": "porsche_carrera_gt",
-		"name": "PORSCHE CARRERA GT",
-		"class": "Legendary V10 Supercar | 5.7L Mid-Mounted V10",
-		"desc": "Pure analog motorsport perfection. Naturally aspirated 605 BHP racing V10, carbon-fiber monocoque chassis, manual beechwood shifter, and raw unassisted thrill.",
-		"top_speed": "330 km/h",
-		"ratio_speed": 0.93,
-		"accel": "3.2 sec",
-		"ratio_accel": 0.91,
-		"power": "605 BHP",
-		"ratio_power": 0.92,
-		"handling": "97.0%",
-		"ratio_handling": 0.97,
-		"specs": "Engine: 5.7L 68-Deg V10 | Redline: 8,400 RPM | Drivetrain: RWD LSD | Weight: 1,380 kg Dry\n0-100 km/h: 3.2s | Clutch: Ceramic Composite (PCCC) | Monocoque: Full Carbon",
-		"price": "400,000 COINS",
-		"cost_coins": 400000,
-		"cost_gems": 0
-	},
-	"porsche_mission_x": {
-		"id": "porsche_mission_x",
-		"name": "PORSCHE MISSION X",
-		"class": "Next-Gen Hypercar Concept | 900V High-Downforce EV",
-		"desc": "The ultimate hypercar beacon. 1:1 power-to-weight ratio, 1,500 BHP electric architecture, downforce values well in excess of current 911 GT3 RS, and extreme high-voltage fast charging.",
-		"top_speed": "370 km/h",
-		"ratio_speed": 1.0,
-		"accel": "2.1 sec",
-		"ratio_accel": 1.0,
-		"power": "1500 BHP",
-		"ratio_power": 1.0,
-		"handling": "99.5%",
-		"ratio_handling": 0.995,
-		"specs": "Powertrain: Permanently Synchronous E-Motors | Voltage: 900V System | Weight: 1,520 kg\n0-100 km/h: 2.1s | Aero: Adaptive Ground Effect Tunnels | Power-to-Weight: 1 BHP / 1 kg",
-		"price": "500,000 COINS",
-		"cost_coins": 500000,
-		"cost_gems": 0
-	},
-	"angkot_dki": {
-		"id": "angkot_dki",
-		"name": "ANGKOT DKI MIKROLET",
-		"class": "Jakarta Legend Microbus | 1.8L Turbo Stage-2",
-		"desc": "Authentic Jakarta street legend featuring full lossless HD cabin details, driver and passenger characters, and race-tuned rear-wheel-drive suspension.",
-		"top_speed": "265 km/h",
-		"ratio_speed": 0.74,
-		"accel": "4.3 sec",
-		"ratio_accel": 0.74,
-		"power": "290 BHP",
-		"ratio_power": 0.64,
-		"handling": "89.0%",
-		"ratio_handling": 0.89,
-		"specs": "Engine: 1.8L Turbo Stage-2 Inline-4 | Drivetrain: RWD | Weight: 1,380 kg\n0-100 km/h: 4.3s | Top Speed: 265 km/h | Cabin: Full Driver & Passenger Crew",
-		"price": "STARTER",
-		"cost_coins": 0,
-		"cost_gems": 0
-	}
-}
+const GARAGE_FLEET_DATA = VehicleCatalogScript.FLEET_DATA
 
 func _get_profile() -> Node:
 	if not _profile_autoload and has_node("/root/PlayerProfile"):
@@ -452,6 +166,36 @@ func _ready() -> void:
 	elif play_btn:
 		play_btn.grab_focus()
 
+func _exit_tree() -> void:
+	var prof = _get_profile()
+	if prof:
+		if prof.is_connected("profile_updated", _on_profile_updated):
+			prof.disconnect("profile_updated", _on_profile_updated)
+		if prof.is_connected("currency_changed", _on_currency_changed):
+			prof.disconnect("currency_changed", _on_currency_changed)
+
+func _open_garage_3d() -> void:
+	if _garage_transitioning:
+		return
+	if not ResourceLoader.exists(GARAGE_3D_SCENE_PATH):
+		_refresh_garage_ui()
+		open_modal(garage_modal)
+		return
+	_garage_transitioning = true
+	var fade := ColorRect.new()
+	fade.name = "GarageFadeTransition"
+	fade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fade.color = Color(0.0, 0.0, 0.0, 0.0)
+	fade.mouse_filter = Control.MOUSE_FILTER_STOP
+	fade.z_index = 100
+	add_child(fade)
+	var tw := create_tween()
+	tw.tween_property(fade, "color:a", 1.0, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tw.tween_callback(func():
+		if is_inside_tree():
+			get_tree().change_scene_to_file(GARAGE_3D_SCENE_PATH)
+	)
+
 func _setup_reference_widgets() -> void:
 	if not hud_root: return
 
@@ -484,8 +228,7 @@ func _setup_reference_widgets() -> void:
 		)
 		_hud_v2.garage_pressed.connect(func():
 			garage_pressed.emit()
-			_refresh_garage_ui()
-			open_modal(garage_modal)
+			_open_garage_3d()
 		)
 		_hud_v2.settings_pressed.connect(func():
 			settings_pressed.emit()
@@ -535,8 +278,8 @@ func _connect_hud_signals() -> void:
 		settings_btn.pressed.connect(func(): open_modal(settings_modal))
 	if garage_btn:
 		garage_btn.pressed.connect(func():
-			_refresh_garage_ui()
-			open_modal(garage_modal)
+			garage_pressed.emit()
+			_open_garage_3d()
 		)
 	if tuning_btn:
 		tuning_btn.pressed.connect(func(): open_modal(tuning_modal))

@@ -261,35 +261,51 @@ func apply_to_current_scene() -> void:
 	var cfg: Dictionary = TIER_PROFILES[current_tier]
 
 	var world_env := scene.find_child("WorldEnvironment", true, false) as WorldEnvironment
+	var preserve_indoor: bool = bool(scene.get_meta("preserve_indoor_lighting", false))
+	if not preserve_indoor and world_env != null:
+		preserve_indoor = bool(world_env.get_meta("preserve_indoor_lighting", false))
 	if world_env and world_env.environment:
 		var env: Environment = world_env.environment
-		env.ssr_enabled = cfg["ssr"]
-		env.ssr_max_steps = cfg["ssr_steps"]
-		env.ssao_enabled = cfg["ssao"]
-		env.ssil_enabled = cfg["ssil"]
-		env.sdfgi_enabled = cfg["sdfgi"]
-		env.volumetric_fog_enabled = cfg["volumetric_fog"]
-		env.fog_enabled = cfg["fog"]
-		env.glow_enabled = cfg["glow"]
+		if preserve_indoor:
+			# Indoor showcase scenes (e.g. Garage3D) keep their handcrafted exposure, ambient,
+			# fog, color grading, and sky while honoring GPU quality toggles across all 4 tiers.
+			env.ssr_enabled = bool(cfg["ssr"])
+			env.ssr_max_steps = maxi(int(cfg["ssr_steps"]), 36) if current_tier == Tier.ULTRA else int(cfg["ssr_steps"])
+			env.ssao_enabled = bool(cfg["ssao"])
+			env.ssil_enabled = bool(cfg["ssil"])
+			env.sdfgi_enabled = bool(cfg["sdfgi"])
+			env.glow_enabled = bool(cfg["glow"])
+		else:
+			env.ssr_enabled = cfg["ssr"]
+			env.ssr_max_steps = cfg["ssr_steps"]
+			env.ssao_enabled = cfg["ssao"]
+			env.ssil_enabled = cfg["ssil"]
+			env.sdfgi_enabled = cfg["sdfgi"]
+			env.volumetric_fog_enabled = cfg["volumetric_fog"]
+			env.fog_enabled = cfg["fog"]
+			env.glow_enabled = cfg["glow"]
 
-		env.tonemap_exposure = float(cfg["exposure"])
-		env.ambient_light_energy = float(cfg["ambient_energy"])
-		env.ambient_light_sky_contribution = float(cfg["sky_contrib"])
-		env.adjustment_brightness = float(cfg["adj_brightness"])
-		env.adjustment_contrast = float(cfg["adj_contrast"])
-		env.adjustment_saturation = float(cfg["adj_saturation"])
+			env.tonemap_exposure = float(cfg["exposure"])
+			env.ambient_light_energy = float(cfg["ambient_energy"])
+			env.ambient_light_sky_contribution = float(cfg["sky_contrib"])
+			env.adjustment_brightness = float(cfg["adj_brightness"])
+			env.adjustment_contrast = float(cfg["adj_contrast"])
+			env.adjustment_saturation = float(cfg["adj_saturation"])
 
-		if env.sky:
-			var target_sky_int := float(cfg["sky_intensity"])
-			if env.sky.sky_material is ShaderMaterial:
-				var sky_mat := env.sky.sky_material as ShaderMaterial
-				var cur_sky := float(sky_mat.get_shader_parameter("hdr_sky_intensity"))
-				if absf(cur_sky - target_sky_int) > 0.005:
-					sky_mat.set_shader_parameter("hdr_sky_intensity", target_sky_int)
-			elif env.sky.sky_material is ProceduralSkyMaterial:
-				var proc_mat := env.sky.sky_material as ProceduralSkyMaterial
-				if absf(proc_mat.energy_multiplier - target_sky_int) > 0.005:
-					proc_mat.energy_multiplier = target_sky_int
+			if env.sky:
+				var target_sky_int := float(cfg["sky_intensity"])
+				if env.sky.sky_material is ShaderMaterial:
+					var sky_mat := env.sky.sky_material as ShaderMaterial
+					var cur_sky := float(sky_mat.get_shader_parameter("hdr_sky_intensity"))
+					if absf(cur_sky - target_sky_int) > 0.005:
+						sky_mat.set_shader_parameter("hdr_sky_intensity", target_sky_int)
+				elif env.sky.sky_material is ProceduralSkyMaterial:
+					var proc_mat := env.sky.sky_material as ProceduralSkyMaterial
+					if absf(proc_mat.energy_multiplier - target_sky_int) > 0.005:
+						proc_mat.energy_multiplier = target_sky_int
+
+	if preserve_indoor:
+		return
 
 	var sun := scene.find_child("SunLight", true, false) as DirectionalLight3D
 	if sun:

@@ -8,11 +8,16 @@ const VehicleConfigScript = preload("res://vehicles/core/VehicleConfig.gd")
 ## Uses background threaded ResourceLoader preloading + pre-built rig pooling
 ## so switching cars and equipping in Garage is instantaneous (< 1 ms).
 
+signal car_model_ready(model_id: String)
+
 @export var current_model: String = "porsche_mission_x"
 @export var current_paint_color: Color = Color(1.0, 1.0, 1.0, 1.0)
 @export var headlights_on: bool = true
 @export var steer_angle: float = 0.0
 @export var wheel_spin_speed: float = 0.0
+@export var use_world_scale: bool = true
+@export var idle_sway_enabled: bool = true
+@export var auto_load_on_ready: bool = true
 
 const MODEL_BASE_YAW_DEG: Dictionary = {
 	"coupe": 0.0,
@@ -101,16 +106,24 @@ var garage_open: bool = false
 
 static var _packed_scene_cache: Dictionary = {}
 
+func get_effective_scale() -> float:
+	return VehicleConfigScript.WORLD_SCALE if use_world_scale else 1.0
+
 func _ready() -> void:
 	if visual_root == null:
 		visual_root = Node3D.new()
 		visual_root.name = "VisualRoot"
 		add_child(visual_root)
 	visual_root.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
-	var world_s: float = VehicleConfigScript.WORLD_SCALE
+	var world_s: float = get_effective_scale()
 	visual_root.scale = Vector3.ONE * world_s
 
 	VehicleMaterialEnhancer.attach_contact_shadow(self, Vector3(0.0, 0.05 * world_s, 0.0), 2.25 * world_s, 4.75 * world_s)
+
+	if not auto_load_on_ready:
+		set_headlights(headlights_on)
+		set_steer(steer_angle)
+		return
 
 	var initial_car = current_model if not current_model.is_empty() else "porsche_mission_x"
 	if has_node("/root/PlayerProfile"):
@@ -163,7 +176,7 @@ func _exit_tree() -> void:
 
 func _process(delta: float) -> void:
 	_idle_time += delta
-	if visual_root:
+	if visual_root and idle_sway_enabled:
 		visual_root.position.y = 0.0
 		visual_root.rotation.z = sin(_idle_time * 3.5) * 0.0005
 
@@ -292,6 +305,17 @@ func load_car_model(model_name: String) -> void:
 		_pending_tscn_path = tscn_path
 		_pending_model_name = model_name
 		return
+	var existing_status: int = ResourceLoader.load_threaded_get_status(tscn_path)
+	if existing_status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+		_pending_tscn_path = tscn_path
+		_pending_model_name = model_name
+		return
+	if existing_status == ResourceLoader.THREAD_LOAD_LOADED:
+		var ready_packed := ResourceLoader.load_threaded_get(tscn_path) as PackedScene
+		if ready_packed:
+			_packed_scene_cache[tscn_path] = ready_packed
+			_apply_loaded_car_scene(model_name, ready_packed, true)
+			return
 	var req_err := ResourceLoader.load_threaded_request(tscn_path, "PackedScene", false)
 	if req_err == OK:
 		_pending_tscn_path = tscn_path
@@ -331,6 +355,7 @@ func _activate_pooled_rig(key: String) -> void:
 	set_headlights(headlights_on)
 	set_steer(steer_angle)
 	_touch_and_trim_rig_pool(key)
+	car_model_ready.emit(key)
 
 func _touch_and_trim_rig_pool(keep_key: String) -> void:
 	_rig_lru.erase(keep_key)
@@ -775,7 +800,7 @@ func set_paint_color(color: Color) -> void:
 
 func set_headlights(on: bool) -> void:
 	headlights_on = on
-	var s: float = VehicleConfigScript.WORLD_SCALE
+	var s: float = get_effective_scale()
 	if fx_root:
 		var spot_l = fx_root.get_node_or_null("HeadlightSpotL") as SpotLight3D
 		var spot_r = fx_root.get_node_or_null("HeadlightSpotR") as SpotLight3D
@@ -802,6 +827,134 @@ func set_headlights(on: bool) -> void:
 			rear_glow.light_specular = 0.12
 			rear_glow.omni_range = 2.8 * s
 			rear_glow.visible = on
+
+func set_light_energy_multiplier(mult: float) -> void:
+	var m: float = maxf(0.0, mult)
+	if not fx_root:
+		return
+	var spot_l = fx_root.get_node_or_null("HeadlightSpotL") as SpotLight3D
+	var spot_r = fx_root.get_node_or_null("HeadlightSpotR") as SpotLight3D
+	var rear_glow = fx_root.get_node_or_null("RearTaillightGlow") as OmniLight3D
+	if spot_l:
+		spot_l.light_energy = 1.5 * m
+	if spot_r:
+		spot_r.light_energy = 1.5 * m
+	if rear_glow:
+		rear_glow.light_energy = 0.6 * m
+
+func spin_wheels_by_radians(delta_rad: float) -> void:
+	_spin_wheels(delta_rad)
+
+func is_model_loading() -> bool:
+	return not _pending_tscn_path.is_empty()
+
+func get_active_model_key() -> String:
+	return _active_rig_model
+
+func compute_wheel_ground_metrics() -> Dictionary:
+	## Computes exact vertex-accurate lowest wheel bottom Y (in local space of ShowcaseCar),
+	## immune to rotated AABB corner inflation when wheels are spun/steered, plus wheel radius
+	## and vehicle footprint width/length in ShowcaseCar local space.
+	var inv_self: Transform3D = global_transform.affine_inverse()
+	var wheel_roots: Array[Node3D] = []
+	for wn in [front_left_wheel, front_right_wheel, rear_left_wheel, rear_right_wheel]:
+		if wn and is_instance_valid(wn):
+			wheel_roots.append(wn)
+
+	var min_wheel_y: float = INF
+	var radii: Array[float] = []
+	for wr in wheel_roots:
+		var w_min_y: float = INF
+		var w_max_y: float = -INF
+		var w_meshes: Array[Node] = []
+		if wr is MeshInstance3D:
+			w_meshes.append(wr)
+		w_meshes.append_array(wr.find_children("*", "MeshInstance3D", true, false))
+		for m_node in w_meshes:
+			var mi := m_node as MeshInstance3D
+			if not mi or not mi.mesh or not mi.visible:
+				continue
+			var local_xf: Transform3D = inv_self * mi.global_transform
+			var used_verts: bool = false
+			var sc: int = mi.mesh.get_surface_count()
+			for s in range(sc):
+				var arrays: Array = mi.mesh.surface_get_arrays(s)
+				if arrays.size() > Mesh.ARRAY_VERTEX and arrays[Mesh.ARRAY_VERTEX] is PackedVector3Array:
+					var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+					if not verts.is_empty():
+						used_verts = true
+						var stride: int = maxi(1, verts.size() / 256)
+						for vi in range(0, verts.size(), stride):
+							var pt: Vector3 = local_xf * verts[vi]
+							w_min_y = minf(w_min_y, pt.y)
+							w_max_y = maxf(w_max_y, pt.y)
+			if not used_verts:
+				var aabb: AABB = mi.mesh.get_aabb()
+				var c_local: Vector3 = local_xf * aabb.get_center()
+				var r_approx: float = maxf(aabb.size.y, aabb.size.z) * 0.5 * local_xf.basis.get_scale().y
+				w_min_y = minf(w_min_y, c_local.y - r_approx)
+				w_max_y = maxf(w_max_y, c_local.y + r_approx)
+		if w_min_y < INF and w_max_y > -INF:
+			min_wheel_y = minf(min_wheel_y, w_min_y)
+			var r_est: float = (w_max_y - w_min_y) * 0.5
+			if r_est > 0.12 and r_est < 1.2:
+				radii.append(r_est)
+
+	var body_min := Vector3(INF, INF, INF)
+	var body_max := Vector3(-INF, -INF, -INF)
+	var scan_root: Node3D = visual_pivot if visual_pivot else visual_root
+	if scan_root:
+		for m_node in scan_root.find_children("*", "MeshInstance3D", true, false):
+			var mi := m_node as MeshInstance3D
+			if not mi or not mi.mesh or not mi.visible:
+				continue
+			var local_xf: Transform3D = inv_self * mi.global_transform
+			var aabb: AABB = mi.mesh.get_aabb()
+			var p: Vector3 = aabb.position
+			var sz: Vector3 = aabb.size
+			var corners: Array[Vector3] = [
+				Vector3(p.x, p.y, p.z),
+				Vector3(p.x + sz.x, p.y, p.z),
+				Vector3(p.x, p.y + sz.y, p.z),
+				Vector3(p.x, p.y, p.z + sz.z),
+				Vector3(p.x + sz.x, p.y + sz.y, p.z),
+				Vector3(p.x + sz.x, p.y, p.z + sz.z),
+				Vector3(p.x, p.y + sz.y, p.z + sz.z),
+				Vector3(p.x + sz.x, p.y + sz.y, p.z + sz.z),
+			]
+			for c in corners:
+				var pt: Vector3 = local_xf * c
+				body_min = body_min.min(pt)
+				body_max = body_max.max(pt)
+
+	if min_wheel_y == INF:
+		min_wheel_y = body_min.y if body_min.y < INF else 0.0
+	var avg_r: float = 0.36 * get_effective_scale()
+	if not radii.is_empty():
+		var sum_r: float = 0.0
+		for rv in radii:
+			sum_r += rv
+		avg_r = sum_r / float(radii.size())
+	var width: float = (body_max.x - body_min.x) if body_min.x < INF else (2.0 * get_effective_scale())
+	var length: float = (body_max.z - body_min.z) if body_min.z < INF else (4.6 * get_effective_scale())
+	var height: float = (body_max.y - body_min.y) if body_min.y < INF else (1.4 * get_effective_scale())
+	return {
+		"min_wheel_y": min_wheel_y,
+		"wheel_radius": avg_r,
+		"width": clampf(width, 1.5, 4.0),
+		"length": clampf(length, 3.2, 8.5),
+		"height": clampf(height, 0.9, 3.5),
+		"center_y": (body_min.y + body_max.y) * 0.5 if body_min.y < INF else 0.7,
+	}
+
+func align_contact_shadow_to_floor(floor_local_y: float, footprint_width: float, footprint_length: float) -> void:
+	var decal := get_node_or_null("ContactShadowDecal") as Decal
+	if decal:
+		decal.position = Vector3(0.0, floor_local_y + 0.006, 0.0)
+		decal.size = Vector3(footprint_width * 1.12, 0.42, footprint_length * 1.06)
+		decal.cull_mask = 1
+		decal.albedo_mix = 0.92
+		decal.modulate = Color(1.0, 1.0, 1.0, 0.95)
 
 func set_steer(angle_deg: float) -> void:
 	steer_angle = angle_deg
@@ -839,7 +992,7 @@ func apply_visual_scene(packed: PackedScene) -> void:
 			c.queue_free()
 	var new_vis = packed.instantiate() as Node3D
 	new_vis.name = "VisualRoot"
-	new_vis.scale = Vector3.ONE * VehicleConfigScript.WORLD_SCALE
+	new_vis.scale = Vector3.ONE * get_effective_scale()
 	add_child(new_vis)
 	visual_root = new_vis
 	_setup_showcase_wheels()
